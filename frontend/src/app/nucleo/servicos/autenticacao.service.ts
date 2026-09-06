@@ -9,21 +9,35 @@ export interface CredenciaisLogin {
   senha: string;
 }
 
+export interface PrimeiroAcessoPayload {
+  usuarioId: number;
+  senhaAtual: string;
+  novaSenha: string;
+  confirmacaoNovaSenha: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AutenticacaoService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private readonly chaveSessao = 'sigea_usuario_autenticado';
+  private readonly chave = 'sigea_sessao';
 
   usuarioLogado = signal<Usuario | null>(this.recuperarSessao());
 
   entrar(credenciais: CredenciaisLogin): Observable<Usuario> {
     return this.http.post<Usuario>('/api/autenticacao/entrar', credenciais).pipe(
       tap((usuario) => {
-        localStorage.setItem(this.chaveSessao, JSON.stringify(usuario));
-        this.usuarioLogado.set(usuario);
+        this.salvarSessao(usuario);
+      })
+    );
+  }
+
+  redefinirPrimeiroAcesso(payload: PrimeiroAcessoPayload): Observable<Usuario> {
+    return this.http.post<Usuario>('/api/autenticacao/primeiro-acesso', payload).pipe(
+      tap((usuario) => {
+        this.salvarSessao(usuario);
       })
     );
   }
@@ -39,14 +53,23 @@ export class AutenticacaoService {
     return this.usuarioLogado() !== null;
   }
 
+  requerPrimeiroAcesso(): boolean {
+    return Boolean(this.usuarioLogado()?.primeiroAcesso);
+  }
+
+  salvarSessao(usuario: Usuario): void {
+    localStorage.setItem(this.chave, JSON.stringify(usuario));
+    this.usuarioLogado.set(usuario);
+  }
+
   private limparSessao(): void {
-    localStorage.removeItem(this.chaveSessao);
+    localStorage.removeItem(this.chave);
     this.usuarioLogado.set(null);
     this.router.navigate(['/login']);
   }
 
   private recuperarSessao(): Usuario | null {
-    const dados = localStorage.getItem(this.chaveSessao);
+    const dados = localStorage.getItem(this.chave);
     return dados ? JSON.parse(dados) : null;
   }
 }

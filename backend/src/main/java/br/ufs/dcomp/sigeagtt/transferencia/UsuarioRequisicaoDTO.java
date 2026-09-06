@@ -1,6 +1,7 @@
 package br.ufs.dcomp.sigeagtt.transferencia;
 
 import br.ufs.dcomp.sigeagtt.modelos.PerfilUsuario;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -15,6 +16,10 @@ public record UsuarioRequisicaoDTO(
     @Pattern(regexp = "\\d{11}", message = "O CPF deve conter exatamente 11 dígitos numéricos")
     String cpf,
 
+    @NotBlank(message = "O e-mail é obrigatório")
+    @Email(message = "O formato de e-mail é inválido")
+    String email,
+
     @NotBlank(message = "O cargo é obrigatório")
     @Size(max = 100, message = "O cargo não pode exceder 100 caracteres")
     String cargo,
@@ -26,13 +31,8 @@ public record UsuarioRequisicaoDTO(
     PerfilUsuario perfil
 ) {
     public UsuarioRequisicaoDTO {
-        // Sanitiza CPF removendo pontos e traços
-        if (cpf != null) {
-            cpf = cpf.replaceAll("\\D", "");
-        }
-        // Converte string vazia em null para não violar o @Pattern de 12 dígitos quando não for Aluno
-        if (matriculaSigaa != null && matriculaSigaa.isBlank()) {
-            matriculaSigaa = null;
-        }
+        if (cpf != null) cpf = cpf.replaceAll("\\D", "");
+        if (matriculaSigaa != null && matriculaSigaa.isBlank()) matriculaSigaa = null;
+        if (email != null) email = email.trim().toLowerCase();
     }
 }

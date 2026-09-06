@@ -3,6 +3,7 @@ package br.ufs.dcomp.sigeagtt.controladores;
 import br.ufs.dcomp.sigeagtt.servicos.AutenticacaoServico;
 import br.ufs.dcomp.sigeagtt.transferencia.LoginRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.LoginRespostaDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.PrimeiroAcessoRequisicaoDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,13 @@ public class ControladorAutenticacao {
         return ResponseEntity.ok(servico.autenticar(dto));
     }
 
+    @PostMapping("/primeiro-acesso")
+    public ResponseEntity<LoginRespostaDTO> primeiroAcesso(@Valid @RequestBody PrimeiroAcessoRequisicaoDTO dto) {
+        return ResponseEntity.ok(servico.redefinirSenhaPrimeiroAcesso(dto));
+    }
+
     @PostMapping("/sair")
     public ResponseEntity<Map<String, String>> sair() {
-        return ResponseEntity.ok(Map.of("mensagem", "Sessão encerrada com sucesso."));
+        return ResponseEntity.ok(Map.of("mensagem", "Sessão finalizada."));
     }
 }

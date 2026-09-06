@@ -22,5 +22,6 @@
     "**/Thumbs.db": true,
     "backend/target": true,
     "frontend/.angular": true
-  }
+  },
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

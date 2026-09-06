@@ -9,19 +9,18 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="container-fluid py-4">
+    <div>
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h1 class="h3 fw-bold text-primary mb-1">Gestão de Usuários e Perfis</h1>
-          <p class="text-muted small mb-0">Controle de acessos com minimização cadastral (LGPD / RBAC)</p>
+          <h1 class="h4 fw-bold text-dark mb-1">Gestão de Usuários e Perfis</h1>
+          <p class="text-muted small mb-0">Controle de acessos com minimização cadastral</p>
         </div>
-        <button class="btn btn-primary" (click)="alternarFormulario()">
+        <button class="btn btn-primary btn-sm px-3" (click)="alternarFormulario()">
           <i class="bi" [ngClass]="exibirFormulario ? 'bi-x-lg' : 'bi-person-plus'"></i>
-          {{ exibirFormulario ? 'Fechar Formulário' : 'Novo Usuário' }}
+          {{ exibirFormulario ? 'Fechar' : 'Novo Usuário' }}
         </button>
       </div>
 
-      <!-- Alertas da API -->
       <div *ngIf="mensagemSucesso()" class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
         <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)"></button>
@@ -33,109 +32,94 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
       </div>
 
       <!-- Formulário de Cadastro -->
-      <div *ngIf="exibirFormulario" class="card shadow-sm border-0 mb-4">
+      <div *ngIf="exibirFormulario" class="card shadow-sm border-0 mb-4 rounded-3">
         <div class="card-header bg-white py-3">
-          <h5 class="card-title mb-0 fw-semibold text-secondary">Cadastrar Novo Usuário</h5>
+          <h6 class="card-title mb-0 fw-bold text-secondary">Novo Cadastro</h6>
+          <small class="text-muted">A senha provisória de ativação será definida como <code>Sigea&#64;123</code></small>
         </div>
         <div class="card-body">
           <form (ngSubmit)="salvarUsuario()">
             <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label small fw-bold">Nome Completo</label>
-                <input type="text" class="form-control" [(ngModel)]="novoUsuario.nomeCompleto" name="nomeCompleto" required maxlength="150" placeholder="Ex.: Maria Souza">
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold">Nome Completo</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="novoUsuario.nomeCompleto" name="nomeCompleto" required maxlength="150">
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold">E-mail Institucional</label>
+                <input type="email" class="form-control form-control-sm" [(ngModel)]="novoUsuario.email" name="email" required maxlength="150" placeholder="usuario@ufs.br">
               </div>
 
               <div class="col-md-3">
-                <label class="form-label small fw-bold">CPF (11 dígitos)</label>
-                <input type="text" 
-                       class="form-control" 
-                       [value]="novoUsuario.cpf" 
-                       (input)="aplicarMascaraCpf($event)" 
-                       name="cpf" 
-                       required 
-                       maxlength="14" 
-                       placeholder="000.000.000-00">
+                <label class="form-label small fw-semibold">CPF (11 dígitos)</label>
+                <input type="text" class="form-control form-control-sm" [value]="novoUsuario.cpf" (input)="aplicarMascaraCpf($event)" name="cpf" required maxlength="14" placeholder="000.000.000-00">
               </div>
 
               <div class="col-md-3">
-                <label class="form-label small fw-bold">Perfil de Acesso</label>
-                <select class="form-select" [(ngModel)]="novoUsuario.perfil" name="perfil" (change)="ajustarPerfil()" required>
+                <label class="form-label small fw-semibold">Perfil de Acesso</label>
+                <select class="form-select form-select-sm" [(ngModel)]="novoUsuario.perfil" name="perfil" (change)="ajustarPerfil()" required>
                   <option value="ADMINISTRADOR">ADMINISTRADOR</option>
                   <option value="PROFESSOR">PROFESSOR</option>
                   <option value="ALUNO">ALUNO</option>
                 </select>
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label small fw-bold">Cargo / Função Institucional</label>
-                <input type="text" class="form-control" [(ngModel)]="novoUsuario.cargo" name="cargo" required maxlength="100" placeholder="Ex.: Docente Adjunto, Residente...">
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold">Cargo / Vínculo</label>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="novoUsuario.cargo" name="cargo" required maxlength="100">
               </div>
 
-              <div class="col-md-6" *ngIf="novoUsuario.perfil === 'ALUNO'">
-                <label class="form-label small fw-bold text-primary">Matrícula SIGAA (obrigatória para Aluno - 12 dígitos)</label>
-                <input type="text" 
-                       class="form-control border-primary" 
-                       [value]="novoUsuario.matriculaSigaa || ''" 
-                       (input)="aplicarMascaraMatricula($event)" 
-                       name="matriculaSigaa" 
-                       maxlength="12" 
-                       placeholder="Ex.: 202100114080">
+              <div class="col-md-4" *ngIf="novoUsuario.perfil === 'ALUNO'">
+                <label class="form-label small fw-semibold text-primary">Matrícula SIGAA (12 dígitos)</label>
+                <input type="text" class="form-control form-control-sm border-primary" [value]="novoUsuario.matriculaSigaa || ''" (input)="aplicarMascaraMatricula($event)" name="matriculaSigaa" maxlength="12">
               </div>
             </div>
 
             <div class="mt-4 text-end">
-              <button type="button" class="btn btn-light me-2" (click)="alternarFormulario()">Cancelar</button>
-              <button type="submit" class="btn btn-success" [disabled]="carregando()">
-                <span *ngIf="carregando()" class="spinner-border spinner-border-sm me-1"></span>
-                Salvar no Banco
+              <button type="button" class="btn btn-light btn-sm me-2" (click)="alternarFormulario()">Cancelar</button>
+              <button type="submit" class="btn btn-success btn-sm px-3" [disabled]="carregando()">
+                Salvar Usuário
               </button>
             </div>
           </form>
         </div>
       </div>
 
-      <!-- Tabela de Usuários -->
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0 fw-semibold text-secondary">Usuários Cadastrados</h5>
-          <button class="btn btn-sm btn-outline-secondary" (click)="carregarUsuarios()">
-            <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
-          </button>
-        </div>
+      <!-- Tabela -->
+      <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
+              <thead class="table-light small text-muted">
                 <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Nome Completo</th>
-                  <th scope="col">CPF</th>
-                  <th scope="col">Cargo</th>
-                  <th scope="col">Matrícula SIGAA</th>
-                  <th scope="col">Perfil</th>
-                  <th scope="col">Status</th>
-                  <th scope="col" class="text-end">Ações</th>
+                  <th>ID</th>
+                  <th>Nome Completo</th>
+                  <th>E-mail</th>
+                  <th>CPF</th>
+                  <th>Perfil</th>
+                  <th>1º Acesso</th>
+                  <th>Status</th>
+                  <th class="text-end">Ações</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr *ngIf="usuarios().length === 0">
-                  <td colspan="8" class="text-center py-4 text-muted">
-                    Nenhum usuário encontrado na base de dados.
-                  </td>
-                </tr>
+              <tbody class="small">
                 <tr *ngFor="let u of usuarios()">
                   <td class="fw-bold">{{ u.id }}</td>
                   <td>{{ u.nomeCompleto }}</td>
+                  <td>{{ u.email }}</td>
                   <td><code>{{ formatarCpfExibicao(u.cpf) }}</code></td>
-                  <td>{{ u.cargo }}</td>
-                  <td>{{ u.matriculaSigaa || '-' }}</td>
                   <td>
                     <span class="badge" [ngClass]="{
-                      'bg-danger': u.perfil === 'ADMINISTRADOR',
-                      'bg-primary': u.perfil === 'PROFESSOR',
-                      'bg-info text-dark': u.perfil === 'ALUNO'
+                      'bg-danger-subtle text-danger border border-danger-subtle': u.perfil === 'ADMINISTRADOR',
+                      'bg-primary-subtle text-primary border border-primary-subtle': u.perfil === 'PROFESSOR',
+                      'bg-info-subtle text-info-emphasis border border-info-subtle': u.perfil === 'ALUNO'
                     }">
                       {{ u.perfil }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="u.primeiroAcesso ? 'bg-warning-subtle text-warning-emphasis' : 'bg-light text-muted border'">
+                      {{ u.primeiroAcesso ? 'Pendente' : 'Concluído' }}
                     </span>
                   </td>
                   <td>
@@ -144,12 +128,8 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
                     </span>
                   </td>
                   <td class="text-end">
-                    <button *ngIf="u.ativo" class="btn btn-sm btn-outline-warning" (click)="inativar(u.id)">
-                      Inativar
-                    </button>
-                    <button *ngIf="!u.ativo" class="btn btn-sm btn-outline-success" (click)="reativar(u.id)">
-                      Reativar
-                    </button>
+                    <button *ngIf="u.ativo" class="btn btn-sm btn-outline-warning py-0 px-2" (click)="inativar(u.id)">Inativar</button>
+                    <button *ngIf="!u.ativo" class="btn btn-sm btn-outline-success py-0 px-2" (click)="reativar(u.id)">Reativar</button>
                   </td>
                 </tr>
               </tbody>
@@ -178,7 +158,7 @@ export class GerenciarUsuariosComponent implements OnInit {
   carregarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (dados) => this.usuarios.set(dados),
-      error: (err) => this.mensagemErro.set('Erro ao conectar à API: ' + (err.error?.mensagem || err.message))
+      error: (err) => this.mensagemErro.set('Erro ao carregar dados: ' + (err.error?.mensagem || err.message))
     });
   }
 
@@ -189,43 +169,30 @@ export class GerenciarUsuariosComponent implements OnInit {
   }
 
   ajustarPerfil(): void {
-    if (this.novoUsuario.perfil !== 'ALUNO') {
-      this.novoUsuario.matriculaSigaa = null;
-    }
+    if (this.novoUsuario.perfil !== 'ALUNO') this.novoUsuario.matriculaSigaa = null;
   }
 
   aplicarMascaraCpf(event: Event): void {
     const input = event.target as HTMLInputElement;
     let numeros = input.value.replace(/\D/g, '');
+    if (numeros.length > 11) numeros = numeros.slice(0, 11);
 
-    // Limita estritamente a 11 dígitos numéricos
-    if (numeros.length > 11) {
-      numeros = numeros.slice(0, 11);
-    }
-
-    // Aplica pontuação progressiva
-    let formatado = numeros;
     if (numeros.length > 9) {
-      formatado = numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+      input.value = numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
     } else if (numeros.length > 6) {
-      formatado = numeros.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+      input.value = numeros.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
     } else if (numeros.length > 3) {
-      formatado = numeros.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+      input.value = numeros.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+    } else {
+      input.value = numeros;
     }
-
-    input.value = formatado;
-    this.novoUsuario.cpf = formatado;
+    this.novoUsuario.cpf = input.value;
   }
 
   aplicarMascaraMatricula(event: Event): void {
     const input = event.target as HTMLInputElement;
     let numeros = input.value.replace(/\D/g, '');
-
-    // Limita estritamente a 12 dígitos numéricos
-    if (numeros.length > 12) {
-      numeros = numeros.slice(0, 12);
-    }
-
+    if (numeros.length > 12) numeros = numeros.slice(0, 12);
     input.value = numeros;
     this.novoUsuario.matriculaSigaa = numeros;
   }
@@ -240,17 +207,9 @@ export class GerenciarUsuariosComponent implements OnInit {
     this.mensagemErro.set(null);
     this.mensagemSucesso.set(null);
 
-    const cpfNumerico = this.novoUsuario.cpf.replace(/\D/g, '');
-
-    if (cpfNumerico.length !== 11) {
-      this.mensagemErro.set('O CPF deve conter exatamente 11 dígitos numéricos.');
-      this.carregando.set(false);
-      return;
-    }
-
     const payload: UsuarioRequisicao = {
       ...this.novoUsuario,
-      cpf: cpfNumerico,
+      cpf: this.novoUsuario.cpf.replace(/\D/g, ''),
       matriculaSigaa: this.novoUsuario.perfil === 'ALUNO' && this.novoUsuario.matriculaSigaa?.trim()
         ? this.novoUsuario.matriculaSigaa.replace(/\D/g, '')
         : null
@@ -258,17 +217,14 @@ export class GerenciarUsuariosComponent implements OnInit {
 
     this.usuarioService.cadastrar(payload).subscribe({
       next: (criado) => {
-        this.mensagemSucesso.set(`Usuário ${criado.nomeCompleto} cadastrado com sucesso!`);
+        this.mensagemSucesso.set(`Usuário ${criado.nomeCompleto} cadastrado. Senha inicial: Sigea&#64;123`);
         this.exibirFormulario = false;
         this.novoUsuario = this.obterFormularioVazio();
         this.carregando.set(false);
         this.carregarUsuarios();
       },
       error: (err) => {
-        const msg = err.error?.mensagem ||
-                    (err.error?.campos ? Object.values(err.error.campos).join('; ') : null) ||
-                    'Falha ao salvar usuário.';
-        this.mensagemErro.set(msg);
+        this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar usuário.');
         this.carregando.set(false);
       }
     });
@@ -277,14 +233,14 @@ export class GerenciarUsuariosComponent implements OnInit {
   inativar(id: number): void {
     this.usuarioService.inativar(id).subscribe({
       next: () => this.carregarUsuarios(),
-      error: (err) => this.mensagemErro.set('Falha ao inativar: ' + err.message)
+      error: (err) => this.mensagemErro.set(err.message)
     });
   }
 
   reativar(id: number): void {
     this.usuarioService.reativar(id).subscribe({
       next: () => this.carregarUsuarios(),
-      error: (err) => this.mensagemErro.set('Falha ao reativar: ' + err.message)
+      error: (err) => this.mensagemErro.set(err.message)
     });
   }
 
@@ -292,6 +248,7 @@ export class GerenciarUsuariosComponent implements OnInit {
     return {
       nomeCompleto: '',
       cpf: '',
+      email: '',
       cargo: '',
       matriculaSigaa: null,
       perfil: 'ALUNO'

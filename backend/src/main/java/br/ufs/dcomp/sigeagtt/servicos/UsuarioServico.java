@@ -5,6 +5,7 @@ import br.ufs.dcomp.sigeagtt.modelos.Usuario;
 import br.ufs.dcomp.sigeagtt.repositorios.UsuarioRepositorio;
 import br.ufs.dcomp.sigeagtt.transferencia.UsuarioRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.UsuarioRespostaDTO;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,23 +15,22 @@ import java.util.List;
 public class UsuarioServico {
 
     private final UsuarioRepositorio repositorio;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServico(UsuarioRepositorio repositorio) {
+    public UsuarioServico(UsuarioRepositorio repositorio, PasswordEncoder passwordEncoder) {
         this.repositorio = repositorio;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional(readOnly = true)
     public List<UsuarioRespostaDTO> listarTodos() {
-        return repositorio.findAll()
-                .stream()
-                .map(UsuarioRespostaDTO::deEntidade)
-                .toList();
+        return repositorio.findAll().stream().map(UsuarioRespostaDTO::deEntidade).toList();
     }
 
     @Transactional(readOnly = true)
     public UsuarioRespostaDTO buscarPorId(Long id) {
         Usuario usuario = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com o ID informado: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com o ID: " + id));
         return UsuarioRespostaDTO.deEntidade(usuario);
     }
 
@@ -39,7 +39,9 @@ public class UsuarioServico {
         if (repositorio.findByCpf(dto.cpf()).isPresent()) {
             throw new IllegalArgumentException("Já existe um usuário cadastrado com o CPF informado.");
         }
-
+        if (repositorio.findByEmail(dto.email()).isPresent()) {
+            throw new IllegalArgumentException("Já existe um usuário cadastrado com este e-mail.");
+        }
         if (dto.perfil() == PerfilUsuario.ALUNO) {
             if (dto.matriculaSigaa() == null || dto.matriculaSigaa().isBlank()) {
                 throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para o perfil ALUNO.");
@@ -52,6 +54,10 @@ public class UsuarioServico {
         Usuario usuario = new Usuario();
         usuario.setNomeCompleto(dto.nomeCompleto());
         usuario.setCpf(dto.cpf());
+        usuario.setEmail(dto.email());
+        // Senha padrão de ativação cadastral: Sigea@123
+        usuario.setSenha(passwordEncoder.encode("Sigea@123"));
+        usuario.setPrimeiroAcesso(true);
         usuario.setCargo(dto.cargo());
         usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? dto.matriculaSigaa() : null);
         usuario.setPerfil(dto.perfil());

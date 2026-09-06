@@ -1,6 +1,7 @@
 package br.ufs.dcomp.sigeagtt.modelos;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,6 +29,20 @@ public class Usuario {
     private String cpf;
 
     @NotBlank
+    @Email
+    @Size(max = 150)
+    @Column(name = "email", nullable = false, unique = true, length = 150)
+    private String email;
+
+    @NotBlank
+    @Column(name = "senha", nullable = false)
+    private String senha;
+
+    @NotNull
+    @Column(name = "primeiro_acesso", nullable = false)
+    private Boolean primeiroAcesso = true;
+
+    @NotBlank
     @Size(max = 100)
     @Column(name = "cargo", nullable = false, length = 100)
     private String cargo;
@@ -51,12 +66,9 @@ public class Usuario {
 
     @PrePersist
     protected void aoCriar() {
-        if (this.criadoEm == null) {
-            this.criadoEm = LocalDateTime.now();
-        }
-        if (this.ativo == null) {
-            this.ativo = true;
-        }
+        if (this.criadoEm == null) this.criadoEm = LocalDateTime.now();
+        if (this.ativo == null) this.ativo = true;
+        if (this.primeiroAcesso == null) this.primeiroAcesso = true;
     }
 
     public Usuario() {}
@@ -69,6 +81,15 @@ public class Usuario {
 
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
+
+    public Boolean getPrimeiroAcesso() { return primeiroAcesso; }
+    public void setPrimeiroAcesso(Boolean primeiroAcesso) { this.primeiroAcesso = primeiroAcesso; }
 
     public String getCargo() { return cargo; }
     public void setCargo(String cargo) { this.cargo = cargo; }

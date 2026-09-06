@@ -6,10 +6,15 @@ export const autenticacaoGuard: CanActivateFn = () => {
   const auth = inject(AutenticacaoService);
   const router = inject(Router);
 
-  if (auth.estaAutenticado()) {
-    return true;
+  if (!auth.estaAutenticado()) {
+    router.navigate(['/login']);
+    return false;
   }
 
-  router.navigate(['/login']);
-  return false;
+  if (auth.requerPrimeiroAcesso()) {
+    router.navigate(['/primeiro-acesso']);
+    return false;
+  }
+
+  return true;
 };

@@ -7,18 +7,22 @@ public record LoginRespostaDTO(
     Long id,
     String nomeCompleto,
     String cpf,
+    String email,
     String cargo,
     String matriculaSigaa,
-    PerfilUsuario perfil
+    PerfilUsuario perfil,
+    Boolean primeiroAcesso
 ) {
     public static LoginRespostaDTO deEntidade(Usuario usuario) {
         return new LoginRespostaDTO(
             usuario.getId(),
             usuario.getNomeCompleto(),
             usuario.getCpf(),
+            usuario.getEmail(),
             usuario.getCargo(),
             usuario.getMatriculaSigaa(),
-            usuario.getPerfil()
+            usuario.getPerfil(),
+            usuario.getPrimeiroAcesso()
         );
     }
 }

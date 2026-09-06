@@ -4,6 +4,10 @@ import br.ufs.dcomp.sigeagtt.modelos.Usuario;
 import br.ufs.dcomp.sigeagtt.repositorios.UsuarioRepositorio;
 import br.ufs.dcomp.sigeagtt.transferencia.LoginRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.LoginRespostaDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.PrimeiroAcessoRequisicaoDTO;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,26 +15,67 @@ import org.springframework.transaction.annotation.Transactional;
 public class AutenticacaoServico {
 
     private final UsuarioRepositorio usuarioRepositorio;
+    private final PasswordEncoder passwordEncoder;
 
-    public AutenticacaoServico(UsuarioRepositorio usuarioRepositorio) {
+    public AutenticacaoServico(UsuarioRepositorio usuarioRepositorio, PasswordEncoder passwordEncoder) {
         this.usuarioRepositorio = usuarioRepositorio;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    // Garante que o usuário inicial ID 1 possua a senha Sigea@123 válida no banco
+    @Bean
+    public CommandLineRunner inicializarSenhaPadrao() {
+        return args -> {
+            usuarioRepositorio.findById(1L).ifPresent(u -> {
+                if (u.getSenha().length() < 30 || u.getSenha().contains("Sigea.")) {
+                    u.setSenha(passwordEncoder.encode("Sigea@123"));
+                    u.setPrimeiroAcesso(true);
+                    usuarioRepositorio.save(u);
+                }
+            });
+        };
     }
 
     @Transactional(readOnly = true)
     public LoginRespostaDTO autenticar(LoginRequisicaoDTO dto) {
-        // Consulta o usuário cadastrado no banco relacional
-        Usuario usuario = usuarioRepositorio.findByCpf(dto.identificador())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário institucional não cadastrado no sistema."));
+        String loginLimpo = dto.identificador().trim();
+        
+        // Permite login por CPF ou por E-mail
+        Usuario usuario = (loginLimpo.contains("@")
+                ? usuarioRepositorio.findByEmail(loginLimpo.toLowerCase())
+                : usuarioRepositorio.findByCpf(loginLimpo.replaceAll("\\D", "")))
+                .orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas: usuário não encontrado."));
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
-            throw new IllegalArgumentException("O acesso deste usuário está inativo no SIGEA-GTT.");
+            throw new IllegalArgumentException("A conta deste usuário está inativa no sistema.");
         }
 
-        // Simulação/Validação do bind LDAP corporativo
-        if (dto.senha().isBlank()) {
-            throw new IllegalArgumentException("Credencial institucional inválida.");
+        if (!passwordEncoder.matches(dto.senha(), usuario.getSenha())) {
+            throw new IllegalArgumentException("Credenciais inválidas: senha incorreta.");
         }
 
         return LoginRespostaDTO.deEntidade(usuario);
+    }
+
+    @Transactional
+    public LoginRespostaDTO redefinirSenhaPrimeiroAcesso(PrimeiroAcessoRequisicaoDTO dto) {
+        Usuario usuario = usuarioRepositorio.findById(dto.usuarioId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + dto.usuarioId()));
+
+        if (!passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha())) {
+            throw new IllegalArgumentException("A senha temporária atual informada está incorreta.");
+        }
+
+        if (!dto.novaSenha().equals(dto.confirmacaoNovaSenha())) {
+            throw new IllegalArgumentException("A nova senha e a confirmação não coincidem.");
+        }
+
+        if (passwordEncoder.matches(dto.novaSenha(), usuario.getSenha())) {
+            throw new IllegalArgumentException("A nova senha não pode ser idêntica à senha temporária.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));
+        usuario.setPrimeiroAcesso(false);
+        return LoginRespostaDTO.deEntidade(usuarioRepositorio.save(usuario));
     }
 }

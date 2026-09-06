@@ -9,9 +9,11 @@ public record UsuarioRespostaDTO(
     Long id,
     String nomeCompleto,
     String cpf,
+    String email,
     String cargo,
     String matriculaSigaa,
     PerfilUsuario perfil,
+    Boolean primeiroAcesso,
     Boolean ativo,
     LocalDateTime criadoEm
 ) {
@@ -20,9 +22,11 @@ public record UsuarioRespostaDTO(
             usuario.getId(),
             usuario.getNomeCompleto(),
             usuario.getCpf(),
+            usuario.getEmail(),
             usuario.getCargo(),
             usuario.getMatriculaSigaa(),
             usuario.getPerfil(),
+            usuario.getPrimeiroAcesso(),
             usuario.getAtivo(),
             usuario.getCriadoEm()
         );

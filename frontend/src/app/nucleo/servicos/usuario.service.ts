@@ -6,6 +6,7 @@ import { Usuario } from '../../compartilhado/modelos/dominio.modelos';
 export interface UsuarioRequisicao {
   nomeCompleto: string;
   cpf: string;
+  email: string;
   cargo: string;
   matriculaSigaa?: string | null;
   perfil: 'ADMINISTRADOR' | 'PROFESSOR' | 'ALUNO';
