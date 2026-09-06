@@ -22,12 +22,11 @@ public class AutenticacaoServico {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Garante que o usuário inicial ID 1 possua a senha Sigea@123 válida no banco
     @Bean
     public CommandLineRunner inicializarSenhaPadrao() {
         return args -> {
             usuarioRepositorio.findById(1L).ifPresent(u -> {
-                if (u.getSenha().length() < 30 || u.getSenha().contains("Sigea.")) {
+                if (u.getSenha() == null || u.getSenha().length() < 30 || u.getSenha().contains("Sigea.")) {
                     u.setSenha(passwordEncoder.encode("Sigea@123"));
                     u.setPrimeiroAcesso(true);
                     usuarioRepositorio.save(u);
@@ -39,8 +38,8 @@ public class AutenticacaoServico {
     @Transactional(readOnly = true)
     public LoginRespostaDTO autenticar(LoginRequisicaoDTO dto) {
         String loginLimpo = dto.identificador().trim();
-        
-        // Permite login por CPF ou por E-mail
+
+        // Se contiver @ busca por email; caso contrário, limpa pontuações e busca por CPF
         Usuario usuario = (loginLimpo.contains("@")
                 ? usuarioRepositorio.findByEmail(loginLimpo.toLowerCase())
                 : usuarioRepositorio.findByCpf(loginLimpo.replaceAll("\\D", "")))
