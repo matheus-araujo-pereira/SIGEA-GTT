@@ -11,7 +11,7 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
   imports: [CommonModule, FormsModule],
   template: `
     <div>
-      <!-- Topo: Título e Botão Novo -->
+      <!-- Topo: Título e Ação -->
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
           <h1 class="h4 fw-bold text-dark mb-1">Controle de Usuários e Perfis</h1>
@@ -23,7 +23,7 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
         </button>
       </div>
 
-      <!-- Alertas de Sucesso / Erro -->
+      <!-- Alertas de Feedback -->
       <div *ngIf="mensagemSucesso()" class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
         <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
         <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)"></button>
@@ -34,8 +34,8 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
         <button type="button" class="btn-close" (click)="mensagemErro.set(null)"></button>
       </div>
 
-      <!-- Formulário de Cadastro / Edição -->
-      <div *ngIf="exibirFormulario" class="card shadow-sm border-0 mb-4 rounded-3 animate-fade">
+      <!-- Painel de Cadastro / Edição -->
+      <div *ngIf="exibirFormulario" class="card shadow-sm border-0 mb-4 rounded-3">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
           <div>
             <h6 class="card-title mb-0 fw-bold text-primary">
@@ -81,7 +81,7 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
               </div>
 
               <div class="col-md-4" *ngIf="formulario.perfil === 'ALUNO'">
-                <label class="form-label small fw-semibold text-primary">Matrícula SIGAA (12 dígitos obrigatórios)</label>
+                <label class="form-label small fw-semibold text-primary">Matrícula SIGAA (12 dígitos)</label>
                 <input type="text" class="form-control form-control-sm border-primary" [value]="formulario.matriculaSigaa || ''" (input)="aplicarMascaraMatricula($event)" name="matriculaSigaa" maxlength="12" placeholder="Ex.: 202100114080">
               </div>
             </div>
@@ -97,17 +97,26 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
         </div>
       </div>
 
-      <!-- Barra de Filtros e Pesquisa em Tempo Real -->
+      <!-- Barra de Filtros Reativos -->
       <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
         <div class="row g-2 align-items-center">
           <div class="col-md-6">
             <div class="input-group input-group-sm">
               <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-              <input type="text" class="form-control bg-light border-start-0" [(ngModel)]="termoBusca" placeholder="Pesquisar por nome, CPF, e-mail ou matrícula...">
+              <input type="text" 
+                     class="form-control bg-light border-start-0" 
+                     [ngModel]="termoBusca()" 
+                     (ngModelChange)="termoBusca.set($event)" 
+                     placeholder="Pesquisar por nome, CPF, e-mail ou matrícula...">
+              <button *ngIf="termoBusca()" class="btn btn-light border border-start-0 text-muted" type="button" (click)="termoBusca.set('')">
+                <i class="bi bi-x"></i>
+              </button>
             </div>
           </div>
           <div class="col-md-3">
-            <select class="form-select form-select-sm" [(ngModel)]="filtroPerfil">
+            <select class="form-select form-select-sm" 
+                    [ngModel]="filtroPerfil()" 
+                    (ngModelChange)="filtroPerfil.set($event)">
               <option value="TODOS">Todos os Perfis</option>
               <option value="ADMINISTRADOR">ADMINISTRADOR</option>
               <option value="PROFESSOR">PROFESSOR</option>
@@ -115,7 +124,9 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
             </select>
           </div>
           <div class="col-md-3">
-            <select class="form-select form-select-sm" [(ngModel)]="filtroStatus">
+            <select class="form-select form-select-sm" 
+                    [ngModel]="filtroStatus()" 
+                    (ngModelChange)="filtroStatus.set($event)">
               <option value="TODOS">Todos os Status</option>
               <option value="ATIVOS">Apenas Ativos</option>
               <option value="INATIVOS">Apenas Inativos</option>
@@ -124,7 +135,7 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
         </div>
       </div>
 
-      <!-- Tabela Profissional de Usuários -->
+      <!-- Tabela Reativa Filtrada -->
       <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -143,8 +154,8 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
               <tbody class="small">
                 <tr *ngIf="usuariosFiltrados().length === 0">
                   <td colspan="7" class="text-center py-5 text-muted">
-                    <i class="bi bi-people fs-2 d-block mb-1 text-secondary"></i>
-                    Nenhum usuário corresponde aos critérios de busca.
+                    <i class="bi bi-search fs-2 d-block mb-1 text-secondary"></i>
+                    Nenhum usuário encontrado para os critérios informados.
                   </td>
                 </tr>
                 <tr *ngFor="let u of usuariosFiltrados()">
@@ -224,25 +235,34 @@ export class GerenciarUsuariosComponent implements OnInit {
   idEdicao: number | null = null;
   formulario: UsuarioRequisicao = this.obterFormularioVazio();
 
-  // Estados dos Filtros
-  termoBusca = '';
-  filtroPerfil = 'TODOS';
-  filtroStatus = 'TODOS';
+  // Sinais Reativos de Filtro
+  termoBusca = signal<string>('');
+  filtroPerfil = signal<string>('TODOS');
+  filtroStatus = signal<string>('TODOS');
 
-  // Lista Computada Dinamicamente com os Filtros
+  // Computação Reativa Automática
   usuariosFiltrados = computed(() => {
-    const termo = this.termoBusca.trim().toLowerCase();
-    const perfil = this.filtroPerfil;
-    const status = this.filtroStatus;
+    const termo = this.termoBusca().trim().toLowerCase();
+    const apenasDigitos = termo.replace(/\D/g, '');
+    const perfil = this.filtroPerfil();
+    const status = this.filtroStatus();
 
     return this.usuarios().filter(u => {
-      const correspondeTermo = !termo ||
-        u.nomeCompleto.toLowerCase().includes(termo) ||
-        u.email.toLowerCase().includes(termo) ||
-        u.cpf.includes(termo.replace(/\D/g, '')) ||
-        (u.matriculaSigaa && u.matriculaSigaa.includes(termo));
+      // 1. Filtro textual
+      let correspondeTermo = true;
+      if (termo.length > 0) {
+        const correspondeNome = u.nomeCompleto ? u.nomeCompleto.toLowerCase().includes(termo) : false;
+        const correspondeEmail = u.email ? u.email.toLowerCase().includes(termo) : false;
+        const correspondeCpf = apenasDigitos.length > 0 && u.cpf ? u.cpf.includes(apenasDigitos) : false;
+        const correspondeMatricula = u.matriculaSigaa ? u.matriculaSigaa.toLowerCase().includes(termo) : false;
 
+        correspondeTermo = correspondeNome || correspondeEmail || correspondeCpf || correspondeMatricula;
+      }
+
+      // 2. Filtro de perfil
       const correspondePerfil = perfil === 'TODOS' || u.perfil === perfil;
+
+      // 3. Filtro de status ativo/inativo
       const correspondeStatus = status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
 
       return correspondeTermo && correspondePerfil && correspondeStatus;
@@ -337,7 +357,6 @@ export class GerenciarUsuariosComponent implements OnInit {
     };
 
     if (this.idEdicao) {
-      // Atualização
       this.usuarioService.editar(this.idEdicao, payload).subscribe({
         next: (atualizado) => {
           this.mensagemSucesso.set(`Usuário ${atualizado.nomeCompleto} atualizado com sucesso!`);
@@ -345,7 +364,6 @@ export class GerenciarUsuariosComponent implements OnInit {
           this.carregando.set(false);
           this.carregarUsuarios();
 
-          // Se o administrador alterou os próprios dados, sincroniza a sessão local
           if (atualizado.id === this.auth.usuarioLogado()?.id) {
             this.auth.salvarSessao(atualizado);
           }
@@ -356,7 +374,6 @@ export class GerenciarUsuariosComponent implements OnInit {
         }
       });
     } else {
-      // Cadastro
       this.usuarioService.cadastrar(payload).subscribe({
         next: (criado) => {
           this.mensagemSucesso.set(`Usuário ${criado.nomeCompleto} cadastrado. Senha provisória: Sigea@123`);
@@ -378,7 +395,7 @@ export class GerenciarUsuariosComponent implements OnInit {
 
     this.usuarioService.resetarSenha(usuario.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(`Senha do usuário ${usuario.nomeCompleto} resetada com sucesso para Sigea@123.`);
+        this.mensagemSucesso.set(`Senha do usuário ${usuario.nomeCompleto} resetada para Sigea@123.`);
         this.carregarUsuarios();
       },
       error: (err) => this.mensagemErro.set('Erro ao resetar senha: ' + err.message)
