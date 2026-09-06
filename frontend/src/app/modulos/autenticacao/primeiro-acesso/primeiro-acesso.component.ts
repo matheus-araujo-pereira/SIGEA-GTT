@@ -78,7 +78,7 @@ export class PrimeiroAcessoComponent {
     }).subscribe({
       next: () => {
         this.carregando.set(false);
-        this.router.navigate(['/usuarios']);
+        this.router.navigate([this.auth.obterRotaPadrao()]);
       },
       error: (err) => {
         this.carregando.set(false);

@@ -25,7 +25,8 @@ public class AutenticacaoServico {
     @Bean
     public CommandLineRunner inicializarSenhaPadrao() {
         return args -> {
-            usuarioRepositorio.findById(1L).ifPresent(u -> {
+            usuarioRepositorio.findAll().forEach(u -> {
+                // Atualiza qualquer usuário que ainda possua o hash sintético do V2
                 if (u.getSenha() == null || u.getSenha().length() < 30 || u.getSenha().contains("Sigea.")) {
                     u.setSenha(passwordEncoder.encode("Sigea@123"));
                     u.setPrimeiroAcesso(true);
@@ -39,7 +40,6 @@ public class AutenticacaoServico {
     public LoginRespostaDTO autenticar(LoginRequisicaoDTO dto) {
         String loginLimpo = dto.identificador().trim();
 
-        // Se contiver @ busca por email; caso contrário, limpa pontuações e busca por CPF
         Usuario usuario = (loginLimpo.contains("@")
                 ? usuarioRepositorio.findByEmail(loginLimpo.toLowerCase())
                 : usuarioRepositorio.findByCpf(loginLimpo.replaceAll("\\D", "")))

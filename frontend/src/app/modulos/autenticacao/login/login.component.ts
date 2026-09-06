@@ -75,7 +75,7 @@ export class LoginComponent {
         if (usuario.primeiroAcesso) {
           this.router.navigate(['/primeiro-acesso']);
         } else {
-          this.router.navigate(['/usuarios']);
+          this.router.navigate([this.authService.obterRotaPadrao()]);
         }
       },
       error: (err) => {

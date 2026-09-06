@@ -57,6 +57,20 @@ export class AutenticacaoService {
     return Boolean(this.usuarioLogado()?.primeiroAcesso);
   }
 
+  obterRotaPadrao(): string {
+    const perfil = this.usuarioLogado()?.perfil;
+    switch (perfil) {
+      case 'ADMINISTRADOR':
+        return '/usuarios';
+      case 'PROFESSOR':
+        return '/turmas';
+      case 'ALUNO':
+        return '/auditoria';
+      default:
+        return '/login';
+    }
+  }
+
   salvarSessao(usuario: Usuario): void {
     localStorage.setItem(this.chave, JSON.stringify(usuario));
     this.usuarioLogado.set(usuario);
