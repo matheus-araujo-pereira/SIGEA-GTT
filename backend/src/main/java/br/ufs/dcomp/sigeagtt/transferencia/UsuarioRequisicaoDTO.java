@@ -24,4 +24,15 @@ public record UsuarioRequisicaoDTO(
 
     @NotNull(message = "O perfil de acesso é obrigatório")
     PerfilUsuario perfil
-) {}
+) {
+    public UsuarioRequisicaoDTO {
+        // Sanitiza CPF removendo pontos e traços
+        if (cpf != null) {
+            cpf = cpf.replaceAll("\\D", "");
+        }
+        // Converte string vazia em null para não violar o @Pattern de 12 dígitos quando não for Aluno
+        if (matriculaSigaa != null && matriculaSigaa.isBlank()) {
+            matriculaSigaa = null;
+        }
+    }
+}

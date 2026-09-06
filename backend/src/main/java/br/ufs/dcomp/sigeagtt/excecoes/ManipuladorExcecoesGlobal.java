@@ -36,6 +36,7 @@ public class ManipuladorExcecoesGlobal {
             camposInvalidos.put(erro.getField(), erro.getDefaultMessage());
         }
         corpo.put("campos", camposInvalidos);
+        corpo.put("mensagem", String.join("; ", camposInvalidos.values()));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(corpo);
     }
