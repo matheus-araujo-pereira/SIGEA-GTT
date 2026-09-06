@@ -3,6 +3,7 @@ package br.ufs.dcomp.sigeagtt.servicos;
 import br.ufs.dcomp.sigeagtt.modelos.PerfilUsuario;
 import br.ufs.dcomp.sigeagtt.modelos.Usuario;
 import br.ufs.dcomp.sigeagtt.repositorios.UsuarioRepositorio;
+import br.ufs.dcomp.sigeagtt.transferencia.UsuarioEdicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.UsuarioRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.UsuarioRespostaDTO;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,7 +56,6 @@ public class UsuarioServico {
         usuario.setNomeCompleto(dto.nomeCompleto());
         usuario.setCpf(dto.cpf());
         usuario.setEmail(dto.email());
-        // Senha padrão de ativação cadastral: Sigea@123
         usuario.setSenha(passwordEncoder.encode("Sigea@123"));
         usuario.setPrimeiroAcesso(true);
         usuario.setCargo(dto.cargo());
@@ -67,9 +67,66 @@ public class UsuarioServico {
     }
 
     @Transactional
+    public UsuarioRespostaDTO editar(Long id, UsuarioEdicaoDTO dto) {
+        Usuario usuario = repositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+
+        if (repositorio.findByCpfAndIdNot(dto.cpf(), id).isPresent()) {
+            throw new IllegalArgumentException("O CPF informado já está em uso por outro usuário.");
+        }
+        if (repositorio.findByEmailAndIdNot(dto.email(), id).isPresent()) {
+            throw new IllegalArgumentException("O e-mail informado já está em uso por outro usuário.");
+        }
+
+        if (dto.perfil() == PerfilUsuario.ALUNO) {
+            if (dto.matriculaSigaa() == null || dto.matriculaSigaa().isBlank()) {
+                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para o perfil ALUNO.");
+            }
+            if (repositorio.findByMatriculaSigaaAndIdNot(dto.matriculaSigaa(), id).isPresent()) {
+                throw new IllegalArgumentException("Esta Matrícula do SIGAA já pertence a outro aluno.");
+            }
+        }
+
+        // Blindagem: se for o único administrador ativo, não pode ter seu perfil rebaixado
+        if (usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR && dto.perfil() != PerfilUsuario.ADMINISTRADOR) {
+            long totalAdmins = repositorio.countByPerfilAndAtivoTrue(PerfilUsuario.ADMINISTRADOR);
+            if (totalAdmins <= 1) {
+                throw new IllegalArgumentException("Operação cancelada: o sistema precisa manter ao menos um Administrador ativo.");
+            }
+        }
+
+        usuario.setNomeCompleto(dto.nomeCompleto());
+        usuario.setCpf(dto.cpf());
+        usuario.setEmail(dto.email());
+        usuario.setCargo(dto.cargo());
+        usuario.setPerfil(dto.perfil());
+        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? dto.matriculaSigaa() : null);
+
+        return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
+    }
+
+    @Transactional
+    public UsuarioRespostaDTO resetarSenha(Long id) {
+        Usuario usuario = repositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+
+        usuario.setSenha(passwordEncoder.encode("Sigea@123"));
+        usuario.setPrimeiroAcesso(true);
+        return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
+    }
+
+    @Transactional
     public UsuarioRespostaDTO inativar(Long id) {
         Usuario usuario = repositorio.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+
+        if (usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR) {
+            long totalAdmins = repositorio.countByPerfilAndAtivoTrue(PerfilUsuario.ADMINISTRADOR);
+            if (totalAdmins <= 1) {
+                throw new IllegalArgumentException("Não é permitido inativar o único Administrador ativo do sistema.");
+            }
+        }
+
         usuario.setAtivo(false);
         return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
     }

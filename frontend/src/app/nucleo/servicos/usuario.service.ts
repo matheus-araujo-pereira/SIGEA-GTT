@@ -31,6 +31,14 @@ export class UsuarioService {
     return this.http.post<Usuario>(this.url, dto);
   }
 
+  editar(id: number, dto: UsuarioRequisicao): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.url}/${id}`, dto);
+  }
+
+  resetarSenha(id: number): Observable<Usuario> {
+    return this.http.patch<Usuario>(`${this.url}/${id}/resetar-senha`, {});
+  }
+
   inativar(id: number): Observable<Usuario> {
     return this.http.patch<Usuario>(`${this.url}/${id}/inativar`, {});
   }

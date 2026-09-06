@@ -1,6 +1,7 @@
 package br.ufs.dcomp.sigeagtt.controladores;
 
 import br.ufs.dcomp.sigeagtt.servicos.UsuarioServico;
+import br.ufs.dcomp.sigeagtt.transferencia.UsuarioEdicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.UsuarioRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.UsuarioRespostaDTO;
 import jakarta.validation.Valid;
@@ -33,6 +34,16 @@ public class ControladorUsuario {
     @PostMapping
     public ResponseEntity<UsuarioRespostaDTO> cadastrar(@Valid @RequestBody UsuarioRequisicaoDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(servico.cadastrar(dto));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioRespostaDTO> editar(@PathVariable Long id, @Valid @RequestBody UsuarioEdicaoDTO dto) {
+        return ResponseEntity.ok(servico.editar(id, dto));
+    }
+
+    @PatchMapping("/{id}/resetar-senha")
+    public ResponseEntity<UsuarioRespostaDTO> resetarSenha(@PathVariable Long id) {
+        return ResponseEntity.ok(servico.resetarSenha(id));
     }
 
     @PatchMapping("/{id}/inativar")
