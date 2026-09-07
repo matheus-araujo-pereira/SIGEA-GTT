@@ -41,6 +41,9 @@ import {
             </button>
           </ng-container>
 
+          <button class="btn btn-outline-info btn-sm px-3" (click)="abrirMelhoriaQualidade()" [disabled]="!consenso()?.id">
+            <i class="bi bi-graph-up-arrow me-1"></i> Ciclo de Melhoria (Ishikawa/PDCA)
+          </button>
           <!-- Status do Consenso -->
           <span *ngIf="consenso()?.submetido" class="badge py-2 px-3 align-self-center" [ngClass]="consenso()?.validacao?.homologado ? 'bg-success' : 'bg-primary'">
             <i class="bi" [ngClass]="consenso()?.validacao?.homologado ? 'bi-patch-check-fill' : 'bi-hourglass-split'"></i>
@@ -444,6 +447,11 @@ export class ConsensoDuplaComponent implements OnInit {
 
   voltar(): void {
     this.router.navigate(['/auditoria']);
+  }
+
+  abrirMelhoriaQualidade(): void {
+    const c = this.consenso();
+    if (c) this.router.navigate([`/melhoria/${c.id}`]);
   }
 
   formatarSegundos(s: number): string {
