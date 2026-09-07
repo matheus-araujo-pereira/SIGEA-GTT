@@ -1,19 +1,17 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { AutenticacaoService } from '../servicos/autenticacao.service';
 
-export const autenticacaoGuard: CanActivateFn = () => {
+export const autenticacaoGuard: CanActivateFn = (): boolean | UrlTree => {
   const auth = inject(AutenticacaoService);
   const router = inject(Router);
 
   if (!auth.estaAutenticado()) {
-    router.navigate(['/login']);
-    return false;
+    return router.createUrlTree(['/login']);
   }
 
   if (auth.requerPrimeiroAcesso()) {
-    router.navigate(['/primeiro-acesso']);
-    return false;
+    return router.createUrlTree(['/primeiro-acesso']);
   }
 
   return true;
