@@ -30,13 +30,16 @@ public class UnidadeHospitalarServico {
 
     @Transactional
     public UnidadeHospitalar cadastrar(UnidadeHospitalarRequisicaoDTO dto) {
-        if (repositorio.findBySigla(dto.sigla()).isPresent()) {
-            throw new IllegalArgumentException("Já existe uma unidade cadastrada com a sigla: " + dto.sigla());
+        String sigla = dto.sigla() != null ? dto.sigla().trim().toUpperCase() : "";
+        String nome = dto.nome() != null ? dto.nome().trim() : "";
+
+        if (repositorio.findBySigla(sigla).isPresent()) {
+            throw new IllegalArgumentException("Já existe uma unidade cadastrada com a sigla: " + sigla);
         }
 
         UnidadeHospitalar unidade = new UnidadeHospitalar();
-        unidade.setSigla(dto.sigla());
-        unidade.setNome(dto.nome());
+        unidade.setSigla(sigla);
+        unidade.setNome(nome);
         unidade.setAtiva(true);
 
         return repositorio.save(unidade);
@@ -46,12 +49,15 @@ public class UnidadeHospitalarServico {
     public UnidadeHospitalar editar(Long id, UnidadeHospitalarRequisicaoDTO dto) {
         UnidadeHospitalar unidade = buscarPorId(id);
 
-        if (repositorio.findBySiglaAndIdNot(dto.sigla(), id).isPresent()) {
-            throw new IllegalArgumentException("A sigla '" + dto.sigla() + "' já está em uso por outra unidade.");
+        String sigla = dto.sigla() != null ? dto.sigla().trim().toUpperCase() : "";
+        String nome = dto.nome() != null ? dto.nome().trim() : "";
+
+        if (repositorio.findBySiglaAndIdNot(sigla, id).isPresent()) {
+            throw new IllegalArgumentException("A sigla '" + sigla + "' já está em uso por outra unidade.");
         }
 
-        unidade.setSigla(dto.sigla());
-        unidade.setNome(dto.nome());
+        unidade.setSigla(sigla);
+        unidade.setNome(nome);
 
         return repositorio.save(unidade);
     }

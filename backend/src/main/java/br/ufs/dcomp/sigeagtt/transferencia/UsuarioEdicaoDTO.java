@@ -29,10 +29,4 @@ public record UsuarioEdicaoDTO(
 
     @NotNull(message = "O perfil de acesso é obrigatório")
     PerfilUsuario perfil
-) {
-    public UsuarioEdicaoDTO {
-        if (cpf != null) cpf = cpf.replaceAll("\\D", "");
-        if (matriculaSigaa != null && matriculaSigaa.isBlank()) matriculaSigaa = null;
-        if (email != null) email = email.trim().toLowerCase();
-    }
-}
+) {}

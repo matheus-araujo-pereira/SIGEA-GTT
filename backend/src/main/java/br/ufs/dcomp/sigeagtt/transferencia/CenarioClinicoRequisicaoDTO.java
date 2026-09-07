@@ -17,10 +17,4 @@ public record CenarioClinicoRequisicaoDTO(
 
     @NotNull(message = "O ID do professor criador é obrigatório")
     Long professorCriadorId
-) {
-    public CenarioClinicoRequisicaoDTO {
-        if (titulo != null) titulo = titulo.trim();
-        if (descricaoPedagogica != null) descricaoPedagogica = descricaoPedagogica.trim();
-        if (objetivosAprendizagem != null) objetivosAprendizagem = objetivosAprendizagem.trim();
-    }
-}
+) {}

@@ -37,29 +37,35 @@ public class UsuarioServico {
 
     @Transactional
     public UsuarioRespostaDTO cadastrar(UsuarioRequisicaoDTO dto) {
-        if (repositorio.findByCpf(dto.cpf()).isPresent()) {
+        String cpfLimpo = dto.cpf() != null ? dto.cpf().replaceAll("\\D", "") : "";
+        String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
+        String matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
+                ? dto.matriculaSigaa().trim()
+                : null;
+
+        if (repositorio.findByCpf(cpfLimpo).isPresent()) {
             throw new IllegalArgumentException("Já existe um usuário cadastrado com o CPF informado.");
         }
-        if (repositorio.findByEmail(dto.email()).isPresent()) {
+        if (repositorio.findByEmail(emailLimpo).isPresent()) {
             throw new IllegalArgumentException("Já existe um usuário cadastrado com este e-mail.");
         }
         if (dto.perfil() == PerfilUsuario.ALUNO) {
-            if (dto.matriculaSigaa() == null || dto.matriculaSigaa().isBlank()) {
+            if (matriculaLimpa == null) {
                 throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para o perfil ALUNO.");
             }
-            if (repositorio.findByMatriculaSigaa(dto.matriculaSigaa()).isPresent()) {
+            if (repositorio.findByMatriculaSigaa(matriculaLimpa).isPresent()) {
                 throw new IllegalArgumentException("Já existe um aluno cadastrado com esta Matrícula do SIGAA.");
             }
         }
 
         Usuario usuario = new Usuario();
-        usuario.setNomeCompleto(dto.nomeCompleto());
-        usuario.setCpf(dto.cpf());
-        usuario.setEmail(dto.email());
+        usuario.setNomeCompleto(dto.nomeCompleto() != null ? dto.nomeCompleto().trim() : "");
+        usuario.setCpf(cpfLimpo);
+        usuario.setEmail(emailLimpo);
         usuario.setSenha(passwordEncoder.encode("Sigea@123"));
         usuario.setPrimeiroAcesso(true);
-        usuario.setCargo(dto.cargo());
-        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? dto.matriculaSigaa() : null);
+        usuario.setCargo(dto.cargo() != null ? dto.cargo().trim() : null);
+        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? matriculaLimpa : null);
         usuario.setPerfil(dto.perfil());
         usuario.setAtivo(true);
 
@@ -71,23 +77,28 @@ public class UsuarioServico {
         Usuario usuario = repositorio.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
 
-        if (repositorio.findByCpfAndIdNot(dto.cpf(), id).isPresent()) {
+        String cpfLimpo = dto.cpf() != null ? dto.cpf().replaceAll("\\D", "") : "";
+        String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
+        String matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
+                ? dto.matriculaSigaa().trim()
+                : null;
+
+        if (repositorio.findByCpfAndIdNot(cpfLimpo, id).isPresent()) {
             throw new IllegalArgumentException("O CPF informado já está em uso por outro usuário.");
         }
-        if (repositorio.findByEmailAndIdNot(dto.email(), id).isPresent()) {
+        if (repositorio.findByEmailAndIdNot(emailLimpo, id).isPresent()) {
             throw new IllegalArgumentException("O e-mail informado já está em uso por outro usuário.");
         }
 
         if (dto.perfil() == PerfilUsuario.ALUNO) {
-            if (dto.matriculaSigaa() == null || dto.matriculaSigaa().isBlank()) {
+            if (matriculaLimpa == null) {
                 throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para o perfil ALUNO.");
             }
-            if (repositorio.findByMatriculaSigaaAndIdNot(dto.matriculaSigaa(), id).isPresent()) {
+            if (repositorio.findByMatriculaSigaaAndIdNot(matriculaLimpa, id).isPresent()) {
                 throw new IllegalArgumentException("Esta Matrícula do SIGAA já pertence a outro aluno.");
             }
         }
 
-        // Blindagem: se for o único administrador ativo, não pode ter seu perfil rebaixado
         if (usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR && dto.perfil() != PerfilUsuario.ADMINISTRADOR) {
             long totalAdmins = repositorio.countByPerfilAndAtivoTrue(PerfilUsuario.ADMINISTRADOR);
             if (totalAdmins <= 1) {
@@ -95,12 +106,12 @@ public class UsuarioServico {
             }
         }
 
-        usuario.setNomeCompleto(dto.nomeCompleto());
-        usuario.setCpf(dto.cpf());
-        usuario.setEmail(dto.email());
-        usuario.setCargo(dto.cargo());
+        usuario.setNomeCompleto(dto.nomeCompleto() != null ? dto.nomeCompleto().trim() : "");
+        usuario.setCpf(cpfLimpo);
+        usuario.setEmail(emailLimpo);
+        usuario.setCargo(dto.cargo() != null ? dto.cargo().trim() : null);
         usuario.setPerfil(dto.perfil());
-        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? dto.matriculaSigaa() : null);
+        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? matriculaLimpa : null);
 
         return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
     }

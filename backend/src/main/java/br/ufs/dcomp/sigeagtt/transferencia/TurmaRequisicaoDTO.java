@@ -19,10 +19,4 @@ public record TurmaRequisicaoDTO(
 
     @NotNull(message = "O ID do professor responsável é obrigatório")
     Long professorResponsavelId
-) {
-    public TurmaRequisicaoDTO {
-        if (codigoDisciplina != null) codigoDisciplina = codigoDisciplina.trim().toUpperCase();
-        if (periodoLetivo != null) periodoLetivo = periodoLetivo.trim();
-        if (anoSemestre != null) anoSemestre = anoSemestre.trim();
-    }
-}
+) {}

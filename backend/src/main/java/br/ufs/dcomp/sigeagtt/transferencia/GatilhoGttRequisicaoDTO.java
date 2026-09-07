@@ -17,9 +17,4 @@ public record GatilhoGttRequisicaoDTO(
 
     @Size(max = 150, message = "O limiar de referência não pode exceder 150 caracteres")
     String limiarReferencia
-) {
-    public GatilhoGttRequisicaoDTO {
-        if (codigo != null) codigo = codigo.trim().toUpperCase();
-        if (descricao != null) descricao = descricao.trim();
-    }
-}
+) {}

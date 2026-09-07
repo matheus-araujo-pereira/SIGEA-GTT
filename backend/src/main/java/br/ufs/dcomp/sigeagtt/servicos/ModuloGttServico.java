@@ -30,13 +30,18 @@ public class ModuloGttServico {
 
     @Transactional
     public ModuloGtt cadastrar(ModuloGttRequisicaoDTO dto) {
-        if (repositorio.findByCodigo(dto.codigo()).isPresent()) {
-            throw new IllegalArgumentException("Já existe um módulo registrado com o código: " + dto.codigo());
+        String codigo = dto.codigo() != null ? dto.codigo().trim().toUpperCase() : "";
+        String nome = dto.nome() != null ? dto.nome().trim() : "";
+        String desc = dto.descricao() != null ? dto.descricao().trim() : null;
+
+        if (repositorio.findByCodigo(codigo).isPresent()) {
+            throw new IllegalArgumentException("Já existe um módulo registrado com o código: " + codigo);
         }
+
         ModuloGtt modulo = new ModuloGtt();
-        modulo.setCodigo(dto.codigo());
-        modulo.setNome(dto.nome());
-        modulo.setDescricao(dto.descricao());
+        modulo.setCodigo(codigo);
+        modulo.setNome(nome);
+        modulo.setDescricao(desc);
         modulo.setAtivo(true);
         return repositorio.save(modulo);
     }
@@ -44,12 +49,18 @@ public class ModuloGttServico {
     @Transactional
     public ModuloGtt editar(Long id, ModuloGttRequisicaoDTO dto) {
         ModuloGtt modulo = buscarPorId(id);
-        if (repositorio.findByCodigoAndIdNot(dto.codigo(), id).isPresent()) {
-            throw new IllegalArgumentException("O código '" + dto.codigo() + "' já pertence a outro módulo.");
+
+        String codigo = dto.codigo() != null ? dto.codigo().trim().toUpperCase() : "";
+        String nome = dto.nome() != null ? dto.nome().trim() : "";
+        String desc = dto.descricao() != null ? dto.descricao().trim() : null;
+
+        if (repositorio.findByCodigoAndIdNot(codigo, id).isPresent()) {
+            throw new IllegalArgumentException("O código '" + codigo + "' já pertence a outro módulo.");
         }
-        modulo.setCodigo(dto.codigo());
-        modulo.setNome(dto.nome());
-        modulo.setDescricao(dto.descricao());
+
+        modulo.setCodigo(codigo);
+        modulo.setNome(nome);
+        modulo.setDescricao(desc);
         return repositorio.save(modulo);
     }
 

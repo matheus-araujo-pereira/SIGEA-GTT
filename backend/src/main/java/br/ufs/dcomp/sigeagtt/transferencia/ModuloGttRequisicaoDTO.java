@@ -13,9 +13,4 @@ public record ModuloGttRequisicaoDTO(
     String nome,
 
     String descricao
-) {
-    public ModuloGttRequisicaoDTO {
-        if (codigo != null) codigo = codigo.trim().toUpperCase();
-        if (nome != null) nome = nome.trim();
-    }
-}
+) {}

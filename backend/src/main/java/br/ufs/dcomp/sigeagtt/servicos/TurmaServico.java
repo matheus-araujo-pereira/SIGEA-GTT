@@ -59,10 +59,14 @@ public class TurmaServico {
             throw new IllegalArgumentException("O usuário responsável precisa possuir perfil de PROFESSOR ou ADMINISTRADOR.");
         }
 
+        String cod = dto.codigoDisciplina() != null ? dto.codigoDisciplina().trim().toUpperCase() : "";
+        String periodo = dto.periodoLetivo() != null ? dto.periodoLetivo().trim() : "";
+        String anoSemestre = dto.anoSemestre() != null ? dto.anoSemestre().trim() : "";
+
         Turma turma = new Turma();
-        turma.setCodigoDisciplina(dto.codigoDisciplina());
-        turma.setPeriodoLetivo(dto.periodoLetivo());
-        turma.setAnoSemestre(dto.anoSemestre());
+        turma.setCodigoDisciplina(cod);
+        turma.setPeriodoLetivo(periodo);
+        turma.setAnoSemestre(anoSemestre);
         turma.setProfessorResponsavel(professor);
         turma.setAtiva(true);
 
@@ -77,9 +81,13 @@ public class TurmaServico {
         Usuario professor = usuarioRepositorio.findById(dto.professorResponsavelId())
                 .orElseThrow(() -> new IllegalArgumentException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
 
-        turma.setCodigoDisciplina(dto.codigoDisciplina());
-        turma.setPeriodoLetivo(dto.periodoLetivo());
-        turma.setAnoSemestre(dto.anoSemestre());
+        String cod = dto.codigoDisciplina() != null ? dto.codigoDisciplina().trim().toUpperCase() : "";
+        String periodo = dto.periodoLetivo() != null ? dto.periodoLetivo().trim() : "";
+        String anoSemestre = dto.anoSemestre() != null ? dto.anoSemestre().trim() : "";
+
+        turma.setCodigoDisciplina(cod);
+        turma.setPeriodoLetivo(periodo);
+        turma.setAnoSemestre(anoSemestre);
         turma.setProfessorResponsavel(professor);
 
         long total = turmaAlunoRepositorio.countByTurmaId(turma.getId());

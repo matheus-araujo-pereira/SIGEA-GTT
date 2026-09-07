@@ -8,10 +8,4 @@ public record LoginRequisicaoDTO(
 
     @NotBlank(message = "A senha é obrigatória")
     String senha
-) {
-    public LoginRequisicaoDTO {
-        if (identificador != null) {
-            identificador = identificador.trim();
-        }
-    }
-}
+) {}

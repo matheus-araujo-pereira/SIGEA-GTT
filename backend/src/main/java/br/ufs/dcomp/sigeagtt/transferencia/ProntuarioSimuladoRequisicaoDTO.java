@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 public record ProntuarioSimuladoRequisicaoDTO(
     @NotNull(message = "O ID do cenário clínico é obrigatório")
@@ -44,12 +43,4 @@ public record ProntuarioSimuladoRequisicaoDTO(
 
     @NotBlank(message = "As evoluções multiprofissionais são obrigatórias")
     String evolucoesMultiprofissionais
-) {
-    public ProntuarioSimuladoRequisicaoDTO {
-        if (numeroAtendimento != null) numeroAtendimento = numeroAtendimento.trim().toUpperCase();
-        if (dataAdmissao != null && dataAlta != null && (tempoPermanenciaDias == null || tempoPermanenciaDias <= 0)) {
-            long dias = ChronoUnit.DAYS.between(dataAdmissao, dataAlta);
-            tempoPermanenciaDias = (int) Math.max(1, dias);
-        }
-    }
-}
+) {}

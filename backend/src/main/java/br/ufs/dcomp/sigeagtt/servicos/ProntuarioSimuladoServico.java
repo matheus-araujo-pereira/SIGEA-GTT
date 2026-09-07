@@ -11,6 +11,7 @@ import br.ufs.dcomp.sigeagtt.transferencia.ProntuarioSimuladoRespostaDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -53,19 +54,14 @@ public class ProntuarioSimuladoServico {
         UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
                 .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada: " + dto.unidadeHospitalarId()));
 
-        if (dto.dataAlta().isBefore(dto.dataAdmissao())) {
-            throw new IllegalArgumentException("A data de alta não pode ser anterior à data de admissão.");
-        }
-
-        int diasCalculados = (int) Math.max(1, ChronoUnit.DAYS.between(dto.dataAdmissao(), dto.dataAlta()));
-        int permanencia = (dto.tempoPermanenciaDias() != null && dto.tempoPermanenciaDias() > 0)
-                ? dto.tempoPermanenciaDias()
-                : diasCalculados;
+        validarDatas(dto.dataAdmissao(), dto.dataAlta());
+        int permanencia = calcularTempoPermanencia(dto.dataAdmissao(), dto.dataAlta(), dto.tempoPermanenciaDias());
+        String numAtend = dto.numeroAtendimento() != null ? dto.numeroAtendimento().trim().toUpperCase() : "";
 
         ProntuarioSimulado p = new ProntuarioSimulado();
         p.setCenario(cenario);
         p.setUnidadeHospitalar(unidade);
-        p.setNumeroAtendimento(dto.numeroAtendimento());
+        p.setNumeroAtendimento(numAtend);
         p.setIdadePaciente(dto.idadePaciente());
         p.setDataAdmissao(dto.dataAdmissao());
         p.setDataAlta(dto.dataAlta());
@@ -90,18 +86,13 @@ public class ProntuarioSimuladoServico {
         UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
                 .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada: " + dto.unidadeHospitalarId()));
 
-        if (dto.dataAlta().isBefore(dto.dataAdmissao())) {
-            throw new IllegalArgumentException("A data de alta não pode ser anterior à data de admissão.");
-        }
-
-        int diasCalculados = (int) Math.max(1, ChronoUnit.DAYS.between(dto.dataAdmissao(), dto.dataAlta()));
-        int permanencia = (dto.tempoPermanenciaDias() != null && dto.tempoPermanenciaDias() > 0)
-                ? dto.tempoPermanenciaDias()
-                : diasCalculados;
+        validarDatas(dto.dataAdmissao(), dto.dataAlta());
+        int permanencia = calcularTempoPermanencia(dto.dataAdmissao(), dto.dataAlta(), dto.tempoPermanenciaDias());
+        String numAtend = dto.numeroAtendimento() != null ? dto.numeroAtendimento().trim().toUpperCase() : "";
 
         p.setCenario(cenario);
         p.setUnidadeHospitalar(unidade);
-        p.setNumeroAtendimento(dto.numeroAtendimento());
+        p.setNumeroAtendimento(numAtend);
         p.setIdadePaciente(dto.idadePaciente());
         p.setDataAdmissao(dto.dataAdmissao());
         p.setDataAlta(dto.dataAlta());
@@ -120,5 +111,22 @@ public class ProntuarioSimuladoServico {
         ProntuarioSimulado p = repositorio.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Prontuário simulado não encontrado: " + id));
         repositorio.delete(p);
+    }
+
+    private void validarDatas(LocalDate admissao, LocalDate alta) {
+        if (alta != null && admissao != null && alta.isBefore(admissao)) {
+            throw new IllegalArgumentException("A data de alta não pode ser anterior à data de admissão.");
+        }
+    }
+
+    private int calcularTempoPermanencia(LocalDate admissao, LocalDate alta, Integer tempoInformado) {
+        if (tempoInformado != null && tempoInformado > 0) {
+            return tempoInformado;
+        }
+        if (admissao != null && alta != null) {
+            long dias = ChronoUnit.DAYS.between(admissao, alta);
+            return (int) Math.max(1, dias);
+        }
+        return 1;
     }
 }

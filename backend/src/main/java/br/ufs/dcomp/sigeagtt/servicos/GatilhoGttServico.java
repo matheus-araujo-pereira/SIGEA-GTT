@@ -37,18 +37,22 @@ public class GatilhoGttServico {
 
     @Transactional
     public GatilhoGtt cadastrar(GatilhoGttRequisicaoDTO dto) {
-        if (gatilhoRepositorio.findByCodigo(dto.codigo()).isPresent()) {
-            throw new IllegalArgumentException("Já existe um gatilho cadastrado com o código: " + dto.codigo());
+        String codigo = dto.codigo() != null ? dto.codigo().trim().toUpperCase() : "";
+        String desc = dto.descricao() != null ? dto.descricao().trim() : "";
+        String limiar = dto.limiarReferencia() != null ? dto.limiarReferencia().trim() : null;
+
+        if (gatilhoRepositorio.findByCodigo(codigo).isPresent()) {
+            throw new IllegalArgumentException("Já existe um gatilho cadastrado com o código: " + codigo);
         }
 
         ModuloGtt modulo = moduloRepositorio.findById(dto.moduloId())
                 .orElseThrow(() -> new IllegalArgumentException("Módulo não encontrado com o ID: " + dto.moduloId()));
 
         GatilhoGtt gatilho = new GatilhoGtt();
-        gatilho.setCodigo(dto.codigo());
+        gatilho.setCodigo(codigo);
         gatilho.setModulo(modulo);
-        gatilho.setDescricao(dto.descricao());
-        gatilho.setLimiarReferencia(dto.limiarReferencia());
+        gatilho.setDescricao(desc);
+        gatilho.setLimiarReferencia(limiar);
         gatilho.setAtivo(true);
 
         return gatilhoRepositorio.save(gatilho);
@@ -58,17 +62,21 @@ public class GatilhoGttServico {
     public GatilhoGtt editar(Long id, GatilhoGttRequisicaoDTO dto) {
         GatilhoGtt gatilho = buscarPorId(id);
 
-        if (gatilhoRepositorio.findByCodigoAndIdNot(dto.codigo(), id).isPresent()) {
-            throw new IllegalArgumentException("O código '" + dto.codigo() + "' já está em uso por outro gatilho.");
+        String codigo = dto.codigo() != null ? dto.codigo().trim().toUpperCase() : "";
+        String desc = dto.descricao() != null ? dto.descricao().trim() : "";
+        String limiar = dto.limiarReferencia() != null ? dto.limiarReferencia().trim() : null;
+
+        if (gatilhoRepositorio.findByCodigoAndIdNot(codigo, id).isPresent()) {
+            throw new IllegalArgumentException("O código '" + codigo + "' já está em uso por outro gatilho.");
         }
 
         ModuloGtt modulo = moduloRepositorio.findById(dto.moduloId())
                 .orElseThrow(() -> new IllegalArgumentException("Módulo não encontrado com o ID: " + dto.moduloId()));
 
-        gatilho.setCodigo(dto.codigo());
+        gatilho.setCodigo(codigo);
         gatilho.setModulo(modulo);
-        gatilho.setDescricao(dto.descricao());
-        gatilho.setLimiarReferencia(dto.limiarReferencia());
+        gatilho.setDescricao(desc);
+        gatilho.setLimiarReferencia(limiar);
 
         return gatilhoRepositorio.save(gatilho);
     }

@@ -26,7 +26,6 @@ public class AutenticacaoServico {
     public CommandLineRunner inicializarSenhaPadrao() {
         return args -> {
             usuarioRepositorio.findAll().forEach(u -> {
-                // Atualiza qualquer usuário que ainda possua o hash sintético do V2
                 if (u.getSenha() == null || u.getSenha().length() < 30 || u.getSenha().contains("Sigea.")) {
                     u.setSenha(passwordEncoder.encode("Sigea@123"));
                     u.setPrimeiroAcesso(true);
@@ -38,7 +37,7 @@ public class AutenticacaoServico {
 
     @Transactional(readOnly = true)
     public LoginRespostaDTO autenticar(LoginRequisicaoDTO dto) {
-        String loginLimpo = dto.identificador().trim();
+        String loginLimpo = dto.identificador() != null ? dto.identificador().trim() : "";
 
         Usuario usuario = (loginLimpo.contains("@")
                 ? usuarioRepositorio.findByEmail(loginLimpo.toLowerCase())

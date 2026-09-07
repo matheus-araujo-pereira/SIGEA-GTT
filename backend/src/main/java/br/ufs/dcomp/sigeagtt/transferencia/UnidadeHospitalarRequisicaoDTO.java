@@ -11,9 +11,4 @@ public record UnidadeHospitalarRequisicaoDTO(
     @NotBlank(message = "O nome da unidade é obrigatório")
     @Size(max = 100, message = "O nome não pode exceder 100 caracteres")
     String nome
-) {
-    public UnidadeHospitalarRequisicaoDTO {
-        if (sigla != null) sigla = sigla.trim().toUpperCase();
-        if (nome != null) nome = nome.trim();
-    }
-}
+) {}
