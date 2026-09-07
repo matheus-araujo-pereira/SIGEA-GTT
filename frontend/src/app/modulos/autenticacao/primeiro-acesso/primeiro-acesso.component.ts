@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,6 +20,12 @@ export class PrimeiroAcessoComponent {
   readonly carregando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
 
+  readonly nomeUsuario = computed(() => this.auth.usuarioLogado()?.nomeCompleto || '');
+
+  readonly textoBotao = computed(() => {
+    return this.carregando() ? 'SALVANDO...' : 'CONFIRMAR NOVA SENHA';
+  });
+
   confirmarRedefinicao(): void {
     const usuario = this.auth.usuarioLogado();
     if (!usuario) {
@@ -28,7 +34,7 @@ export class PrimeiroAcessoComponent {
     }
 
     if (!this.senhaAtual || !this.novaSenha || !this.confirmacao) {
-      this.mensagemErro.set('Preencha todos os campos obrigatórios.');
+      this.mensagemErro.set('Preencha todos os campos.');
       return;
     }
 

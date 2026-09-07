@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,9 +19,13 @@ export class LoginComponent {
   readonly carregando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
 
+  readonly textoBotao = computed(() => {
+    return this.carregando() ? 'ENTRANDO...' : 'ENTRAR';
+  });
+
   entrar(): void {
-    if (!this.identificador || !this.senha) {
-      this.mensagemErro.set('Preencha todos os campos para continuar.');
+    if (!this.identificador.trim() || !this.senha.trim()) {
+      this.mensagemErro.set('Informe suas credenciais para continuar.');
       return;
     }
 
@@ -29,7 +33,7 @@ export class LoginComponent {
     this.mensagemErro.set(null);
 
     this.authService.entrar({
-      identificador: this.identificador,
+      identificador: this.identificador.trim(),
       senha: this.senha
     }).subscribe({
       next: (usuario) => {
@@ -42,7 +46,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.carregando.set(false);
-        this.mensagemErro.set(err.error?.mensagem || 'Falha ao autenticar. Verifique suas credenciais.');
+        this.mensagemErro.set(err.error?.mensagem || 'Credenciais inválidas.');
       }
     });
   }
