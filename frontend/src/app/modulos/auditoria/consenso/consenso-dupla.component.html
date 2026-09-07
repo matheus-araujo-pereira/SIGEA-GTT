@@ -1,0 +1,321 @@
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-2" (click)="voltar()">
+        <i class="bi bi-arrow-left me-1"></i> Voltar para Auditorias
+      </button>
+      <h1 class="h4 fw-bold text-dark mb-1">Consenso de Dupla e Validação IHI-GTT</h1>
+      <p class="text-muted small mb-0">
+        Prontuário: <span class="badge bg-dark font-monospace">{{ consenso()?.prontuarioAtendimento }}</span> | Dupla #{{ consenso()?.duplaId }}
+      </p>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      @if (!consensoSubmetido() && ehAluno()) {
+        <button type="button" class="btn btn-outline-primary btn-sm px-3" (click)="salvarConsenso(false)" [disabled]="carregando()">
+          <i class="bi bi-save me-1"></i> Salvar Acordo
+        </button>
+        <button type="button" class="btn btn-success btn-sm px-3" (click)="salvarConsenso(true)" [disabled]="carregando() || !podeSubmeter()">
+          <i class="bi bi-send-check me-1"></i> Submeter à Validação Docente
+        </button>
+      }
+
+      <button type="button" class="btn btn-outline-info btn-sm px-3" (click)="abrirMelhoriaQualidade()" [disabled]="!consenso()">
+        <i class="bi bi-graph-up-arrow me-1"></i> Ciclo de Melhoria (Ishikawa/PDCA)
+      </button>
+
+      @if (consensoSubmetido()) {
+        <span class="badge py-2 px-3 align-self-center" [class.bg-success]="consenso()?.validacao?.homologado" [class.bg-primary]="!consenso()?.validacao?.homologado">
+          <i class="bi" [class.bi-patch-check-fill]="consenso()?.validacao?.homologado" [class.bi-hourglass-split]="!consenso()?.validacao?.homologado"></i>
+          {{ consenso()?.validacao?.homologado ? 'Homologado pelo Docente' : 'Aguardando Parecer do Docente' }}
+        </span>
+      }
+    </div>
+  </div>
+
+  @if (mensagemSucesso()) {
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
+      <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
+      <button type="button" class="btn-close" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
+    <div class="card-header bg-surface py-3 border-bottom border-subdued">
+      <h2 class="h6 card-title mb-0 fw-bold text-dark">
+        <i class="bi bi-columns-gap text-primary me-2"></i>
+        Conferência Lado a Lado dos Revisores Primários (Duplo-Cego IHI)
+      </h2>
+    </div>
+    <div class="card-body p-3">
+      <div class="row g-3">
+        <div class="col-md-6 border-end border-subdued">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h3 class="h6 fw-bold mb-0 text-dark">{{ consenso()?.comparativo?.revisor1Nome }}</h3>
+              <small class="text-muted">Revisor Primário 1</small>
+            </div>
+            <div>
+              <span class="badge" [class.bg-success]="consenso()?.comparativo?.revisor1Finalizou" [class.bg-warning-subtle]="!consenso()?.comparativo?.revisor1Finalizou" [class.text-warning-emphasis]="!consenso()?.comparativo?.revisor1Finalizou">
+                {{ consenso()?.comparativo?.revisor1Finalizou ? 'Finalizado' : 'Em Andamento' }}
+              </span>
+              <span class="badge bg-light text-dark border border-subdued ms-1 font-monospace">{{ formatarSegundos(consenso()?.comparativo?.revisor1TempoSegundos || 0) }}</span>
+            </div>
+          </div>
+
+          @if (consenso()?.comparativo?.revisor1Achados?.length === 0) {
+            <div class="text-center py-4 text-muted small">
+              Nenhum gatilho apontado por este revisor.
+            </div>
+          }
+
+          @for (a of consenso()?.comparativo?.revisor1Achados; track a.gatilhoId) {
+            <div class="card bg-surface-subdued border border-subdued mb-2 p-2 rounded-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-dark font-monospace">{{ a.gatilhoCodigo }}</span>
+                <span class="badge" [class.bg-danger]="a.confirmouDano" [class.bg-secondary]="!a.confirmouDano">
+                  {{ a.confirmouDano ? (a.gravidade || 'Dano Confirmado') : 'Sem Dano' }}
+                </span>
+              </div>
+              <small class="text-secondary d-block text-truncate">{{ a.gatilhoDescricao }}</small>
+              @if (a.confirmouDano) {
+                <div class="mt-1 small text-dark fst-italic">"{{ a.justificativaDano }}"</div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="col-md-6">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h3 class="h6 fw-bold mb-0 text-dark">{{ consenso()?.comparativo?.revisor2Nome }}</h3>
+              <small class="text-muted">Revisor Primário 2</small>
+            </div>
+            <div>
+              <span class="badge" [class.bg-success]="consenso()?.comparativo?.revisor2Finalizou" [class.bg-warning-subtle]="!consenso()?.comparativo?.revisor2Finalizou" [class.text-warning-emphasis]="!consenso()?.comparativo?.revisor2Finalizou">
+                {{ consenso()?.comparativo?.revisor2Finalizou ? 'Finalizado' : 'Em Andamento' }}
+              </span>
+              <span class="badge bg-light text-dark border border-subdued ms-1 font-monospace">{{ formatarSegundos(consenso()?.comparativo?.revisor2TempoSegundos || 0) }}</span>
+            </div>
+          </div>
+
+          @if (consenso()?.comparativo?.revisor2Achados?.length === 0) {
+            <div class="text-center py-4 text-muted small">
+              Nenhum gatilho apontado por este revisor.
+            </div>
+          }
+
+          @for (a of consenso()?.comparativo?.revisor2Achados; track a.gatilhoId) {
+            <div class="card bg-surface-subdued border border-subdued mb-2 p-2 rounded-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-dark font-monospace">{{ a.gatilhoCodigo }}</span>
+                <span class="badge" [class.bg-danger]="a.confirmouDano" [class.bg-secondary]="!a.confirmouDano">
+                  {{ a.confirmouDano ? (a.gravidade || 'Dano Confirmado') : 'Sem Dano' }}
+                </span>
+              </div>
+              <small class="text-secondary d-block text-truncate">{{ a.gatilhoDescricao }}</small>
+              @if (a.confirmouDano) {
+                <div class="mt-1 small text-dark fst-italic">"{{ a.justificativaDano }}"</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
+    <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="h6 card-title mb-0 fw-bold text-dark">Planilha Consolidada de Consenso da Dupla</h2>
+        <small class="text-muted">Acordo final sobre quais gatilhos foram confirmados e sua severidade NCC MERP</small>
+      </div>
+      @if (!consensoSubmetido() && ehAluno()) {
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="exibirModalAdicionar = true">
+          <i class="bi bi-plus-lg me-1"></i> Incluir Item de Consenso
+        </button>
+      }
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-muted text-uppercase fs-xxs">
+            <tr>
+              <th scope="col" class="ps-3 text-nowrap">Gatilho</th>
+              <th scope="col">Descrição Operacional</th>
+              <th scope="col" class="text-nowrap">Houve Dano?</th>
+              <th scope="col" class="text-nowrap">Severidade Consenso</th>
+              @if (consenso()?.validacao?.homologado) {
+                <th scope="col" class="text-nowrap">Homologada Docente</th>
+              }
+              <th scope="col">Justificativa / Conduta</th>
+              @if (!consensoSubmetido()) {
+                <th scope="col" class="text-end pe-3 text-nowrap">Ação</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="small">
+            @if (itensConsenso().length === 0) {
+              <tr>
+                <td [attr.colspan]="consenso()?.validacao?.homologado ? 7 : 6" class="text-center py-4 text-muted">
+                  Nenhum item adicionado à planilha de consenso.
+                </td>
+              </tr>
+            }
+            @for (item of itensConsenso(); track item.gatilhoId; let idx = $index) {
+              <tr>
+                <td class="ps-3"><span class="badge bg-dark font-monospace">{{ item.gatilhoCodigo }}</span></td>
+                <td>
+                  <div class="fw-semibold text-dark">{{ item.gatilhoDescricao }}</div>
+                  <span class="badge bg-light text-primary border border-subdued small">{{ item.moduloNome }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class.bg-danger]="item.confirmouDano" [class.bg-secondary]="!item.confirmouDano">
+                    {{ item.confirmouDano ? 'Sim (EA)' : 'Não' }}
+                  </span>
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" [(ngModel)]="item.gravidadeConsenso" [disabled]="consensoSubmetido() || !item.confirmouDano">
+                    <option value="CATEGORIA_E">Categoria E</option>
+                    <option value="CATEGORIA_F">Categoria F</option>
+                    <option value="CATEGORIA_G">Categoria G</option>
+                    <option value="CATEGORIA_H">Categoria H</option>
+                    <option value="CATEGORIA_I">Categoria I</option>
+                  </select>
+                </td>
+                @if (consenso()?.validacao?.homologado) {
+                  <td>
+                    <span class="badge bg-success font-monospace">{{ item.gravidadeHomologada || item.gravidadeConsenso }}</span>
+                  </td>
+                }
+                <td>
+                  <input type="text" class="form-control form-control-sm" [(ngModel)]="item.justificativaDano" [disabled]="consensoSubmetido()" placeholder="Acordo descritivo do dano...">
+                </td>
+                @if (!consensoSubmetido()) {
+                  <td class="text-end pe-3">
+                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="removerItem(idx)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @if (ehDocenteOuAdmin() || consenso()?.validacao) {
+    <div class="card bg-surface border border-subdued border-top border-4 border-success shadow-sm rounded-3">
+      <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+        <h2 class="h6 card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-award text-success me-2"></i>
+          Validação e Arbitragem Docente (Revisor Médico IHI)
+        </h2>
+        @if (consenso()?.validacao) {
+          <span class="badge bg-light text-dark border border-subdued">
+            Validado em {{ formatarData(consenso()?.validacao?.dataValidacao || '') }} por {{ consenso()?.validacao?.professorValidadorNome }}
+          </span>
+        }
+      </div>
+
+      <div class="card-body p-4">
+        @if (ehDocenteOuAdmin()) {
+          <div>
+            <div class="mb-3">
+              <label for="parecerFormativoDocente" class="form-label small fw-semibold text-secondary">Parecer Formativo do Docente</label>
+              <textarea id="parecerFormativoDocente" class="form-control form-control-sm" rows="3" [(ngModel)]="parecerDocente" placeholder="Feedback pedagógico sobre o raciocínio clínico da dupla, identificação de falsos positivos e pertinência dos danos..."></textarea>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" [(ngModel)]="homologarCheck" id="checkHomologar">
+                <label class="form-check-label small fw-bold text-dark" for="checkHomologar">
+                  Homologar Consenso da Dupla (Chancelar Danos e Categorias)
+                </label>
+              </div>
+
+              <button type="button" class="btn btn-success btn-sm px-4" (click)="salvarValidacaoDocente()" [disabled]="carregando() || !parecerDocente">
+                <i class="bi bi-check2-circle me-1"></i> Gravar Parecer e Homologar
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (ehAluno() && consenso()?.validacao) {
+          <div class="bg-surface-subdued p-3 rounded-3 border border-subdued">
+            <h3 class="h6 small fw-bold text-dark mb-1">Parecer Formativo:</h3>
+            <p class="small text-secondary mb-0">{{ consenso()?.validacao?.parecerFormativo }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (exibirModalAdicionar) {
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-surface border border-subdued shadow">
+          <div class="modal-header bg-surface py-3 border-bottom border-subdued">
+            <h2 class="h6 modal-title fw-bold text-dark mb-0">Adicionar Rastreador ao Consenso</h2>
+            <button type="button" class="btn-close" (click)="exibirModalAdicionar = false" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body p-3">
+            <div class="mb-3">
+              <label for="selectGatilhoModal" class="form-label small fw-semibold text-secondary">Selecione o Gatilho IHI</label>
+              <select id="selectGatilhoModal" class="form-select form-select-sm" [(ngModel)]="novoItemGatilhoId">
+                <option [ngValue]="null" disabled>Escolha um gatilho...</option>
+                @for (g of todosGatilhos(); track g.id) {
+                  <option [value]="g.id">
+                    {{ g.codigo }} - {{ g.descricao }} ({{ g.modulo.nome }})
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="novoItemDano" id="checkNovoDano">
+              <label class="form-check-label small fw-bold" for="checkNovoDano">Confirmou Evento Adverso (Dano)?</label>
+            </div>
+
+            @if (novoItemDano) {
+              <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                  <label for="selectGravidadeModal" class="form-label small fw-semibold text-secondary">Severidade NCC MERP</label>
+                  <select id="selectGravidadeModal" class="form-select form-select-sm" [(ngModel)]="novoItemGravidade">
+                    <option value="CATEGORIA_E">Categoria E</option>
+                    <option value="CATEGORIA_F">Categoria F</option>
+                    <option value="CATEGORIA_G">Categoria G</option>
+                    <option value="CATEGORIA_H">Categoria H</option>
+                    <option value="CATEGORIA_I">Categoria I</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="inputJustificativaModal" class="form-label small fw-semibold text-secondary">Justificativa do Dano</label>
+                  <input id="inputJustificativaModal" type="text" class="form-control form-control-sm" [(ngModel)]="novoItemJustificativa" placeholder="Descreva a evidência acordada entre os revisores...">
+                </div>
+              </div>
+            }
+
+            <div class="text-end">
+              <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="exibirModalAdicionar = false">Cancelar</button>
+              <button type="button" class="btn btn-primary btn-sm px-3" (click)="confirmarAdicionarItem()" [disabled]="!novoItemGatilhoId">
+                Confirmar Inclusão
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

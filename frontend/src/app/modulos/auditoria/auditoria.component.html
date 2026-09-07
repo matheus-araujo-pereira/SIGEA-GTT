@@ -1,0 +1,353 @@
+<div>
+  @if (!modoRevisaoAtiva()) {
+    <div>
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+          <h1 class="h4 fw-bold text-dark mb-1">Minhas Atividades de Auditoria Clínica</h1>
+          <p class="text-muted small mb-0">
+            Discente: {{ auth.usuarioLogado()?.nomeCompleto }} | Matrícula: <code class="text-dark">{{ auth.usuarioLogado()?.matriculaSigaa || 'N/A' }}</code>
+          </p>
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="carregarMinhasAtividades()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
+        </button>
+      </div>
+
+      @if (mensagemSucesso()) {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+          <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
+          <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+        </div>
+      }
+
+      @if (atividades().length === 0) {
+        <div class="card bg-surface border border-subdued shadow-sm p-5 text-center rounded-3">
+          <div class="text-muted py-4">
+            <i class="bi bi-journal-x fs-1 text-secondary mb-2 d-block"></i>
+            <h2 class="h6 fw-bold text-secondary">Nenhuma atividade de auditoria atribuída</h2>
+            <p class="small text-muted mb-0">O docente responsável ainda não alocou seu usuário em uma dupla de revisão.</p>
+          </div>
+        </div>
+      }
+
+      @for (at of atividades(); track at.atividadeId) {
+        <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
+          <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+              <span class="badge bg-primary me-2 font-monospace">{{ at.turmaCodigo }}</span>
+              <h2 class="h6 card-title d-inline fw-bold text-dark mb-0">{{ at.atividadeTitulo }}</h2>
+              <div class="small text-muted mt-1">
+                Cenário Clínico: <strong>{{ at.cenarioTitulo }}</strong> | Parceiro de Dupla: <strong>{{ at.parceiroNome }}</strong>
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="badge" [class.bg-secondary]="at.finalizada" [class.bg-success]="!at.finalizada">
+                {{ at.finalizada ? 'Atividade Encerrada' : 'Auditoria Aberta' }}
+              </span>
+              <div class="text-muted fs-xxs">Meta IHI: {{ at.tempoLimiteMinutos }} min/caso</div>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-muted text-uppercase fs-xxs">
+                  <tr>
+                    <th scope="col" class="ps-3 text-nowrap">Atendimento</th>
+                    <th scope="col" class="text-nowrap">Unidade HU</th>
+                    <th scope="col" class="text-nowrap">Idade</th>
+                    <th scope="col" class="text-nowrap">Permanência</th>
+                    <th scope="col" class="text-nowrap">Rastreadores</th>
+                    <th scope="col" class="text-nowrap">Danos (EA)</th>
+                    <th scope="col" class="text-nowrap">Tempo Gasto</th>
+                    <th scope="col" class="text-nowrap">Status</th>
+                    <th scope="col" class="text-end pe-3 text-nowrap">Ações</th>
+                  </tr>
+                </thead>
+                <tbody class="small">
+                  @for (p of at.prontuarios; track p.prontuarioId) {
+                    <tr>
+                      <td class="ps-3 fw-bold font-monospace text-dark">{{ p.numeroAtendimento }}</td>
+                      <td><span class="badge bg-light text-primary border border-subdued">{{ p.unidadeSigla }}</span></td>
+                      <td>{{ p.idadePaciente }} anos</td>
+                      <td>{{ p.tempoPermanenciaDias }} dia(s)</td>
+                      <td><span class="badge bg-light text-dark border border-subdued">{{ p.totalGatilhos }} gatilho(s)</span></td>
+                      <td>
+                        <span class="badge" [class.bg-danger]="p.totalDanosConfirmados > 0" [class.bg-secondary-subtle]="p.totalDanosConfirmados === 0" [class.text-secondary]="p.totalDanosConfirmados === 0">
+                          {{ p.totalDanosConfirmados }} dano(s)
+                        </span>
+                      </td>
+                      <td><code class="text-dark">{{ formatarSegundos(p.tempoGastoSegundos) }}</code></td>
+                      <td>
+                        <span class="badge" [ngClass]="{
+                          'bg-success': p.finalizada,
+                          'bg-warning-subtle text-warning-emphasis': !p.finalizada && p.revisaoId,
+                          'bg-light text-muted border border-subdued': !p.revisaoId
+                        }">
+                          {{ p.finalizada ? 'Finalizada' : (p.revisaoId ? 'Em Andamento' : 'Não Iniciada') }}
+                        </span>
+                      </td>
+                      <td class="text-end pe-3">
+                        <div class="btn-group btn-group-sm">
+                          <button type="button" class="btn btn-primary py-0 px-3" (click)="abrirAuditoria(at, p)">
+                            <i class="bi" [class.bi-eye]="p.finalizada" [class.bi-play-fill]="!p.finalizada && p.revisaoId" [class.bi-clipboard-check]="!p.finalizada && !p.revisaoId"></i>
+                            {{ p.finalizada ? 'Rever' : (p.revisaoId ? 'Continuar' : 'Auditar') }}
+                          </button>
+                          @if (p.finalizada) {
+                            <button type="button" class="btn btn-outline-primary py-0 px-2" (click)="abrirConsenso(at, p)" title="Abrir Consenso da Dupla">
+                              <i class="bi bi-people"></i> Consenso
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (modoRevisaoAtiva()) {
+    <div>
+      <div class="card bg-dark text-white border-0 shadow-sm mb-3 rounded-3">
+        <div class="card-body py-2 px-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <button type="button" class="btn btn-sm btn-outline-light py-1" (click)="sairDaRevisao()">
+              <i class="bi bi-arrow-left me-1"></i> Voltar
+            </button>
+            <div>
+              <span class="badge bg-light text-dark font-monospace me-2">{{ prontuarioAtivo()?.numeroAtendimento }}</span>
+              <span class="small text-light">{{ prontuarioAtivo()?.unidadeHospitalarSigla }} | Paciente: {{ prontuarioAtivo()?.idadePaciente }} anos | Permanência: {{ prontuarioAtivo()?.tempoPermanenciaDias }} dia(s)</span>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-end">
+              <div class="text-secondary fs-xxs">CRONÔMETRO (META 20 MIN)</div>
+              <div class="h5 mb-0 font-monospace fw-bold" [ngClass]="{
+                'text-danger': cronometroSegundos() >= 1200,
+                'text-warning': cronometroSegundos() >= 900 && cronometroSegundos() < 1200,
+                'text-success': cronometroSegundos() < 900
+              }">
+                <i class="bi bi-stopwatch me-1"></i>{{ formatarSegundos(cronometroSegundos()) }}
+              </div>
+            </div>
+
+            @if (!revisaoFinalizada()) {
+              <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-light" (click)="salvarRascunho()" [disabled]="carregando()">
+                  <i class="bi bi-save me-1"></i> Salvar Rascunho
+                </button>
+                <button type="button" class="btn btn-success" (click)="finalizarAuditoria()" [disabled]="carregando()">
+                  <i class="bi bi-check-all me-1"></i> Finalizar Auditoria
+                </button>
+              </div>
+            }
+
+            @if (revisaoFinalizada()) {
+              <span class="badge bg-secondary py-2 px-3">
+                <i class="bi bi-lock-fill me-1"></i> Auditoria Finalizada
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card bg-surface border border-subdued shadow-sm rounded-3">
+            <div class="card-header bg-surface py-2 border-bottom border-subdued">
+              <ul class="nav nav-pills nav-fill small">
+                <li class="nav-item">
+                  <button type="button" class="nav-link py-1" [class.active]="secaoAtiva() === 'SUMARIO'" (click)="secaoAtiva.set('SUMARIO')">
+                    1. Sumário de Alta
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button type="button" class="nav-link py-1" [class.active]="secaoAtiva() === 'MEDICACAO'" (click)="secaoAtiva.set('MEDICACAO')">
+                    2. Medicamentos
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button type="button" class="nav-link py-1" [class.active]="secaoAtiva() === 'LABORATORIO'" (click)="secaoAtiva.set('LABORATORIO')">
+                    3. Exames
+                  </button>
+                </li>
+                @if (prontuarioAtivo()?.relatorioCirurgico) {
+                  <li class="nav-item">
+                    <button type="button" class="nav-link py-1" [class.active]="secaoAtiva() === 'CIRURGICO'" (click)="secaoAtiva.set('CIRURGICO')">
+                      4. Bloco Cirúrgico
+                    </button>
+                  </li>
+                }
+                <li class="nav-item">
+                  <button type="button" class="nav-link py-1" [class.active]="secaoAtiva() === 'EVOLUCOES'" (click)="secaoAtiva.set('EVOLUCOES')">
+                    5. Evoluções
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card-body p-4 auditoria-pane">
+              @if (secaoAtiva() === 'SUMARIO') {
+                <div>
+                  <h2 class="h6 fw-bold text-primary mb-2"><i class="bi bi-file-earmark-medical me-2"></i>1. Sumário de Alta e Códigos Diagnósticos</h2>
+                  <p class="small text-muted mb-3">Diretriz IHI: Iniciar pelo relatório de alta verificando diagnósticos, transferências e causas de internação/alta.</p>
+                  <pre class="bg-light p-3 rounded-3 text-dark font-monospace small text-pre-wrap">{{ prontuarioAtivo()?.sumarioAlta }}</pre>
+                </div>
+              }
+
+              @if (secaoAtiva() === 'MEDICACAO') {
+                <div>
+                  <h2 class="h6 fw-bold text-warning-emphasis mb-2"><i class="bi bi-capsule me-2"></i>2. Prescrições e Aprazamento de Medicamentos</h2>
+                  <p class="small text-muted mb-3">Diretriz IHI: Buscar suspensões abruptas, dosagens elevadas e administração de antídotos (vitamina K, naloxona, antieméticos).</p>
+                  <pre class="bg-light p-3 rounded-3 text-dark font-monospace small text-pre-wrap">{{ prontuarioAtivo()?.prescricoesMedicas }}</pre>
+                </div>
+              }
+
+              @if (secaoAtiva() === 'LABORATORIO') {
+                <div>
+                  <h2 class="h6 fw-bold text-info mb-2"><i class="bi bi-droplet-half me-2"></i>3. Resultados de Exames Laboratoriais</h2>
+                  <p class="small text-muted mb-3">Diretriz IHI: Verificar glicemias abaixo de 50 mg/dL, INR acima de 6, creatinina 2x basal, queda de Hb/Ht &ge; 25% e culturas positivas.</p>
+                  <pre class="bg-light p-3 rounded-3 text-dark font-monospace small text-pre-wrap">{{ prontuarioAtivo()?.examesLaboratoriais }}</pre>
+                </div>
+              }
+
+              @if (secaoAtiva() === 'CIRURGICO') {
+                <div>
+                  <h2 class="h6 fw-bold text-danger mb-2"><i class="bi bi-scissors me-2"></i>4. Relatório Cirúrgico e Anestésico</h2>
+                  <p class="small text-muted mb-3">Diretriz IHI: Identificar mudança de procedimento, lesão acidental de órgãos e reintervenções cirúrgicas.</p>
+                  <pre class="bg-light p-3 rounded-3 text-dark font-monospace small text-pre-wrap">{{ prontuarioAtivo()?.relatorioCirurgico }}</pre>
+                </div>
+              }
+
+              @if (secaoAtiva() === 'EVOLUCOES') {
+                <div>
+                  <h2 class="h6 fw-bold text-secondary mb-2"><i class="bi bi-card-checklist me-2"></i>5. Evoluções Multiprofissionais e de Enfermagem</h2>
+                  <p class="small text-muted mb-3">Diretriz IHI: Pesquisar relatos de sonolência acentuada, quedas, lesões por pressão ou contenção física.</p>
+                  <pre class="bg-light p-3 rounded-3 text-dark font-monospace small text-pre-wrap">{{ prontuarioAtivo()?.evolucoesMultiprofissionais }}</pre>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card bg-surface border border-subdued shadow-sm rounded-3">
+            <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+              <div>
+                <h2 class="h6 card-title mb-0 fw-bold text-dark">Rastreadores Identificados</h2>
+                <small class="text-muted">{{ achados().length }} gatilho(s) apontado(s)</small>
+              </div>
+              @if (!revisaoFinalizada()) {
+                <button type="button" class="btn btn-primary btn-sm px-3" (click)="exibirSeletorGatilhos = true">
+                  <i class="bi bi-plus-lg me-1"></i> Adicionar Gatilho
+                </button>
+              }
+            </div>
+
+            <div class="card-body p-3 auditoria-pane">
+              @if (achados().length === 0) {
+                <div class="text-center py-5 text-muted">
+                  <i class="bi bi-search fs-2 d-block mb-1 text-secondary"></i>
+                  Nenhum gatilho registrado neste prontuário ainda.
+                  <div class="small mt-1">Identifique pistas clínicas navegando pelas seções ao lado.</div>
+                </div>
+              }
+
+              @for (a of achados(); track a.gatilhoId; let idx = $index) {
+                <div class="card bg-surface border border-subdued shadow-sm mb-3 rounded-3 p-3">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <span class="badge bg-dark font-monospace me-1">{{ a.gatilhoCodigo }}</span>
+                      <span class="badge bg-light text-primary border border-subdued small">{{ a.moduloNome }}</span>
+                    </div>
+                    @if (!revisaoFinalizada()) {
+                      <button type="button" class="btn btn-sm btn-outline-danger border-0 p-0" (click)="removerAchado(idx)" title="Remover Gatilho">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
+                  </div>
+
+                  <p class="small text-secondary mb-2">{{ a.gatilhoDescricao }}</p>
+
+                  <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" [(ngModel)]="a.confirmouDano" [disabled]="revisaoFinalizada()" id="checkDano-{{idx}}">
+                    <label class="form-check-label small fw-bold" [class.text-danger]="a.confirmouDano" for="checkDano-{{idx}}">
+                      Confirmou Dano Físico ao Paciente (Evento Adverso)?
+                    </label>
+                  </div>
+
+                  @if (a.confirmouDano) {
+                    <div class="bg-surface-subdued p-2 rounded-2 border border-subdued">
+                      <div class="mb-2">
+                        <label for="gravidade-{{idx}}" class="form-label small fw-semibold text-secondary mb-1">Severidade (Índice NCC MERP)</label>
+                        <select id="gravidade-{{idx}}" class="form-select form-select-sm" [(ngModel)]="a.gravidade" [disabled]="revisaoFinalizada()">
+                          <option [ngValue]="null" disabled>Selecione a categoria de dano...</option>
+                          <option value="CATEGORIA_E">Categoria E: Dano temporário com necessidade de intervenção</option>
+                          <option value="CATEGORIA_F">Categoria F: Dano temporário com prolongamento de hospitalização</option>
+                          <option value="CATEGORIA_G">Categoria G: Dano permanente ao paciente</option>
+                          <option value="CATEGORIA_H">Categoria H: Necessidade de intervenção para manter a vida (&lt; 1h)</option>
+                          <option value="CATEGORIA_I">Categoria I: Morte do paciente com cuidado contribuinte</option>
+                        </select>
+                      </div>
+
+                      <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="a.danoPresenteAdmissao" [disabled]="revisaoFinalizada()" id="poa-{{idx}}">
+                        <label class="form-check-label small text-secondary" for="poa-{{idx}}">
+                          Dano Presente na Admissão (POA - Ocorreu antes da internação)
+                        </label>
+                      </div>
+
+                      <div>
+                        <label for="justificativa-{{idx}}" class="form-label small fw-semibold text-secondary mb-1">Justificativa e Conduta Clínica</label>
+                        <textarea id="justificativa-{{idx}}" class="form-control form-control-sm" rows="2" [(ngModel)]="a.justificativaDano" [disabled]="revisaoFinalizada()" placeholder="Descreva as evidências clínicas do dano e as intervenções médicas realizadas..."></textarea>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (exibirSeletorGatilhos) {
+        <div class="modal-backdrop fade show"></div>
+        <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-surface border border-subdued shadow">
+              <div class="modal-header bg-surface py-3 border-bottom border-subdued">
+                <h2 class="h6 modal-title fw-bold text-dark mb-0">Catálogo Oficial de Gatilhos (IHI-GTT)</h2>
+                <button type="button" class="btn-close" (click)="exibirSeletorGatilhos = false" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body p-3">
+                <div class="input-group input-group-sm mb-3">
+                  <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                  <input type="text" class="form-control border-start-0" [(ngModel)]="buscaGatilho" placeholder="Pesquisar por código (ex.: M4, C6, S8) ou palavra...">
+                </div>
+
+                <div class="list-group list-group-flush">
+                  @for (g of gatilhosFiltradosModal(); track g.id) {
+                    <button type="button" class="list-group-item list-group-item-action p-2 d-flex justify-content-between align-items-center" (click)="adicionarGatilho(g)">
+                      <div>
+                        <span class="badge bg-dark font-monospace me-2">{{ g.codigo }}</span>
+                        <span class="badge bg-light text-primary border border-subdued me-2">{{ g.modulo.nome }}</span>
+                        <span class="small text-dark">{{ g.descricao }}</span>
+                      </div>
+                      <i class="bi bi-plus-circle text-primary fs-5"></i>
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
