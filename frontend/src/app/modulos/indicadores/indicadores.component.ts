@@ -5,14 +5,33 @@ import { IndicadoresService, IndicadoresIHI } from '../../nucleo/servicos/indica
 import { TurmaService } from '../../nucleo/servicos/turma.service';
 import { Turma } from '../../compartilhado/modelos/dominio.modelos';
 
-interface PontoGrafico {
+export interface MetricaCard {
+  rotulo: string;
+  valor: string | number;
+  descricao: string;
+}
+
+export interface MetricaSimples {
+  rotulo: string;
+  valor: string | number;
+}
+
+export interface DetalheSeveridadeLinha {
+  categoria: string;
+  nome: string;
+  total: number;
+  porcentagem: string;
+  descricao: string;
+}
+
+export interface PontoGrafico {
   rotulo: string;
   valor: number;
   x: number;
   y: number;
 }
 
-interface BarraCategoria {
+export interface BarraCategoria {
   categoria: string;
   rotulo: string;
   total: number;
@@ -39,12 +58,59 @@ export class IndicadoresComponent implements OnInit {
   readonly turmaFiltroId = signal<string>('TODOS');
   readonly carregando = signal<boolean>(false);
 
-  readonly taxaAtual = computed(() => {
-    return this.indicadores()?.taxaDanosPorMilDias || 0;
+  readonly taxaAtual = computed(() => this.indicadores()?.taxaDanosPorMilDias || 0);
+  readonly totalDanos = computed(() => this.indicadores()?.totalEventosAdversos || 0);
+
+  readonly metricasPrincipais = computed<MetricaCard[]>(() => {
+    const ind = this.indicadores();
+    return [
+      {
+        rotulo: 'TAXA DE DANOS (IHI)',
+        valor: ind?.taxaDanosPorMilDias ?? 0,
+        descricao: 'Eventos Adversos por 1.000 pacientes-dia'
+      },
+      {
+        rotulo: 'FREQUÊNCIA DE DANOS',
+        valor: `${ind?.frequenciaPorCemAdmissoes ?? 0}%`,
+        descricao: 'Eventos Adversos por 100 admissões revistas'
+      },
+      {
+        rotulo: 'PREVALÊNCIA COM DANO',
+        valor: `${ind?.prevalenciaPercentual ?? 0}%`,
+        descricao: 'Percentual de prontuários com >= 1 EA'
+      }
+    ];
   });
 
-  readonly totalDanos = computed(() => {
-    return this.indicadores()?.totalEventosAdversos || 0;
+  readonly metricasSecundarias = computed<MetricaSimples[]>(() => {
+    const ind = this.indicadores();
+    return [
+      { rotulo: 'PRONTUÁRIOS HOMOLOGADOS', valor: ind?.totalProntuariosRevistos ?? 0 },
+      { rotulo: 'DIAS DE INTERNAÇÃO', valor: `${ind?.totalDiasInternacao ?? 0} d` },
+      { rotulo: 'TOTAL EVENTOS ADVERSOS', valor: ind?.totalEventosAdversos ?? 0 },
+      { rotulo: 'ADMISSÕES COM DANO', valor: ind?.prontuariosComDano ?? 0 }
+    ];
+  });
+
+  readonly severidadesLinhas = computed<DetalheSeveridadeLinha[]>(() => {
+    const sev = this.indicadores()?.distribuicaoSeveridade;
+    const total = this.totalDanos() || 1;
+
+    const itens = [
+      { cat: '[CAT. E]', nome: 'Categoria E', total: sev?.CATEGORIA_E ?? 0, desc: 'Dano temporário com necessidade de intervenção' },
+      { cat: '[CAT. F]', nome: 'Categoria F', total: sev?.CATEGORIA_F ?? 0, desc: 'Dano temporário com prolongamento de hospitalização' },
+      { cat: '[CAT. G]', nome: 'Categoria G', total: sev?.CATEGORIA_G ?? 0, desc: 'Dano permanente ao paciente' },
+      { cat: '[CAT. H]', nome: 'Categoria H', total: sev?.CATEGORIA_H ?? 0, desc: 'Intervenção para manter a vida (< 1h)' },
+      { cat: '[CAT. I]', nome: 'Categoria I', total: sev?.CATEGORIA_I ?? 0, desc: 'Óbito com cuidado assistencial contribuinte' }
+    ];
+
+    return itens.map((item) => ({
+      categoria: item.cat,
+      nome: item.nome,
+      total: item.total,
+      porcentagem: `${((item.total / total) * 100).toFixed(1)}%`,
+      descricao: item.desc
+    }));
   });
 
   readonly pontosTendencia = computed<PontoGrafico[]>(() => {
@@ -57,8 +123,8 @@ export class IndicadoresComponent implements OnInit {
       { rotulo: 'Consolidado', valor: atual }
     ];
 
-    const xInicio = 90;
-    const xFim = 530;
+    const xInicio = 80;
+    const xFim = 540;
     const passo = (xFim - xInicio) / (pontosBase.length - 1);
     const yMax = 200;
     const yMin = 0;
