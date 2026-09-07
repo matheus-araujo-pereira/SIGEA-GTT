@@ -1,6 +1,6 @@
 -- =============================================================================
 -- SIGEA-GTT: Sistema Inteligente de Gestão de Eventos Adversos - Global Trigger Tool
--- Script DDL Consolidado e Zerado (PostgreSQL 16+)
+-- Script DDL Consolidado (PostgreSQL 16+)
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
@@ -48,14 +48,12 @@ CREATE TYPE gravidade_ncc_merp_enum AS ENUM (
 );
 
 -- -----------------------------------------------------------------------------
--- 3. GESTÃO DE ACESSO E AUTENTICAÇÃO
+-- 3. GESTÃO DE ACESSO E AUTENTICAÇÃO (SEM CPF E SEM CARGO)
 -- -----------------------------------------------------------------------------
 CREATE TABLE usuarios (
     id BIGSERIAL PRIMARY KEY,
     nome_completo VARCHAR(150) NOT NULL,
-    cpf VARCHAR(11) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
-    cargo VARCHAR(100) NOT NULL,
     matricula_sigaa VARCHAR(12) UNIQUE,
     perfil perfil_usuario_enum NOT NULL,
     senha VARCHAR(255) NOT NULL,
@@ -269,7 +267,7 @@ CREATE INDEX idx_atividades_turma ON atividades_auditoria(turma_id);
 CREATE INDEX idx_atividades_cenario ON atividades_auditoria(cenario_id);
 CREATE INDEX idx_duplas_atividade ON duplas_revisores(atividade_id);
 CREATE INDEX idx_duplas_aluno1 ON duplas_revisores(aluno_revisor_1_id);
-CREATE INDEX idx_duplas_aluno2 ON duplas_revisores(aluno_revisor_2_id);
+CREATE INDEX idx_duplas_aluno2 ON duplas_revisores(aluno_revisor_1_id);
 CREATE INDEX idx_revisoes_dupla ON revisoes_individuais(dupla_id);
 CREATE INDEX idx_revisoes_aluno ON revisoes_individuais(aluno_id);
 CREATE INDEX idx_revisoes_prontuario ON revisoes_individuais(prontuario_id);
