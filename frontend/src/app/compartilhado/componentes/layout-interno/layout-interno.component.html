@@ -1,74 +1,38 @@
-<div class="d-flex vh-100 overflow-hidden bg-light">
-  <aside class="sidebar-layout d-flex flex-column flex-shrink-0 p-3 bg-white border-end border-subdued shadow-sm h-100">
-    <div class="d-flex align-items-center gap-2 mb-3 px-2 flex-shrink-0">
-      <div class="brand-icon bg-primary text-white rounded-3 d-flex align-items-center justify-content-center">
-        <i class="bi bi-hospital fs-5"></i>
+<div class="d-flex app-viewport-fhd">
+  <aside class="sidebar-fhd d-flex flex-column justify-content-between">
+    <div>
+      <div class="p-3 b-b">
+        <span class="fw-bold text-dark d-block">SIGEA-GTT</span>
+        <span class="text-secondary small font-monospace">UFS / DCOMP</span>
       </div>
-      <div>
-        <span class="fs-6 fw-bold text-dark d-block">SIGEA-GTT</span>
-        <span class="badge bg-light text-secondary border small">UFS / DCOMP</span>
-      </div>
+
+      <nav class="p-2">
+        @for (grupo of gruposMenu(); track grupo.titulo) {
+          <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">{{ grupo.titulo }}</div>
+          @for (item of grupo.itens; track item.rota) {
+            <a [routerLink]="item.rota"
+               routerLinkActive="active"
+               class="nav-link py-2 px-3 d-flex align-items-center gap-2 mb-1">
+              <i class="bi" [class]="item.icone"></i>
+              <span>{{ item.rotulo }}</span>
+            </a>
+          }
+        }
+      </nav>
     </div>
 
-    <nav class="nav nav-pills flex-column flex-grow-1 mb-auto gap-1 overflow-y-auto pe-1">
-      @if (usuario()?.perfil === 'ADMINISTRADOR') {
-        <div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-1 fs-xxs">Administração</div>
-        <a routerLink="/usuarios" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-people"></i> Usuários & Perfis
-        </a>
-        <a routerLink="/gatilhos" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-sliders"></i> Gatilhos & Módulos
-        </a>
-        <a routerLink="/unidades" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-building"></i> Unidades HU
-        </a>
-      }
-
-      @if (usuario()?.perfil === 'PROFESSOR' || usuario()?.perfil === 'ADMINISTRADOR') {
-        <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">Epidemiologia</div>
-        <a routerLink="/indicadores" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-graph-up"></i> Indicadores IHI
-        </a>
-
-        <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">Gestão Acadêmica</div>
-        <a routerLink="/turmas" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-mortarboard"></i> Turmas & Alunos
-        </a>
-        <a routerLink="/cenarios" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-file-earmark-medical"></i> Cenários Clínicos
-        </a>
-        <a routerLink="/prontuarios" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-journal-medical"></i> Prontuários Simulados
-        </a>
-        <a routerLink="/atividades" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-calendar-check"></i> Atividades & Duplas
-        </a>
-      }
-
-      @if (usuario()?.perfil === 'ALUNO') {
-        <div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-1 fs-xxs">Auditoria Clínica</div>
-        <a routerLink="/auditoria" routerLinkActive="active" class="nav-link py-2 px-3 rounded-3 d-flex align-items-center gap-2">
-          <i class="bi bi-clipboard-pulse"></i> Minhas Auditorias
-        </a>
-      }
-    </nav>
-
-    <div class="pt-3 mt-auto border-top border-subdued flex-shrink-0">
-      <div class="d-flex align-items-center justify-content-between">
-        <div class="overflow-hidden me-2">
-          <div class="fw-semibold text-dark text-truncate small">{{ usuario()?.nomeCompleto }}</div>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-xxs">
-            {{ usuario()?.perfil }}
-          </span>
-        </div>
-        <button class="btn btn-sm btn-outline-danger border-0" (click)="sair()" title="Encerrar Sessão">
-          <i class="bi bi-box-arrow-right fs-5"></i>
-        </button>
+    <div class="p-3 b-t d-flex justify-content-between align-items-center">
+      <div class="overflow-hidden me-2">
+        <div class="fw-bold text-truncate small">{{ nomeUsuario() }}</div>
+        <span class="font-monospace text-muted fs-xxs">{{ perfilUsuario() }}</span>
       </div>
+      <button type="button" class="btn btn-outline-danger btn-sm" (click)="sair()" title="Encerrar Sessão">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
     </div>
   </aside>
 
-  <main class="flex-grow-1 p-4 overflow-y-auto bg-light h-100">
+  <main class="content-fhd">
     <router-outlet></router-outlet>
   </main>
 </div>

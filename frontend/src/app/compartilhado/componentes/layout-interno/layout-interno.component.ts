@@ -1,7 +1,18 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
+
+export interface ItemMenu {
+  rota: string;
+  rotulo: string;
+  icone: string;
+}
+
+export interface GrupoMenu {
+  titulo: string;
+  itens: ItemMenu[];
+}
 
 @Component({
   selector: 'app-layout-interno',
@@ -12,6 +23,57 @@ import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.servi
 export class LayoutInternoComponent {
   private readonly authService = inject(AutenticacaoService);
   readonly usuario = this.authService.usuarioLogado;
+
+  readonly nomeUsuario = computed(() => this.usuario()?.nomeCompleto || '');
+  readonly perfilUsuario = computed(() => this.usuario()?.perfil ? `[${this.usuario()?.perfil}]` : '');
+
+  readonly gruposMenu = computed<GrupoMenu[]>(() => {
+    const perfil = this.usuario()?.perfil;
+    if (!perfil) return [];
+
+    const grupos: GrupoMenu[] = [];
+
+    if (perfil === 'ADMINISTRADOR') {
+      grupos.push({
+        titulo: 'Administração',
+        itens: [
+          { rota: '/usuarios', rotulo: 'Usuários & Perfis', icone: 'bi-people' },
+          { rota: '/gatilhos', rotulo: 'Gatilhos & Módulos', icone: 'bi-sliders' },
+          { rota: '/unidades', rotulo: 'Unidades HU', icone: 'bi-building' }
+        ]
+      });
+    }
+
+    if (perfil === 'PROFESSOR' || perfil === 'ADMINISTRADOR') {
+      grupos.push({
+        titulo: 'Epidemiologia',
+        itens: [
+          { rota: '/indicadores', rotulo: 'Indicadores IHI', icone: 'bi-graph-up' }
+        ]
+      });
+
+      grupos.push({
+        titulo: 'Gestão Acadêmica',
+        itens: [
+          { rota: '/turmas', rotulo: 'Turmas & Alunos', icone: 'bi-mortarboard' },
+          { rota: '/cenarios', rotulo: 'Cenários Clínicos', icone: 'bi-file-earmark-medical' },
+          { rota: '/prontuarios', rotulo: 'Prontuários Simulados', icone: 'bi-journal-medical' },
+          { rota: '/atividades', rotulo: 'Atividades & Duplas', icone: 'bi-calendar-check' }
+        ]
+      });
+    }
+
+    if (perfil === 'ALUNO') {
+      grupos.push({
+        titulo: 'Auditoria Clínica',
+        itens: [
+          { rota: '/auditoria', rotulo: 'Minhas Auditorias', icone: 'bi-clipboard-pulse' }
+        ]
+      });
+    }
+
+    return grupos;
+  });
 
   sair(): void {
     this.authService.sair();
