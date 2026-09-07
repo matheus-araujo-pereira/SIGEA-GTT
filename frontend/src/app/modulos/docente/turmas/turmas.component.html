@@ -1,0 +1,252 @@
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-dark mb-1">Gestão Acadêmica de Turmas e Alunos</h1>
+      <p class="text-muted small mb-0">Controle de semestres letivos, enturmação discente e preparação de auditorias</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" (click)="iniciarNovaTurma()">
+      <i class="bi" [class.bi-x-lg]="exibirFormTurma" [class.bi-plus-lg]="!exibirFormTurma"></i>
+      {{ exibirFormTurma ? 'Fechar Formulário' : 'Nova Turma' }}
+    </button>
+  </div>
+
+  @if (mensagemSucesso()) {
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
+      <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
+      <button type="button" class="btn-close" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (exibirFormTurma) {
+    <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
+      <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+        <h2 class="h6 card-title mb-0 fw-bold text-primary">
+          <i class="bi" [class.bi-pencil]="idEdicaoTurma" [class.bi-mortarboard]="!idEdicaoTurma"></i>
+          {{ idEdicaoTurma ? 'Editar Turma #' + idEdicaoTurma : 'Cadastrar Nova Turma' }}
+        </h2>
+        <button type="button" class="btn-close" (click)="fecharFormTurma()" aria-label="Fechar"></button>
+      </div>
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvarTurma()">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label for="codigoDisciplina" class="form-label small fw-semibold text-secondary">Código da Disciplina</label>
+              <input id="codigoDisciplina"
+                     type="text"
+                     class="form-control form-control-sm text-uppercase font-monospace"
+                     [(ngModel)]="formTurma.codigoDisciplina"
+                     name="codDisciplina"
+                     required
+                     maxlength="30"
+                     placeholder="Ex.: ENF0052">
+            </div>
+            <div class="col-md-3">
+              <label for="periodoLetivo" class="form-label small fw-semibold text-secondary">Período Letivo</label>
+              <input id="periodoLetivo"
+                     type="text"
+                     class="form-control form-control-sm"
+                     [(ngModel)]="formTurma.periodoLetivo"
+                     name="periodo"
+                     required
+                     maxlength="20"
+                     placeholder="Ex.: 2026.1">
+            </div>
+            <div class="col-md-2">
+              <label for="anoSemestre" class="form-label small fw-semibold text-secondary">Ano / Semestre</label>
+              <input id="anoSemestre"
+                     type="text"
+                     class="form-control form-control-sm"
+                     [(ngModel)]="formTurma.anoSemestre"
+                     name="semestre"
+                     required
+                     maxlength="10"
+                     placeholder="Ex.: 2026/1">
+            </div>
+            <div class="col-md-4">
+              <label for="profResponsavel" class="form-label small fw-semibold text-secondary">Professor Responsável</label>
+              <select id="profResponsavel"
+                      class="form-select form-select-sm"
+                      [(ngModel)]="formTurma.professorResponsavelId"
+                      name="profResponsavel"
+                      required>
+                @for (p of professores(); track p.id) {
+                  <option [value]="p.id">{{ p.nomeCompleto }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4 text-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="fecharFormTurma()">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="carregando()">
+              @if (carregando()) {
+                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              }
+              {{ idEdicaoTurma ? 'Salvar Alterações' : 'Cadastrar Turma' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (turmaSelecionada()) {
+    <div class="card bg-surface border border-subdued border-top border-4 border-primary shadow-sm mb-4 rounded-3">
+      <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="h6 card-title mb-0 fw-bold text-dark">
+            <i class="bi bi-people-fill text-primary me-2"></i>
+            Alunos Matriculados: {{ turmaSelecionada()?.codigoDisciplina }} ({{ turmaSelecionada()?.periodoLetivo }})
+          </h2>
+          <small class="text-muted">Professor: {{ turmaSelecionada()?.professorResponsavelNome }}</small>
+        </div>
+        <button type="button" class="btn-close" (click)="turmaSelecionada.set(null)" aria-label="Fechar"></button>
+      </div>
+
+      <div class="card-body p-4">
+        <div class="row g-2 align-items-end mb-4 bg-surface-subdued border border-subdued p-3 rounded-3">
+          <div class="col-md-8">
+            <label for="selecaoAlunoMatricula" class="form-label small fw-semibold text-secondary">Selecionar Aluno Cadastrado no SIGEA</label>
+            <select id="selecaoAlunoMatricula" class="form-select form-select-sm" [(ngModel)]="idAlunoParaMatricular">
+              <option [ngValue]="null" disabled>Selecione um discente com perfil ALUNO...</option>
+              @for (a of alunosDisponiveisParaMatricula(); track a.id) {
+                <option [value]="a.id">
+                  {{ a.nomeCompleto }} | CPF: {{ a.cpf }} | Matrícula: {{ a.matriculaSigaa || 'N/A' }}
+                </option>
+              }
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button type="button" class="btn btn-primary btn-sm w-100" (click)="matricularAluno()" [disabled]="!idAlunoParaMatricular || carregando()">
+              <i class="bi bi-person-plus me-1"></i> Confirmar Matrícula
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small text-muted text-uppercase fs-xxs">
+              <tr>
+                <th scope="col" class="ps-3 text-nowrap">ID</th>
+                <th scope="col">Nome Completo</th>
+                <th scope="col" class="text-nowrap">Matrícula SIGAA</th>
+                <th scope="col">E-mail</th>
+                <th scope="col" class="text-nowrap">CPF</th>
+                <th scope="col" class="text-end pe-3 text-nowrap">Ação</th>
+              </tr>
+            </thead>
+            <tbody class="small">
+              @if (alunosDaTurma().length === 0) {
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    Nenhum aluno matriculado nesta turma ainda.
+                  </td>
+                </tr>
+              }
+              @for (a of alunosDaTurma(); track a.id) {
+                <tr>
+                  <td class="ps-3 fw-bold">{{ a.id }}</td>
+                  <td class="fw-semibold text-dark">{{ a.nomeCompleto }}</td>
+                  <td><code class="text-dark">{{ a.matriculaSigaa || '-' }}</code></td>
+                  <td>{{ a.email }}</td>
+                  <td><code class="text-muted">{{ a.cpf }}</code></td>
+                  <td class="text-end pe-3">
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" (click)="desmatricularAluno(a)" title="Remover da Turma">
+                      <i class="bi bi-person-dash"></i> Remover
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="card bg-surface border border-subdued shadow-sm p-3 mb-3 rounded-3">
+    <div class="input-group input-group-sm">
+      <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+      <input type="text"
+             class="form-control border-start-0"
+             [ngModel]="termoBusca()"
+             (ngModelChange)="termoBusca.set($event)"
+             placeholder="Pesquisar por código da disciplina, período ou professor...">
+      @if (termoBusca()) {
+        <button type="button" class="btn btn-light border border-start-0 text-muted" (click)="termoBusca.set('')">
+          <i class="bi bi-x"></i>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="card bg-surface border border-subdued shadow-sm rounded-3">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-muted text-uppercase fs-xxs">
+            <tr>
+              <th scope="col" class="ps-3 text-nowrap">ID</th>
+              <th scope="col" class="text-nowrap">Disciplina</th>
+              <th scope="col" class="text-nowrap">Período</th>
+              <th scope="col" class="text-nowrap">Semestre</th>
+              <th scope="col">Professor Responsável</th>
+              <th scope="col" class="text-nowrap">Alunos Matriculados</th>
+              <th scope="col" class="text-nowrap">Status</th>
+              <th scope="col" class="text-end pe-3 text-nowrap">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="small">
+            @if (turmasFiltradas().length === 0) {
+              <tr>
+                <td colspan="8" class="text-center py-5 text-muted">
+                  <i class="bi bi-mortarboard fs-2 d-block mb-1 text-secondary"></i>
+                  Nenhuma turma encontrada.
+                </td>
+              </tr>
+            }
+            @for (t of turmasFiltradas(); track t.id) {
+              <tr [class.table-light]="turmaSelecionada()?.id === t.id">
+                <td class="ps-3 fw-bold text-dark">{{ t.id }}</td>
+                <td><span class="badge bg-dark font-monospace">{{ t.codigoDisciplina }}</span></td>
+                <td>{{ t.periodoLetivo }}</td>
+                <td>{{ t.anoSemestre }}</td>
+                <td class="fw-semibold text-dark">{{ t.professorResponsavelNome }}</td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" (click)="selecionarTurmaParaEnturmar(t)">
+                    <i class="bi bi-people me-1"></i> {{ t.totalAlunos }} aluno(s)
+                  </button>
+                </td>
+                <td>
+                  <span class="badge" [class.bg-success]="t.ativa" [class.bg-secondary]="!t.ativa">
+                    {{ t.ativa ? 'Ativa' : 'Inativa' }}
+                  </span>
+                </td>
+                <td class="text-end pe-3">
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" (click)="iniciarEdicaoTurma(t)" title="Editar Turma">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" (click)="alternarStatusTurma(t.id)" [title]="t.ativa ? 'Desativar' : 'Ativar'">
+                      <i class="bi" [class.bi-toggle-on]="t.ativa" [class.text-success]="t.ativa" [class.bi-toggle-off]="!t.ativa" [class.text-muted]="!t.ativa"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" (click)="excluirTurma(t)" title="Excluir Turma">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

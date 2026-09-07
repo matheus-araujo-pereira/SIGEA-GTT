@@ -1,0 +1,262 @@
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-dark mb-1">Atividades de Auditoria e Duplas</h1>
+      <p class="text-muted small mb-0">Parametrização de sessões práticas e formação de duplas de revisão independente</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" (click)="iniciarNovaAtividade()">
+      <i class="bi" [class.bi-x-lg]="exibirFormAtividade" [class.bi-plus-lg]="!exibirFormAtividade"></i>
+      {{ exibirFormAtividade ? 'Fechar Painel' : 'Nova Atividade' }}
+    </button>
+  </div>
+
+  @if (mensagemSucesso()) {
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
+      <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
+      <button type="button" class="btn-close" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (exibirFormAtividade) {
+    <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
+      <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+        <h2 class="h6 card-title mb-0 fw-bold text-primary">
+          <i class="bi" [class.bi-pencil]="idEdicaoAtividade" [class.bi-calendar-check]="!idEdicaoAtividade"></i>
+          {{ idEdicaoAtividade ? 'Editar Atividade #' + idEdicaoAtividade : 'Cadastrar Nova Atividade de Auditoria' }}
+        </h2>
+        <button type="button" class="btn-close" (click)="fecharFormAtividade()" aria-label="Fechar"></button>
+      </div>
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvarAtividade()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="tituloAtividade" class="form-label small fw-semibold text-secondary">Título da Atividade</label>
+              <input id="tituloAtividade"
+                     type="text"
+                     class="form-control form-control-sm"
+                     [(ngModel)]="formAtividade.titulo"
+                     name="titulo"
+                     required
+                     maxlength="150"
+                     placeholder="Ex.: Auditoria Retrospectiva GTT - Caso 01">
+            </div>
+            <div class="col-md-3">
+              <label for="turmaVinculada" class="form-label small fw-semibold text-secondary">Turma Vinculada</label>
+              <select id="turmaVinculada" class="form-select form-select-sm" [(ngModel)]="formAtividade.turmaId" name="turmaId" required>
+                @for (t of turmas(); track t.id) {
+                  <option [value]="t.id">{{ t.codigoDisciplina }} ({{ t.periodoLetivo }})</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="cenarioClinico" class="form-label small fw-semibold text-secondary">Cenário Clínico</label>
+              <select id="cenarioClinico" class="form-select form-select-sm" [(ngModel)]="formAtividade.cenarioId" name="cenarioId" required>
+                @for (c of cenarios(); track c.id) {
+                  <option [value]="c.id">{{ c.titulo }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label for="dataInicio" class="form-label small fw-semibold text-secondary">Data / Hora de Início</label>
+              <input id="dataInicio" type="datetime-local" class="form-control form-control-sm" [(ngModel)]="formAtividade.dataInicio" name="dataInicio" required>
+            </div>
+            <div class="col-md-4">
+              <label for="dataFim" class="form-label small fw-semibold text-secondary">Data / Hora de Término</label>
+              <input id="dataFim" type="datetime-local" class="form-control form-control-sm" [(ngModel)]="formAtividade.dataFim" name="dataFim" required>
+            </div>
+            <div class="col-md-4">
+              <label for="tempoLimiteMinutos" class="form-label small fw-semibold text-secondary">Tempo Limite por Prontuário (Regra IHI)</label>
+              <div class="input-group input-group-sm">
+                <input id="tempoLimiteMinutos" type="number" class="form-control form-control-sm" [(ngModel)]="formAtividade.tempoLimiteMinutos" name="limiteMin" required min="5" max="60">
+                <span class="input-group-text bg-light border-subdued">minutos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 text-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="fecharFormAtividade()">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="carregando()">
+              @if (carregando()) {
+                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              }
+              {{ idEdicaoAtividade ? 'Salvar Alterações' : 'Criar Atividade' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (atividadeSelecionada()) {
+    <div class="card bg-surface border border-subdued border-top border-4 border-primary shadow-sm mb-4 rounded-3">
+      <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="h6 card-title mb-0 fw-bold text-dark">
+            <i class="bi bi-people-fill text-primary me-2"></i>
+            Duplas de Revisores: {{ atividadeSelecionada()?.titulo }}
+          </h2>
+          <small class="text-muted">Turma: {{ atividadeSelecionada()?.turmaCodigo }} | Cenário: {{ atividadeSelecionada()?.cenarioTitulo }}</small>
+        </div>
+        <button type="button" class="btn-close" (click)="atividadeSelecionada.set(null)" aria-label="Fechar"></button>
+      </div>
+
+      <div class="card-body p-4">
+        <div class="row g-2 align-items-end mb-4 bg-surface-subdued border border-subdued p-3 rounded-3">
+          <div class="col-md-5">
+            <label for="alunoRevisor1" class="form-label small fw-semibold text-secondary">Aluno Revisor 1</label>
+            <select id="alunoRevisor1" class="form-select form-select-sm" [(ngModel)]="formDupla.alunoRevisor1Id">
+              <option [ngValue]="0" disabled>Selecione o 1º Revisor...</option>
+              @for (a of alunosDaTurma(); track a.id) {
+                <option [value]="a.id">
+                  {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || 'N/A' }})
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="col-md-5">
+            <label for="alunoRevisor2" class="form-label small fw-semibold text-secondary">Aluno Revisor 2</label>
+            <select id="alunoRevisor2" class="form-select form-select-sm" [(ngModel)]="formDupla.alunoRevisor2Id">
+              <option [ngValue]="0" disabled>Selecione o 2º Revisor...</option>
+              @for (a of alunosDaTurma(); track a.id) {
+                <option [value]="a.id">
+                  {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || 'N/A' }})
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <button type="button" class="btn btn-primary btn-sm w-100" (click)="cadastrarDupla()" [disabled]="!formDupla.alunoRevisor1Id || !formDupla.alunoRevisor2Id || carregando()">
+              <i class="bi bi-plus-lg me-1"></i> Formar Dupla
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small text-muted text-uppercase fs-xxs">
+              <tr>
+                <th scope="col" class="ps-3 text-nowrap">Dupla</th>
+                <th scope="col">Revisor Primário 1</th>
+                <th scope="col">Revisor Primário 2</th>
+                <th scope="col" class="text-nowrap">Status</th>
+                <th scope="col" class="text-end pe-3 text-nowrap">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="small">
+              @if (duplasDaAtividade().length === 0) {
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    Nenhuma dupla de revisão formada para esta atividade.
+                  </td>
+                </tr>
+              }
+              @for (d of duplasDaAtividade(); track d.id; let i = $index) {
+                <tr>
+                  <td class="ps-3"><span class="badge bg-dark font-monospace">Dupla #{{ i + 1 }}</span></td>
+                  <td>
+                    <div class="fw-semibold text-dark">{{ d.alunoRevisor1Nome }}</div>
+                    <small class="text-muted">Matrícula: <code>{{ d.alunoRevisor1Matricula || '-' }}</code></small>
+                  </td>
+                  <td>
+                    <div class="fw-semibold text-dark">{{ d.alunoRevisor2Nome }}</div>
+                    <small class="text-muted">Matrícula: <code>{{ d.alunoRevisor2Matricula || '-' }}</code></small>
+                  </td>
+                  <td>
+                    <span class="badge" [class.bg-success]="d.ativa" [class.bg-secondary]="!d.ativa">
+                      {{ d.ativa ? 'Ativa' : 'Inativa' }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-3">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-secondary py-0 px-2" (click)="alternarStatusDupla(d.id)" [title]="d.ativa ? 'Desativar' : 'Ativar'">
+                        <i class="bi" [class.bi-toggle-on]="d.ativa" [class.text-success]="d.ativa" [class.bi-toggle-off]="!d.ativa" [class.text-muted]="!d.ativa"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-danger py-0 px-2" (click)="excluirDupla(d)" title="Remover Dupla">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="card bg-surface border border-subdued shadow-sm rounded-3">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-muted text-uppercase fs-xxs">
+            <tr>
+              <th scope="col" class="ps-3 text-nowrap">ID</th>
+              <th scope="col">Título da Atividade</th>
+              <th scope="col" class="text-nowrap">Turma</th>
+              <th scope="col">Cenário Clínico</th>
+              <th scope="col" class="text-nowrap">Período de Execução</th>
+              <th scope="col" class="text-nowrap">Limite / Caso</th>
+              <th scope="col" class="text-nowrap">Duplas</th>
+              <th scope="col" class="text-nowrap">Status</th>
+              <th scope="col" class="text-end pe-3 text-nowrap">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="small">
+            @if (atividades().length === 0) {
+              <tr>
+                <td colspan="9" class="text-center py-5 text-muted">
+                  <i class="bi bi-calendar-x fs-2 d-block mb-1 text-secondary"></i>
+                  Nenhuma atividade de auditoria cadastrada.
+                </td>
+              </tr>
+            }
+            @for (at of atividades(); track at.id) {
+              <tr [class.table-light]="atividadeSelecionada()?.id === at.id">
+                <td class="ps-3 fw-bold text-dark">{{ at.id }}</td>
+                <td><div class="fw-semibold text-dark">{{ at.titulo }}</div></td>
+                <td><span class="badge bg-light text-dark border border-subdued font-monospace">{{ at.turmaCodigo }} ({{ at.turmaPeriodo }})</span></td>
+                <td><span class="badge bg-light text-primary border border-subdued">{{ at.cenarioTitulo }}</span></td>
+                <td class="text-muted">{{ formatarDataHora(at.dataInicio) }} até {{ formatarDataHora(at.dataFim) }}</td>
+                <td><span class="badge bg-secondary-subtle text-secondary border border-subdued">{{ at.tempoLimiteMinutos }} min</span></td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" (click)="selecionarAtividadeParaDuplas(at)">
+                    <i class="bi bi-people me-1"></i> {{ at.totalDuplas }} dupla(s)
+                  </button>
+                </td>
+                <td>
+                  <span class="badge" [class.bg-secondary]="at.finalizada" [class.bg-success]="!at.finalizada">
+                    {{ at.finalizada ? 'Finalizada' : 'Aberta' }}
+                  </span>
+                </td>
+                <td class="text-end pe-3">
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" (click)="iniciarEdicaoAtividade(at)" title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" (click)="alternarFinalizada(at.id)" [title]="at.finalizada ? 'Reabrir' : 'Encerrar'">
+                      <i class="bi" [class.bi-lock-fill]="at.finalizada" [class.text-danger]="at.finalizada" [class.bi-unlock-fill]="!at.finalizada" [class.text-success]="!at.finalizada"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" (click)="excluirAtividade(at)" title="Excluir">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
