@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ModuloGttServico {
@@ -25,7 +26,7 @@ public class ModuloGttServico {
     @Transactional(readOnly = true)
     public ModuloGtt buscarPorId(Long id) {
         return repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Módulo GTT não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Módulo GTT não encontrado: " + id));
     }
 
     @Transactional

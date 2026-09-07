@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class MelhoriaQualidadeServico {
@@ -29,7 +30,7 @@ public class MelhoriaQualidadeServico {
     @Transactional(readOnly = true)
     public MelhoriaQualidadeRespostaDTO buscarPorConsenso(Long consensoDuplaId) {
         ConsensoDupla consenso = consensoRepositorio.findById(consensoDuplaId)
-                .orElseThrow(() -> new IllegalArgumentException("Consenso não encontrado: " + consensoDuplaId));
+                .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoDuplaId));
 
         IshikawaDTO ishikawaDTO = ishikawaRepositorio.findByConsensoDuplaId(consenso.getId())
                 .map(i -> new IshikawaDTO(i.getId(), i.getEfeitoPrincipal(), i.getMetodo(), i.getMaoDeObra(), i.getMaterial(), i.getMedida(), i.getMeioAmbiente(), i.getMaquina()))
@@ -49,7 +50,7 @@ public class MelhoriaQualidadeServico {
     @Transactional
     public MelhoriaQualidadeRespostaDTO salvar(Long consensoDuplaId, SalvarMelhoriaQualidadeDTO dto) {
         ConsensoDupla consenso = consensoRepositorio.findById(consensoDuplaId)
-                .orElseThrow(() -> new IllegalArgumentException("Consenso não encontrado: " + consensoDuplaId));
+                .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoDuplaId));
 
         // Ishikawa
         if (dto.ishikawa() != null) {
@@ -69,7 +70,7 @@ public class MelhoriaQualidadeServico {
             ishikawaRepositorio.save(ish);
         }
 
-        // 5W3H (Substituição completa do plano)
+        // 5W3H
         planoRepositorio.deleteByConsensoDuplaId(consenso.getId());
         if (dto.planos5w3h() != null && !dto.planos5w3h().isEmpty()) {
             for (Plano5w3hDTO p : dto.planos5w3h()) {

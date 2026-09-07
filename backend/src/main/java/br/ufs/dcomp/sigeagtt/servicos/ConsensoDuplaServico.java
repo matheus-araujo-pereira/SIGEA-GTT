@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -46,10 +47,10 @@ public class ConsensoDuplaServico {
     @Transactional
     public ConsensoDuplaRespostaDTO obterOuCriarConsenso(Long duplaId, Long prontuarioId) {
         DuplaRevisores dupla = duplaRepositorio.findById(duplaId)
-                .orElseThrow(() -> new IllegalArgumentException("Dupla não encontrada: " + duplaId));
+                .orElseThrow(() -> new NoSuchElementException("Dupla não encontrada: " + duplaId));
 
         ProntuarioSimulado prontuario = prontuarioRepositorio.findById(prontuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Prontuário não encontrado: " + prontuarioId));
+                .orElseThrow(() -> new NoSuchElementException("Prontuário não encontrado: " + prontuarioId));
 
         ConsensoDupla consenso = consensoRepositorio.findByDuplaIdAndProntuarioId(duplaId, prontuarioId)
                 .orElseGet(() -> {
@@ -67,13 +68,12 @@ public class ConsensoDuplaServico {
     @Transactional
     public ConsensoDuplaRespostaDTO salvarConsenso(Long consensoId, SubmeterConsensoDTO dto) {
         ConsensoDupla consenso = consensoRepositorio.findById(consensoId)
-                .orElseThrow(() -> new IllegalArgumentException("Consenso não encontrado: " + consensoId));
+                .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoId));
 
         if (Boolean.TRUE.equals(consenso.getSubmetido())) {
-            throw new IllegalArgumentException("Este consenso já foi submetido e homologado ou está aguardando validação docente.");
+            throw new IllegalStateException("Este consenso já foi submetido e homologado ou está aguardando validação docente.");
         }
 
-        // Validação Metodológica do IHI: Ambos os revisores devem ter finalizado suas revisões individuais
         DuplaRevisores dupla = consenso.getDupla();
         Long pId = consenso.getProntuario().getId();
 
@@ -84,7 +84,7 @@ public class ConsensoDuplaServico {
         boolean rev2Finalizada = rev2.isPresent() && Boolean.TRUE.equals(rev2.get().getFinalizada());
 
         if (Boolean.TRUE.equals(dto.submeterFinal()) && (!rev1Finalizada || !rev2Finalizada)) {
-            throw new IllegalArgumentException("A submissão do consenso exige que ambos os revisores da dupla tenham finalizado a auditoria individual.");
+            throw new IllegalStateException("A submissão do consenso exige que ambos os revisores da dupla tenham finalizado a auditoria individual.");
         }
 
         itemConsensoRepositorio.deleteByConsensoDuplaId(consenso.getId());
@@ -92,7 +92,7 @@ public class ConsensoDuplaServico {
         if (dto.itens() != null && !dto.itens().isEmpty()) {
             for (ItemConsensoDTO item : dto.itens()) {
                 GatilhoGtt gatilho = gatilhoRepositorio.findById(item.gatilhoId())
-                        .orElseThrow(() -> new IllegalArgumentException("Gatilho não encontrado: " + item.gatilhoId()));
+                        .orElseThrow(() -> new NoSuchElementException("Gatilho não encontrado: " + item.gatilhoId()));
 
                 ItemConsenso ic = new ItemConsenso();
                 ic.setConsensoDupla(consenso);
@@ -118,16 +118,15 @@ public class ConsensoDuplaServico {
     @Transactional
     public ConsensoDuplaRespostaDTO validarEHomologar(Long consensoId, HomologarConsensoDTO dto) {
         ConsensoDupla consenso = consensoRepositorio.findById(consensoId)
-                .orElseThrow(() -> new IllegalArgumentException("Consenso não encontrado: " + consensoId));
+                .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoId));
 
         Usuario professor = usuarioRepositorio.findById(dto.professorValidadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Professor não encontrado: " + dto.professorValidadorId()));
+                .orElseThrow(() -> new NoSuchElementException("Professor não encontrado: " + dto.professorValidadorId()));
 
         if (professor.getPerfil() != PerfilUsuario.PROFESSOR && professor.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
             throw new IllegalArgumentException("Apenas docentes ou administradores podem validar e homologar o consenso.");
         }
 
-        // Papel de Revisor Médico do IHI: Reclassificar gravidades se necessário
         if (dto.reclassificacoesGravidade() != null && !dto.reclassificacoesGravidade().isEmpty()) {
             List<ItemConsenso> itens = itemConsensoRepositorio.findByConsensoDuplaId(consenso.getId());
             for (ItemConsenso item : itens) {
@@ -179,7 +178,6 @@ public class ConsensoDuplaServico {
                     v.getDataValidacao()
                 )).orElse(null);
 
-        // Comparativo Lado a Lado (Revisor 1 vs Revisor 2)
         DuplaRevisores d = c.getDupla();
         Long pId = c.getProntuario().getId();
 

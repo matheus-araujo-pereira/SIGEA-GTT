@@ -21,8 +21,8 @@ public class IndicadoresEpidemiologicosServico {
     private final ItemConsensoRepositorio itemConsensoRepositorio;
 
     public IndicadoresEpidemiologicosServico(ConsensoDuplaRepositorio consensoRepositorio,
-                                             ValidacaoDocenteRepositorio validacaoDocenteRepositorio,
-                                             ItemConsensoRepositorio itemConsensoRepositorio) {
+                                            ValidacaoDocenteRepositorio validacaoDocenteRepositorio,
+                                            ItemConsensoRepositorio itemConsensoRepositorio) {
         this.consensoRepositorio = consensoRepositorio;
         this.validacaoDocenteRepositorio = validacaoDocenteRepositorio;
         this.itemConsensoRepositorio = itemConsensoRepositorio;
@@ -32,11 +32,8 @@ public class IndicadoresEpidemiologicosServico {
     public Map<String, Object> calcularIndicadores(Long turmaId) {
         List<ConsensoDupla> consensos = consensoRepositorio.findAll();
 
-        // Filtra apenas consensos validados e homologados positivamente pelo docente
         List<ConsensoDupla> homologados = consensos.stream().filter(c -> {
             if (turmaId != null) {
-                // Se houver filtro de turma, verifica se a atividade pertence à turma
-                // (acessando via dupla -> atividade -> turma)
                 Long tId = c.getDupla().getAtividade().getTurma().getId();
                 if (!tId.equals(turmaId)) return false;
             }
@@ -84,7 +81,6 @@ public class IndicadoresEpidemiologicosServico {
             }
         }
 
-        // Fórmulas IHI
         double taxaDanosPorMilDias = totalDiasInternacao > 0 
                 ? ((double) totalEventosAdversos / totalDiasInternacao) * 1000.0 
                 : 0.0;

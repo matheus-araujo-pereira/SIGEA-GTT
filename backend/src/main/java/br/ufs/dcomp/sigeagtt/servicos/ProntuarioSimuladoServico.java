@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ProntuarioSimuladoServico {
@@ -42,17 +43,17 @@ public class ProntuarioSimuladoServico {
     @Transactional(readOnly = true)
     public ProntuarioSimuladoRespostaDTO buscarPorId(Long id) {
         ProntuarioSimulado p = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Prontuário simulado não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Prontuário simulado não encontrado: " + id));
         return ProntuarioSimuladoRespostaDTO.deEntidade(p);
     }
 
     @Transactional
     public ProntuarioSimuladoRespostaDTO cadastrar(ProntuarioSimuladoRequisicaoDTO dto) {
         CenarioClinico cenario = cenarioRepositorio.findById(dto.cenarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + dto.cenarioId()));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + dto.cenarioId()));
 
         UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
-                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada: " + dto.unidadeHospitalarId()));
+                .orElseThrow(() -> new NoSuchElementException("Unidade hospitalar não encontrada: " + dto.unidadeHospitalarId()));
 
         validarDatas(dto.dataAdmissao(), dto.dataAlta());
         int permanencia = calcularTempoPermanencia(dto.dataAdmissao(), dto.dataAlta(), dto.tempoPermanenciaDias());
@@ -78,13 +79,13 @@ public class ProntuarioSimuladoServico {
     @Transactional
     public ProntuarioSimuladoRespostaDTO editar(Long id, ProntuarioSimuladoRequisicaoDTO dto) {
         ProntuarioSimulado p = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Prontuário simulado não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Prontuário simulado não encontrado: " + id));
 
         CenarioClinico cenario = cenarioRepositorio.findById(dto.cenarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + dto.cenarioId()));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + dto.cenarioId()));
 
         UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
-                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada: " + dto.unidadeHospitalarId()));
+                .orElseThrow(() -> new NoSuchElementException("Unidade hospitalar não encontrada: " + dto.unidadeHospitalarId()));
 
         validarDatas(dto.dataAdmissao(), dto.dataAlta());
         int permanencia = calcularTempoPermanencia(dto.dataAdmissao(), dto.dataAlta(), dto.tempoPermanenciaDias());
@@ -109,7 +110,7 @@ public class ProntuarioSimuladoServico {
     @Transactional
     public void excluir(Long id) {
         ProntuarioSimulado p = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Prontuário simulado não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Prontuário simulado não encontrado: " + id));
         repositorio.delete(p);
     }
 

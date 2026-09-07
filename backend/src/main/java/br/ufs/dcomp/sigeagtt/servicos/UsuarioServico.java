@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class UsuarioServico {
@@ -31,7 +32,7 @@ public class UsuarioServico {
     @Transactional(readOnly = true)
     public UsuarioRespostaDTO buscarPorId(Long id) {
         Usuario usuario = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com o ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado com o ID: " + id));
         return UsuarioRespostaDTO.deEntidade(usuario);
     }
 
@@ -75,7 +76,7 @@ public class UsuarioServico {
     @Transactional
     public UsuarioRespostaDTO editar(Long id, UsuarioEdicaoDTO dto) {
         Usuario usuario = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
 
         String cpfLimpo = dto.cpf() != null ? dto.cpf().replaceAll("\\D", "") : "";
         String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
@@ -119,7 +120,7 @@ public class UsuarioServico {
     @Transactional
     public UsuarioRespostaDTO resetarSenha(Long id) {
         Usuario usuario = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
 
         usuario.setSenha(passwordEncoder.encode("Sigea@123"));
         usuario.setPrimeiroAcesso(true);
@@ -129,7 +130,7 @@ public class UsuarioServico {
     @Transactional
     public UsuarioRespostaDTO inativar(Long id) {
         Usuario usuario = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
 
         if (usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR) {
             long totalAdmins = repositorio.countByPerfilAndAtivoTrue(PerfilUsuario.ADMINISTRADOR);
@@ -145,7 +146,7 @@ public class UsuarioServico {
     @Transactional
     public UsuarioRespostaDTO reativar(Long id) {
         Usuario usuario = repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
         usuario.setAtivo(true);
         return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
     }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class AtividadeAuditoriaServico {
@@ -47,7 +48,7 @@ public class AtividadeAuditoriaServico {
     @Transactional(readOnly = true)
     public AtividadeAuditoriaRespostaDTO buscarPorId(Long id) {
         AtividadeAuditoria a = atividadeRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Atividade de auditoria não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Atividade de auditoria não encontrada: " + id));
         long totalDuplas = duplaRepositorio.countByAtividadeId(a.getId());
         return AtividadeAuditoriaRespostaDTO.deEntidade(a, totalDuplas);
     }
@@ -55,10 +56,10 @@ public class AtividadeAuditoriaServico {
     @Transactional
     public AtividadeAuditoriaRespostaDTO cadastrar(AtividadeAuditoriaRequisicaoDTO dto) {
         Turma turma = turmaRepositorio.findById(dto.turmaId())
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + dto.turmaId()));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + dto.turmaId()));
 
         CenarioClinico cenario = cenarioRepositorio.findById(dto.cenarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + dto.cenarioId()));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + dto.cenarioId()));
 
         if (dto.dataFim().isBefore(dto.dataInicio())) {
             throw new IllegalArgumentException("A data de término não pode ser anterior à data de início.");
@@ -79,13 +80,13 @@ public class AtividadeAuditoriaServico {
     @Transactional
     public AtividadeAuditoriaRespostaDTO editar(Long id, AtividadeAuditoriaRequisicaoDTO dto) {
         AtividadeAuditoria a = atividadeRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Atividade de auditoria não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Atividade de auditoria não encontrada: " + id));
 
         Turma turma = turmaRepositorio.findById(dto.turmaId())
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + dto.turmaId()));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + dto.turmaId()));
 
         CenarioClinico cenario = cenarioRepositorio.findById(dto.cenarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + dto.cenarioId()));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + dto.cenarioId()));
 
         if (dto.dataFim().isBefore(dto.dataInicio())) {
             throw new IllegalArgumentException("A data de término não pode ser anterior à data de início.");
@@ -105,14 +106,14 @@ public class AtividadeAuditoriaServico {
     @Transactional
     public void excluir(Long id) {
         AtividadeAuditoria a = atividadeRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Atividade não encontrada: " + id));
         atividadeRepositorio.delete(a);
     }
 
     @Transactional
     public AtividadeAuditoriaRespostaDTO alternarFinalizada(Long id) {
         AtividadeAuditoria a = atividadeRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Atividade não encontrada: " + id));
         a.setFinalizada(!Boolean.TRUE.equals(a.getFinalizada()));
         long totalDuplas = duplaRepositorio.countByAtividadeId(a.getId());
         return AtividadeAuditoriaRespostaDTO.deEntidade(atividadeRepositorio.save(a), totalDuplas);

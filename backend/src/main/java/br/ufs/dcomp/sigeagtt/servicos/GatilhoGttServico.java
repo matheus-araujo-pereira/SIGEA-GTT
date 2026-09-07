@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class GatilhoGttServico {
@@ -26,13 +27,13 @@ public class GatilhoGttServico {
         if (moduloId != null) {
             return gatilhoRepositorio.findByModuloId(moduloId);
         }
-        return gatilhoRepositorio.findAll();
+        return gatilhoRepositorio.findByAtivoTrue();
     }
 
     @Transactional(readOnly = true)
     public GatilhoGtt buscarPorId(Long id) {
         return gatilhoRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Gatilho não encontrado com o ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Gatilho não encontrado com o ID: " + id));
     }
 
     @Transactional
@@ -46,7 +47,7 @@ public class GatilhoGttServico {
         }
 
         ModuloGtt modulo = moduloRepositorio.findById(dto.moduloId())
-                .orElseThrow(() -> new IllegalArgumentException("Módulo não encontrado com o ID: " + dto.moduloId()));
+                .orElseThrow(() -> new NoSuchElementException("Módulo não encontrado com o ID: " + dto.moduloId()));
 
         GatilhoGtt gatilho = new GatilhoGtt();
         gatilho.setCodigo(codigo);
@@ -71,7 +72,7 @@ public class GatilhoGttServico {
         }
 
         ModuloGtt modulo = moduloRepositorio.findById(dto.moduloId())
-                .orElseThrow(() -> new IllegalArgumentException("Módulo não encontrado com o ID: " + dto.moduloId()));
+                .orElseThrow(() -> new NoSuchElementException("Módulo não encontrado com o ID: " + dto.moduloId()));
 
         gatilho.setCodigo(codigo);
         gatilho.setModulo(modulo);

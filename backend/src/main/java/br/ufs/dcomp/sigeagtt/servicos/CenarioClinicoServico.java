@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class CenarioClinicoServico {
@@ -34,14 +35,14 @@ public class CenarioClinicoServico {
     @Transactional(readOnly = true)
     public CenarioClinicoRespostaDTO buscarPorId(Long id) {
         CenarioClinico c = cenarioRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + id));
         return CenarioClinicoRespostaDTO.deEntidade(c);
     }
 
     @Transactional
     public CenarioClinicoRespostaDTO cadastrar(CenarioClinicoRequisicaoDTO dto) {
         Usuario professor = usuarioRepositorio.findById(dto.professorCriadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Professor criador não encontrado: " + dto.professorCriadorId()));
+                .orElseThrow(() -> new NoSuchElementException("Professor criador não encontrado: " + dto.professorCriadorId()));
 
         if (professor.getPerfil() != PerfilUsuario.PROFESSOR && professor.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
             throw new IllegalArgumentException("Apenas docentes ou administradores podem criar cenários clínicos.");
@@ -59,10 +60,10 @@ public class CenarioClinicoServico {
     @Transactional
     public CenarioClinicoRespostaDTO editar(Long id, CenarioClinicoRequisicaoDTO dto) {
         CenarioClinico c = cenarioRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + id));
 
         Usuario professor = usuarioRepositorio.findById(dto.professorCriadorId())
-                .orElseThrow(() -> new IllegalArgumentException("Professor criador não encontrado: " + dto.professorCriadorId()));
+                .orElseThrow(() -> new NoSuchElementException("Professor criador não encontrado: " + dto.professorCriadorId()));
 
         c.setProfessorCriador(professor);
         c.setTitulo(dto.titulo() != null ? dto.titulo().trim() : "");
@@ -75,7 +76,7 @@ public class CenarioClinicoServico {
     @Transactional
     public void excluir(Long id) {
         CenarioClinico c = cenarioRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cenário clínico não encontrado: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + id));
         cenarioRepositorio.delete(c);
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -113,11 +114,11 @@ public class RevisaoIndividualServico {
                 .findByDuplaIdAndAlunoIdAndProntuarioId(dto.duplaId(), dto.alunoId(), dto.prontuarioId())
                 .orElseGet(() -> {
                     DuplaRevisores dupla = duplaRepositorio.findById(dto.duplaId())
-                            .orElseThrow(() -> new IllegalArgumentException("Dupla não encontrada: " + dto.duplaId()));
+                            .orElseThrow(() -> new NoSuchElementException("Dupla não encontrada: " + dto.duplaId()));
                     Usuario aluno = usuarioRepositorio.findById(dto.alunoId())
-                            .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado: " + dto.alunoId()));
+                            .orElseThrow(() -> new NoSuchElementException("Aluno não encontrado: " + dto.alunoId()));
                     ProntuarioSimulado prontuario = prontuarioRepositorio.findById(dto.prontuarioId())
-                            .orElseThrow(() -> new IllegalArgumentException("Prontuário não encontrado: " + dto.prontuarioId()));
+                            .orElseThrow(() -> new NoSuchElementException("Prontuário não encontrado: " + dto.prontuarioId()));
 
                     RevisaoIndividual nova = new RevisaoIndividual();
                     nova.setDupla(dupla);
@@ -134,10 +135,10 @@ public class RevisaoIndividualServico {
     @Transactional
     public RevisaoIndividualRespostaDTO salvarAchadosETempo(Long id, SalvarRevisaoRequisicaoDTO dto) {
         RevisaoIndividual revisao = revisaoRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Revisão individual não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + id));
 
         if (Boolean.TRUE.equals(revisao.getFinalizada())) {
-            throw new IllegalArgumentException("Esta auditoria individual já foi finalizada e não pode mais ser alterada.");
+            throw new IllegalStateException("Esta auditoria individual já foi finalizada e não pode mais ser alterada.");
         }
 
         revisao.setTempoGastoSegundos(dto.tempoGastoSegundos());
@@ -152,7 +153,7 @@ public class RevisaoIndividualServico {
         if (dto.achados() != null && !dto.achados().isEmpty()) {
             for (AchadoGatilhoDTO item : dto.achados()) {
                 GatilhoGtt gatilho = gatilhoRepositorio.findById(item.gatilhoId())
-                        .orElseThrow(() -> new IllegalArgumentException("Gatilho não encontrado: " + item.gatilhoId()));
+                        .orElseThrow(() -> new NoSuchElementException("Gatilho não encontrado: " + item.gatilhoId()));
 
                 AchadoGatilho a = new AchadoGatilho();
                 a.setRevisaoIndividual(revisao);
@@ -160,7 +161,7 @@ public class RevisaoIndividualServico {
                 a.setConfirmouDano(Boolean.TRUE.equals(item.confirmouDano()));
                 a.setJustificativaDano(item.justificativaDano());
                 a.setDanoPresenteAdmissao(Boolean.TRUE.equals(item.danoPresenteAdmissao()));
-                a.setGravidade(item.confirmouDano() ? item.gravidade() : null);
+                a.setGravidade(Boolean.TRUE.equals(item.confirmouDano()) ? item.gravidade() : null);
 
                 achadoRepositorio.save(a);
             }

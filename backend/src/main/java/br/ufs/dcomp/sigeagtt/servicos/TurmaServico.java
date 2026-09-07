@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class TurmaServico {
@@ -45,7 +46,7 @@ public class TurmaServico {
     @Transactional(readOnly = true)
     public TurmaRespostaDTO buscarPorId(Long id) {
         Turma turma = turmaRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + id));
         long total = turmaAlunoRepositorio.countByTurmaId(turma.getId());
         return TurmaRespostaDTO.deEntidade(turma, total);
     }
@@ -53,7 +54,7 @@ public class TurmaServico {
     @Transactional
     public TurmaRespostaDTO cadastrar(TurmaRequisicaoDTO dto) {
         Usuario professor = usuarioRepositorio.findById(dto.professorResponsavelId())
-                .orElseThrow(() -> new IllegalArgumentException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
+                .orElseThrow(() -> new NoSuchElementException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
 
         if (professor.getPerfil() != PerfilUsuario.PROFESSOR && professor.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
             throw new IllegalArgumentException("O usuário responsável precisa possuir perfil de PROFESSOR ou ADMINISTRADOR.");
@@ -76,10 +77,10 @@ public class TurmaServico {
     @Transactional
     public TurmaRespostaDTO editar(Long id, TurmaRequisicaoDTO dto) {
         Turma turma = turmaRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + id));
 
         Usuario professor = usuarioRepositorio.findById(dto.professorResponsavelId())
-                .orElseThrow(() -> new IllegalArgumentException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
+                .orElseThrow(() -> new NoSuchElementException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
 
         String cod = dto.codigoDisciplina() != null ? dto.codigoDisciplina().trim().toUpperCase() : "";
         String periodo = dto.periodoLetivo() != null ? dto.periodoLetivo().trim() : "";
@@ -97,22 +98,18 @@ public class TurmaServico {
     @Transactional
     public void excluir(Long id) {
         Turma turma = turmaRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + id));
         turmaRepositorio.delete(turma);
     }
 
     @Transactional
     public TurmaRespostaDTO alternarStatus(Long id) {
         Turma turma = turmaRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + id));
         turma.setAtiva(!Boolean.TRUE.equals(turma.getAtiva()));
         long total = turmaAlunoRepositorio.countByTurmaId(turma.getId());
         return TurmaRespostaDTO.deEntidade(turmaRepositorio.save(turma), total);
     }
-
-    // =========================================================================
-    // Gestão de Matrícula Discente (Enturmação)
-    // =========================================================================
 
     @Transactional(readOnly = true)
     public List<UsuarioRespostaDTO> listarAlunosDaTurma(Long turmaId) {
@@ -124,10 +121,10 @@ public class TurmaServico {
     @Transactional
     public void matricularAluno(Long turmaId, Long alunoId) {
         Turma turma = turmaRepositorio.findById(turmaId)
-                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada: " + turmaId));
+                .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + turmaId));
 
         Usuario aluno = usuarioRepositorio.findById(alunoId)
-                .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado: " + alunoId));
+                .orElseThrow(() -> new NoSuchElementException("Aluno não encontrado: " + alunoId));
 
         if (aluno.getPerfil() != PerfilUsuario.ALUNO) {
             throw new IllegalArgumentException("Apenas usuários com perfil de ALUNO podem ser matriculados em turmas.");

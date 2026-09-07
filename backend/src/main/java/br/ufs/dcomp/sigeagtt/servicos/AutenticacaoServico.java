@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class AutenticacaoServico {
 
@@ -45,7 +47,7 @@ public class AutenticacaoServico {
                 .orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas: usuário não encontrado."));
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
-            throw new IllegalArgumentException("A conta deste usuário está inativa no sistema.");
+            throw new IllegalStateException("A conta deste usuário está inativa no sistema.");
         }
 
         if (!passwordEncoder.matches(dto.senha(), usuario.getSenha())) {
@@ -58,7 +60,7 @@ public class AutenticacaoServico {
     @Transactional
     public LoginRespostaDTO redefinirSenhaPrimeiroAcesso(PrimeiroAcessoRequisicaoDTO dto) {
         Usuario usuario = usuarioRepositorio.findById(dto.usuarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + dto.usuarioId()));
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + dto.usuarioId()));
 
         if (!passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha())) {
             throw new IllegalArgumentException("A senha temporária atual informada está incorreta.");

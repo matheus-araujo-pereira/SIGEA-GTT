@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class DuplaRevisoresServico {
@@ -41,13 +42,13 @@ public class DuplaRevisoresServico {
         }
 
         AtividadeAuditoria atividade = atividadeRepositorio.findById(dto.atividadeId())
-                .orElseThrow(() -> new IllegalArgumentException("Atividade de auditoria não encontrada: " + dto.atividadeId()));
+                .orElseThrow(() -> new NoSuchElementException("Atividade de auditoria não encontrada: " + dto.atividadeId()));
 
         Usuario aluno1 = usuarioRepositorio.findById(dto.alunoRevisor1Id())
-                .orElseThrow(() -> new IllegalArgumentException("Aluno Revisor 1 não encontrado: " + dto.alunoRevisor1Id()));
+                .orElseThrow(() -> new NoSuchElementException("Aluno Revisor 1 não encontrado: " + dto.alunoRevisor1Id()));
 
         Usuario aluno2 = usuarioRepositorio.findById(dto.alunoRevisor2Id())
-                .orElseThrow(() -> new IllegalArgumentException("Aluno Revisor 2 não encontrado: " + dto.alunoRevisor2Id()));
+                .orElseThrow(() -> new NoSuchElementException("Aluno Revisor 2 não encontrado: " + dto.alunoRevisor2Id()));
 
         if (aluno1.getPerfil() != PerfilUsuario.ALUNO || aluno2.getPerfil() != PerfilUsuario.ALUNO) {
             throw new IllegalArgumentException("Ambos os membros da dupla de revisão devem possuir perfil de ALUNO.");
@@ -77,14 +78,14 @@ public class DuplaRevisoresServico {
     @Transactional
     public void excluir(Long id) {
         DuplaRevisores dupla = duplaRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Dupla de revisores não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Dupla de revisores não encontrada: " + id));
         duplaRepositorio.delete(dupla);
     }
 
     @Transactional
     public DuplaRevisoresRespostaDTO alternarStatus(Long id) {
         DuplaRevisores dupla = duplaRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Dupla não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Dupla não encontrada: " + id));
         dupla.setAtiva(!Boolean.TRUE.equals(dupla.getAtiva()));
         return DuplaRevisoresRespostaDTO.deEntidade(duplaRepositorio.save(dupla));
     }

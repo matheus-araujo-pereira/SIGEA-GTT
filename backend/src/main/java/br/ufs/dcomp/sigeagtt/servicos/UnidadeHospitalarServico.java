@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class UnidadeHospitalarServico {
@@ -25,7 +26,7 @@ public class UnidadeHospitalarServico {
     @Transactional(readOnly = true)
     public UnidadeHospitalar buscarPorId(Long id) {
         return repositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Unidade hospitalar não encontrada: " + id));
     }
 
     @Transactional
