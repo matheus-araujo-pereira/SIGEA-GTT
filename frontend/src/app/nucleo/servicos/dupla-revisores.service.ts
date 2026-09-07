@@ -13,7 +13,7 @@ export interface DuplaRevisoresRequisicao {
   providedIn: 'root'
 })
 export class DuplaRevisoresService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/duplas-revisores';
 
   listarPorAtividade(atividadeId: number): Observable<DuplaRevisores[]> {

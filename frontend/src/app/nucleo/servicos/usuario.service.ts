@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Usuario } from '../../compartilhado/modelos/dominio.modelos';
+import { Usuario, PerfilUsuario } from '../../compartilhado/modelos/dominio.modelos';
 
 export interface UsuarioRequisicao {
   nomeCompleto: string;
@@ -9,14 +9,14 @@ export interface UsuarioRequisicao {
   email: string;
   cargo: string;
   matriculaSigaa?: string | null;
-  perfil: 'ADMINISTRADOR' | 'PROFESSOR' | 'ALUNO';
+  perfil: PerfilUsuario;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsuarioService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/usuarios';
 
   listar(): Observable<Usuario[]> {

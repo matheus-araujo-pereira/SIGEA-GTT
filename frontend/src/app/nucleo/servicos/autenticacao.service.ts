@@ -20,25 +20,21 @@ export interface PrimeiroAcessoPayload {
   providedIn: 'root'
 })
 export class AutenticacaoService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly chave = 'sigea_sessao';
 
-  usuarioLogado = signal<Usuario | null>(this.recuperarSessao());
+  readonly usuarioLogado = signal<Usuario | null>(this.recuperarSessao());
 
   entrar(credenciais: CredenciaisLogin): Observable<Usuario> {
     return this.http.post<Usuario>('/api/autenticacao/entrar', credenciais).pipe(
-      tap((usuario) => {
-        this.salvarSessao(usuario);
-      })
+      tap((usuario) => this.salvarSessao(usuario))
     );
   }
 
   redefinirPrimeiroAcesso(payload: PrimeiroAcessoPayload): Observable<Usuario> {
     return this.http.post<Usuario>('/api/autenticacao/primeiro-acesso', payload).pipe(
-      tap((usuario) => {
-        this.salvarSessao(usuario);
-      })
+      tap((usuario) => this.salvarSessao(usuario))
     );
   }
 

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CenarioClinico } from '../../compartilhado/modelos/dominio.modelos';
 
@@ -14,11 +14,14 @@ export interface CenarioClinicoRequisicao {
   providedIn: 'root'
 })
 export class CenarioClinicoService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/cenarios-clinicos';
 
   listar(professorId?: number): Observable<CenarioClinico[]> {
-    const params = professorId ? { professorId: professorId.toString() } : undefined;
+    let params = new HttpParams();
+    if (professorId) {
+      params = params.set('professorId', professorId.toString());
+    }
     return this.http.get<CenarioClinico[]>(this.url, { params });
   }
 

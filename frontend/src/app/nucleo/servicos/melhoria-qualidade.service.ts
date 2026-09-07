@@ -7,7 +7,7 @@ import { MelhoriaQualidade } from '../../compartilhado/modelos/dominio.modelos';
   providedIn: 'root'
 })
 export class MelhoriaQualidadeService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/melhoria-qualidade';
 
   buscarPorConsenso(consensoDuplaId: number): Observable<MelhoriaQualidade> {

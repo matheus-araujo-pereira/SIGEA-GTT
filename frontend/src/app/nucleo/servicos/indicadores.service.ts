@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface IndicadoresIHI {
@@ -23,11 +23,14 @@ export interface IndicadoresIHI {
   providedIn: 'root'
 })
 export class IndicadoresService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/indicadores';
 
   obterIndicadores(turmaId?: number): Observable<IndicadoresIHI> {
-    const params = turmaId ? { turmaId: turmaId.toString() } : undefined;
+    let params = new HttpParams();
+    if (turmaId) {
+      params = params.set('turmaId', turmaId.toString());
+    }
     return this.http.get<IndicadoresIHI>(this.url, { params });
   }
 }

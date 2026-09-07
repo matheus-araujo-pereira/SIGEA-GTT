@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AtividadeAuditoria } from '../../compartilhado/modelos/dominio.modelos';
 
@@ -16,11 +16,14 @@ export interface AtividadeAuditoriaRequisicao {
   providedIn: 'root'
 })
 export class AtividadeAuditoriaService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/atividades-auditoria';
 
   listar(turmaId?: number): Observable<AtividadeAuditoria[]> {
-    const params = turmaId ? { turmaId: turmaId.toString() } : undefined;
+    let params = new HttpParams();
+    if (turmaId) {
+      params = params.set('turmaId', turmaId.toString());
+    }
     return this.http.get<AtividadeAuditoria[]>(this.url, { params });
   }
 

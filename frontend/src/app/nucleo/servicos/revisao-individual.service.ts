@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AtividadeDiscente, RevisaoIndividual, AchadoGatilho } from '../../compartilhado/modelos/dominio.modelos';
 
@@ -19,11 +19,12 @@ export interface SalvarRevisaoPayload {
   providedIn: 'root'
 })
 export class RevisaoIndividualService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/revisoes-individuais';
 
   listarMinhasAtividades(alunoId: number): Observable<AtividadeDiscente[]> {
-    return this.http.get<AtividadeDiscente[]>(`${this.url}/minhas-atividades?alunoId=${alunoId}`);
+    const params = new HttpParams().set('alunoId', alunoId.toString());
+    return this.http.get<AtividadeDiscente[]>(`${this.url}/minhas-atividades`, { params });
   }
 
   iniciarRevisao(payload: IniciarRevisaoPayload): Observable<RevisaoIndividual> {

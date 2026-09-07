@@ -12,7 +12,7 @@ export interface UnidadeRequisicao {
   providedIn: 'root'
 })
 export class UnidadeService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/unidades';
 
   listar(): Observable<UnidadeHospitalar[]> {

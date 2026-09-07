@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Turma, Usuario } from '../../compartilhado/modelos/dominio.modelos';
 
@@ -14,11 +14,14 @@ export interface TurmaRequisicao {
   providedIn: 'root'
 })
 export class TurmaService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/turmas';
 
   listar(professorId?: number): Observable<Turma[]> {
-    const params = professorId ? { professorId: professorId.toString() } : undefined;
+    let params = new HttpParams();
+    if (professorId) {
+      params = params.set('professorId', professorId.toString());
+    }
     return this.http.get<Turma[]>(this.url, { params });
   }
 

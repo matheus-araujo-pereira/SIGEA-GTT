@@ -13,11 +13,15 @@ export interface ModuloRequisicao {
   providedIn: 'root'
 })
 export class ModuloGttService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/modulos-gtt';
 
   listar(): Observable<ModuloGtt[]> {
     return this.http.get<ModuloGtt[]>(this.url);
+  }
+
+  buscarPorId(id: number): Observable<ModuloGtt> {
+    return this.http.get<ModuloGtt>(`${this.url}/${id}`);
   }
 
   cadastrar(dto: ModuloRequisicao): Observable<ModuloGtt> {

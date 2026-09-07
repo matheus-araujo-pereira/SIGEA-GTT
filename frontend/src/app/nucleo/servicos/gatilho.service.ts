@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { GatilhoGtt } from '../../compartilhado/modelos/dominio.modelos';
 
@@ -14,12 +14,19 @@ export interface GatilhoRequisicao {
   providedIn: 'root'
 })
 export class GatilhoService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/gatilhos';
 
   listar(moduloId?: number): Observable<GatilhoGtt[]> {
-    const params = moduloId ? { moduloId: moduloId.toString() } : undefined;
+    let params = new HttpParams();
+    if (moduloId) {
+      params = params.set('moduloId', moduloId.toString());
+    }
     return this.http.get<GatilhoGtt[]>(this.url, { params });
+  }
+
+  buscarPorId(id: number): Observable<GatilhoGtt> {
+    return this.http.get<GatilhoGtt>(`${this.url}/${id}`);
   }
 
   cadastrar(dto: GatilhoRequisicao): Observable<GatilhoGtt> {

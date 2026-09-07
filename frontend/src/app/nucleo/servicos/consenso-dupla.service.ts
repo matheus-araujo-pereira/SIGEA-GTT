@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ConsensoDupla, ItemConsenso, GravidadeNccMerp } from '../../compartilhado/modelos/dominio.modelos';
+import { ConsensoDupla, ItemConsenso, GravidadeNccMerp, ComparativoRevisao } from '../../compartilhado/modelos/dominio.modelos';
 
 export interface SalvarConsensoPayload {
   itens: ItemConsenso[];
@@ -19,11 +19,18 @@ export interface HomologarConsensoPayload {
   providedIn: 'root'
 })
 export class ConsensoDuplaService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/consensos-duplas';
 
   obterOuCriar(duplaId: number, prontuarioId: number): Observable<ConsensoDupla> {
     return this.http.get<ConsensoDupla>(`${this.url}/dupla/${duplaId}/prontuario/${prontuarioId}`);
+  }
+
+  obterComparativo(duplaId: number, prontuarioId: number): Observable<ComparativoRevisao> {
+    const params = new HttpParams()
+      .set('duplaId', duplaId.toString())
+      .set('prontuarioId', prontuarioId.toString());
+    return this.http.get<ComparativoRevisao>(`${this.url}/comparativo`, { params });
   }
 
   salvar(id: number, payload: SalvarConsensoPayload): Observable<ConsensoDupla> {

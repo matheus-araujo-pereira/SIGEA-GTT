@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProntuarioSimulado } from '../../compartilhado/modelos/dominio.modelos';
 
@@ -22,11 +22,14 @@ export interface ProntuarioSimuladoRequisicao {
   providedIn: 'root'
 })
 export class ProntuarioSimuladoService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly url = '/api/prontuarios-simulados';
 
   listar(cenarioId?: number): Observable<ProntuarioSimulado[]> {
-    const params = cenarioId ? { cenarioId: cenarioId.toString() } : undefined;
+    let params = new HttpParams();
+    if (cenarioId) {
+      params = params.set('cenarioId', cenarioId.toString());
+    }
     return this.http.get<ProntuarioSimulado[]>(this.url, { params });
   }
 
