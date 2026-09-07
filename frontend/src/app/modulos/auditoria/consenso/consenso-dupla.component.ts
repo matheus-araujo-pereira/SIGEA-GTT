@@ -2,15 +2,15 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConsensoDuplaService } from '../../../../nucleo/servicos/consenso-dupla.service';
-import { GatilhoService } from '../../../../nucleo/servicos/gatilho.service';
-import { AutenticacaoService } from '../../../../nucleo/servicos/autenticacao.service';
+import { ConsensoDuplaService } from '../../../nucleo/servicos/consenso-dupla.service';
+import { GatilhoService } from '../../../nucleo/servicos/gatilho.service';
+import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 import {
   ConsensoDupla,
   ItemConsenso,
   GatilhoGtt,
   GravidadeNccMerp
-} from '../../../../compartilhado/modelos/dominio.modelos';
+} from '../../../compartilhado/modelos/dominio.modelos';
 
 @Component({
   selector: 'app-consenso-dupla',
@@ -32,7 +32,7 @@ import {
 
         <div class="d-flex gap-2">
           <!-- Ações Discente -->
-          <ng-container *ngIf="!consenso()?.submetido && auth.usuarioLogado()?.perfil === 'ALUNO'">
+          <ng-container *ngIf="!consensoSubmetido() && ehAluno()">
             <button class="btn btn-outline-primary btn-sm px-3" (click)="salvarConsenso(false)" [disabled]="carregando()">
               <i class="bi bi-save me-1"></i> Salvar Acordo
             </button>
@@ -41,11 +41,12 @@ import {
             </button>
           </ng-container>
 
-          <button class="btn btn-outline-info btn-sm px-3" (click)="abrirMelhoriaQualidade()" [disabled]="!consenso()?.id">
+          <button class="btn btn-outline-info btn-sm px-3" (click)="abrirMelhoriaQualidade()" [disabled]="!consenso()">
             <i class="bi bi-graph-up-arrow me-1"></i> Ciclo de Melhoria (Ishikawa/PDCA)
           </button>
+
           <!-- Status do Consenso -->
-          <span *ngIf="consenso()?.submetido" class="badge py-2 px-3 align-self-center" [ngClass]="consenso()?.validacao?.homologado ? 'bg-success' : 'bg-primary'">
+          <span *ngIf="consensoSubmetido()" class="badge py-2 px-3 align-self-center" [ngClass]="consenso()?.validacao?.homologado ? 'bg-success' : 'bg-primary'">
             <i class="bi" [ngClass]="consenso()?.validacao?.homologado ? 'bi-patch-check-fill' : 'bi-hourglass-split'"></i>
             {{ consenso()?.validacao?.homologado ? 'Homologado pelo Docente' : 'Aguardando Parecer do Docente' }}
           </span>
@@ -145,7 +146,7 @@ import {
             <h6 class="card-title mb-0 fw-bold text-dark">Planilha Consolidada de Consenso da Dupla</h6>
             <small class="text-muted">Acordo final sobre quais gatilhos foram confirmados e sua severidade NCC MERP</small>
           </div>
-          <button *ngIf="!consenso()?.submetido && auth.usuarioLogado()?.perfil === 'ALUNO'" class="btn btn-outline-primary btn-sm" (click)="exibirModalAdicionar = true">
+          <button *ngIf="!consensoSubmetido() && ehAluno()" class="btn btn-outline-primary btn-sm" (click)="exibirModalAdicionar = true">
             <i class="bi bi-plus-lg me-1"></i> Incluir Item de Consenso
           </button>
         </div>
@@ -161,7 +162,7 @@ import {
                   <th style="width: 180px;">Severidade Consenso</th>
                   <th style="width: 180px;" *ngIf="consenso()?.validacao?.homologado">Homologada Docente</th>
                   <th>Justificativa / Conduta</th>
-                  <th style="width: 80px;" class="text-end pe-3" *ngIf="!consenso()?.submetido">Ação</th>
+                  <th style="width: 80px;" class="text-end pe-3" *ngIf="!consensoSubmetido()">Ação</th>
                 </tr>
               </thead>
               <tbody class="small">
@@ -182,7 +183,7 @@ import {
                     </span>
                   </td>
                   <td>
-                    <select class="form-select form-select-sm" [(ngModel)]="item.gravidadeConsenso" [disabled]="consenso()?.submetido || !item.confirmouDano">
+                    <select class="form-select form-select-sm" [(ngModel)]="item.gravidadeConsenso" [disabled]="consensoSubmetido() || !item.confirmouDano">
                       <option value="CATEGORIA_E">Categoria E</option>
                       <option value="CATEGORIA_F">Categoria F</option>
                       <option value="CATEGORIA_G">Categoria G</option>
@@ -194,9 +195,9 @@ import {
                     <span class="badge bg-success font-monospace">{{ item.gravidadeHomologada || item.gravidadeConsenso }}</span>
                   </td>
                   <td>
-                    <input type="text" class="form-control form-control-sm" [(ngModel)]="item.justificativaDano" [disabled]="consenso()?.submetido" placeholder="Acordo descritivo do dano...">
+                    <input type="text" class="form-control form-control-sm" [(ngModel)]="item.justificativaDano" [disabled]="consensoSubmetido()" placeholder="Acordo descritivo do dano...">
                   </td>
-                  <td class="text-end pe-3" *ngIf="!consenso()?.submetido">
+                  <td class="text-end pe-3" *ngIf="!consensoSubmetido()">
                     <button class="btn btn-outline-danger btn-sm py-0 px-2" (click)="removerItem(idx)">
                       <i class="bi bi-trash"></i>
                     </button>
@@ -209,7 +210,7 @@ import {
       </div>
 
       <!-- PAINEL DE VALIDAÇÃO DOCENTE (PAPEL DE REVISOR MÉDICO DO IHI) -->
-      <div *ngIf="auth.usuarioLogado()?.perfil === 'PROFESSOR' || auth.usuarioLogado()?.perfil === 'ADMINISTRADOR' || consenso()?.validacao" class="card shadow-sm border-0 border-top border-4 border-success rounded-3">
+      <div *ngIf="ehDocenteOuAdmin() || consenso()?.validacao" class="card shadow-sm border-0 border-top border-4 border-success rounded-3">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
           <h6 class="card-title mb-0 fw-bold text-dark">
             <i class="bi bi-award text-success me-2"></i>
@@ -221,7 +222,7 @@ import {
         </div>
 
         <div class="card-body p-4">
-          <div *ngIf="auth.usuarioLogado()?.perfil === 'PROFESSOR' || auth.usuarioLogado()?.perfil === 'ADMINISTRADOR'">
+          <div *ngIf="ehDocenteOuAdmin()">
             <div class="mb-3">
               <label class="form-label small fw-semibold">Parecer Formativo do Docente</label>
               <textarea class="form-control form-control-sm" rows="3" [(ngModel)]="parecerDocente" placeholder="Feedback pedagógico sobre o raciocínio clínico da dupla, identificação de falsos positivos e pertinência dos danos..."></textarea>
@@ -242,7 +243,7 @@ import {
           </div>
 
           <!-- Exibição do Parecer para o Aluno -->
-          <div *ngIf="auth.usuarioLogado()?.perfil === 'ALUNO' && consenso()?.validacao" class="bg-light p-3 rounded-3">
+          <div *ngIf="ehAluno() && consenso()?.validacao" class="bg-light p-3 rounded-3">
             <h6 class="small fw-bold text-dark mb-1">Parecer Formativo:</h6>
             <p class="small text-secondary mb-0">{{ consenso()?.validacao?.parecerFormativo }}</p>
           </div>
@@ -293,7 +294,7 @@ import {
 
               <div class="text-end">
                 <button type="button" class="btn btn-light btn-sm me-2" (click)="exibirModalAdicionar = false">Cancelar</button>
-                <button type="button" class="btn btn-primary btn-sm px-3" (click)="confirmarAdicionarItem()" [disabled]="!novoItemGatilhoId">
+                <button type="button" class="btn-primary btn btn-sm px-3" (click)="confirmarAdicionarItem()" [disabled]="!novoItemGatilhoId">
                   Confirmar Inclusão
                 </button>
               </div>
@@ -327,6 +328,13 @@ export class ConsensoDuplaComponent implements OnInit {
 
   parecerDocente = '';
   homologarCheck = false;
+
+  consensoSubmetido = computed(() => !!this.consenso()?.submetido);
+  ehDocenteOuAdmin = computed(() => {
+    const p = this.auth.usuarioLogado()?.perfil;
+    return p === 'PROFESSOR' || p === 'ADMINISTRADOR';
+  });
+  ehAluno = computed(() => this.auth.usuarioLogado()?.perfil === 'ALUNO');
 
   podeSubmeter = computed(() => {
     const comp = this.consenso()?.comparativo;
@@ -418,6 +426,13 @@ export class ConsensoDuplaComponent implements OnInit {
     });
   }
 
+  abrirMelhoriaQualidade(): void {
+    const c = this.consenso();
+    if (c) {
+      this.router.navigate([`/melhoria/${c.id}`]);
+    }
+  }
+
   confirmarAdicionarItem(): void {
     const g = this.todosGatilhos().find(x => x.id === this.novoItemGatilhoId);
     if (!g) return;
@@ -447,11 +462,6 @@ export class ConsensoDuplaComponent implements OnInit {
 
   voltar(): void {
     this.router.navigate(['/auditoria']);
-  }
-
-  abrirMelhoriaQualidade(): void {
-    const c = this.consenso();
-    if (c) this.router.navigate([`/melhoria/${c.id}`]);
   }
 
   formatarSegundos(s: number): string {

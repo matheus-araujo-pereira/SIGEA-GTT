@@ -2,14 +2,14 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MelhoriaQualidadeService } from '../../../../nucleo/servicos/melhoria-qualidade.service';
-import { AutenticacaoService } from '../../../../nucleo/servicos/autenticacao.service';
+import { MelhoriaQualidadeService } from '../../../nucleo/servicos/melhoria-qualidade.service';
+import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 import {
   MelhoriaQualidade,
   Ishikawa,
   Plano5w3h,
   Pdca
-} from '../../../../compartilhado/modelos/dominio.modelos';
+} from '../../../compartilhado/modelos/dominio.modelos';
 
 @Component({
   selector: 'app-melhoria-qualidade',
@@ -200,14 +200,14 @@ export class MelhoriaQualidadeComponent implements OnInit {
   carregarMelhoria(): void {
     this.carregando.set(true);
     this.melhoriaService.buscarPorConsenso(this.consensoId).subscribe({
-      next: (dados) => {
+      next: (dados: MelhoriaQualidade) => {
         if (dados.ishikawa) this.ishikawa = dados.ishikawa;
         if (dados.planos5w3h) this.planos5w3h = dados.planos5w3h;
         if (dados.pdca) this.pdca = dados.pdca;
         this.carregando.set(false);
       },
-      error: (err) => {
-        this.mensagemErro.set('Erro ao carregar melhoria de qualidade: ' + err.message);
+      error: (err: any) => {
+        this.mensagemErro.set('Erro ao carregar melhoria de qualidade: ' + (err.error?.mensagem || err.message));
         this.carregando.set(false);
       }
     });
@@ -241,14 +241,14 @@ export class MelhoriaQualidadeComponent implements OnInit {
     };
 
     this.melhoriaService.salvar(this.consensoId, payload).subscribe({
-      next: (resp) => {
+      next: (resp: MelhoriaQualidade) => {
         if (resp.ishikawa) this.ishikawa = resp.ishikawa;
         if (resp.planos5w3h) this.planos5w3h = resp.planos5w3h;
         if (resp.pdca) this.pdca = resp.pdca;
         this.mensagemSucesso.set('Ciclo de melhoria da qualidade salvo com sucesso!');
         this.carregando.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar melhoria da qualidade.');
         this.carregando.set(false);
       }
@@ -256,7 +256,6 @@ export class MelhoriaQualidadeComponent implements OnInit {
   }
 
   voltar(): void {
-    // Retorna para a tela de consenso (precisamos resgatar duplaId e prontuarioId do histórico ou rota)
     window.history.back();
   }
 }
