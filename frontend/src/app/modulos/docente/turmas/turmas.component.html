@@ -67,7 +67,7 @@
     </div>
   }
 
-  <!-- PAINEL DE ENTURMAÇÃO RETANGULAR -->
+  <!-- PAINEL DE ENTURMAÇÃO RETANGULAR (SEM COLUNA CPF) -->
   @if (turmaSelecionada()) {
     <div class="p-3 mb-3 bg-white b-1 border-primary">
       <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
@@ -96,7 +96,6 @@
             <th scope="col" class="p-2">NOME DO DISCENTE</th>
             <th scope="col" class="p-2">MATRÍCULA</th>
             <th scope="col" class="p-2">E-MAIL</th>
-            <th scope="col" class="p-2">CPF</th>
             <th scope="col" class="p-2 text-end">AÇÃO</th>
           </tr>
         </thead>
@@ -107,7 +106,6 @@
               <td class="p-2 font-sans-serif fw-semibold text-dark">{{ a.nome }}</td>
               <td class="p-2">{{ a.matricula }}</td>
               <td class="p-2 font-sans-serif">{{ a.email }}</td>
-              <td class="p-2">{{ a.cpf }}</td>
               <td class="p-2 text-end">
                 <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="desmatricularAluno(a.original)">
                   DESMATRICULAR
@@ -116,7 +114,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="text-center py-3 text-muted">
+              <td colspan="5" class="text-center py-3 text-muted">
                 Nenhum aluno matriculado nesta turma.
               </td>
             </tr>

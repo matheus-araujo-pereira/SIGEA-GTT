@@ -14,13 +14,14 @@
 
     <form (ngSubmit)="entrar()">
       <div class="mb-3">
-        <label for="identificador" class="form-label small text-secondary m-0">CPF ou E-mail</label>
+        <label for="identificador" class="form-label small text-secondary m-0">E-mail Institucional (&#64;academico.ufs.br)</label>
         <input id="identificador"
-               type="text"
+               type="email"
                class="form-control form-control-sm font-monospace"
                [(ngModel)]="identificador"
                name="identificador"
                autocomplete="username"
+               placeholder="usuario@academico.ufs.br"
                required>
       </div>
 

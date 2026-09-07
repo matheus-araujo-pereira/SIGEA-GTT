@@ -12,17 +12,10 @@ public record UsuarioEdicaoDTO(
     @Size(max = 150, message = "O nome não pode exceder 150 caracteres")
     String nomeCompleto,
 
-    @NotBlank(message = "O CPF é obrigatório")
-    @Pattern(regexp = "\\d{11}", message = "O CPF deve conter exatamente 11 dígitos numéricos")
-    String cpf,
-
-    @NotBlank(message = "O e-mail é obrigatório")
+    @NotBlank(message = "O e-mail institucional é obrigatório")
     @Email(message = "O formato de e-mail é inválido")
+    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@academico\\.ufs\\.br$", message = "O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br")
     String email,
-
-    @NotBlank(message = "O cargo é obrigatório")
-    @Size(max = 100, message = "O cargo não pode exceder 100 caracteres")
-    String cargo,
 
     @Pattern(regexp = "\\d{12}", message = "A matrícula SIGAA deve conter exatamente 12 dígitos numéricos")
     String matriculaSigaa,

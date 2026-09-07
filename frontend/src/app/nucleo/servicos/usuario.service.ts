@@ -5,9 +5,7 @@ import { Usuario, PerfilUsuario } from '../../compartilhado/modelos/dominio.mode
 
 export interface UsuarioRequisicao {
   nomeCompleto: string;
-  cpf: string;
   email: string;
-  cargo: string;
   matriculaSigaa?: string | null;
   perfil: PerfilUsuario;
 }

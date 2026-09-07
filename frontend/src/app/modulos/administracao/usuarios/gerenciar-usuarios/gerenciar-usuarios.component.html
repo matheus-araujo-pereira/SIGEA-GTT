@@ -35,19 +35,9 @@
 
       <form (ngSubmit)="salvar()">
         <div class="row g-2">
-          <div class="col-md-4">
+          <div class="col-md-5">
             <label for="nomeCompleto" class="form-label small text-secondary m-0">Nome Completo</label>
             <input id="nomeCompleto" type="text" class="form-control form-control-sm" [(ngModel)]="formulario.nomeCompleto" name="nomeCompleto" required maxlength="150">
-          </div>
-
-          <div class="col-md-3">
-            <label for="email" class="form-label small text-secondary m-0">E-mail</label>
-            <input id="email" type="email" class="form-control form-control-sm" [(ngModel)]="formulario.email" name="email" required maxlength="150">
-          </div>
-
-          <div class="col-md-2">
-            <label for="cpf" class="form-label small text-secondary m-0">CPF</label>
-            <input id="cpf" type="text" class="form-control form-control-sm font-monospace" [value]="formulario.cpf" (input)="aplicarMascaraCpf($event)" name="cpf" required maxlength="14">
           </div>
 
           <div class="col-md-3">
@@ -60,14 +50,29 @@
           </div>
 
           <div class="col-md-4">
-            <label for="cargo" class="form-label small text-secondary m-0">Cargo / Função</label>
-            <input id="cargo" type="text" class="form-control form-control-sm" [(ngModel)]="formulario.cargo" name="cargo" required maxlength="100">
+            <label for="email" class="form-label small text-secondary m-0">E-mail Institucional (&#64;academico.ufs.br)</label>
+            <input id="email"
+                   type="email"
+                   class="form-control form-control-sm font-monospace"
+                   [(ngModel)]="formulario.email"
+                   name="email"
+                   required
+                   maxlength="150"
+                   placeholder="usuario@academico.ufs.br">
           </div>
 
           @if (formulario.perfil === 'ALUNO') {
             <div class="col-md-4">
-              <label for="matriculaSigaa" class="form-label small text-secondary m-0">Matrícula SIGAA</label>
-              <input id="matriculaSigaa" type="text" class="form-control form-control-sm font-monospace" [value]="formulario.matriculaSigaa || ''" (input)="aplicarMascaraMatricula($event)" name="matriculaSigaa" maxlength="12">
+              <label for="matriculaSigaa" class="form-label small text-secondary m-0">Matrícula SIGAA (12 dígitos)</label>
+              <input id="matriculaSigaa"
+                     type="text"
+                     class="form-control form-control-sm font-monospace"
+                     [value]="formulario.matriculaSigaa || ''"
+                     (input)="aplicarMascaraMatricula($event)"
+                     name="matriculaSigaa"
+                     required
+                     maxlength="12"
+                     placeholder="Ex.: 202600123456">
             </div>
           }
         </div>
@@ -88,7 +93,7 @@
            class="form-control form-control-sm"
            [ngModel]="termoBusca()"
            (ngModelChange)="atualizarBusca($event)"
-           placeholder="Filtrar por nome, CPF, e-mail ou matrícula...">
+           placeholder="Filtrar por nome, e-mail institucional ou matrícula...">
 
     <select class="form-select form-select-sm w-auto"
             [ngModel]="filtroPerfil()"
@@ -112,15 +117,14 @@
     }
   </div>
 
-  <!-- TABELA DE ALTO CONTRASTE -->
+  <!-- TABELA DE ALTO CONTRASTE (SEM ID, SEM CPF E SEM CARGO) -->
   <div class="bg-white b-1">
     <table class="table table-hover table-sm m-0">
       <thead class="bg-light text-secondary small font-monospace b-b">
         <tr>
-          <th scope="col" class="p-2">NOME</th>
+          <th scope="col" class="p-2">NOME COMPLETO</th>
           <th scope="col" class="p-2">MATRÍCULA</th>
-          <th scope="col" class="p-2">E-MAIL / CPF</th>
-          <th scope="col" class="p-2">CARGO</th>
+          <th scope="col" class="p-2">E-MAIL INSTITUCIONAL</th>
           <th scope="col" class="p-2">PERFIL</th>
           <th scope="col" class="p-2">1º ACESSO</th>
           <th scope="col" class="p-2">STATUS</th>
@@ -137,11 +141,7 @@
               }
             </td>
             <td class="p-2">{{ u.matricula }}</td>
-            <td class="p-2 font-sans-serif">
-              <div>{{ u.email }}</div>
-              <span class="text-muted font-monospace">{{ u.cpf }}</span>
-            </td>
-            <td class="p-2 font-sans-serif text-secondary">{{ u.cargo }}</td>
+            <td class="p-2 font-sans-serif text-dark">{{ u.email }}</td>
             <td class="p-2 text-primary fw-bold">{{ u.perfil }}</td>
             <td class="p-2" [class.text-warning]="u.primeiroAcesso.includes('PENDENTE')">{{ u.primeiroAcesso }}</td>
             <td class="p-2" [class.text-success]="u.ativo" [class.text-muted]="!u.ativo">{{ u.status }}</td>
@@ -164,7 +164,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="text-center py-4 text-muted">
+            <td colspan="7" class="text-center py-4 text-muted">
               Nenhum usuário encontrado.
             </td>
           </tr>

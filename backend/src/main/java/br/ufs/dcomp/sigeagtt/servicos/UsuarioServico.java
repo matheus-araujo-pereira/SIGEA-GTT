@@ -38,21 +38,20 @@ public class UsuarioServico {
 
     @Transactional
     public UsuarioRespostaDTO cadastrar(UsuarioRequisicaoDTO dto) {
-        String cpfLimpo = dto.cpf() != null ? dto.cpf().replaceAll("\\D", "") : "";
         String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
-        String matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
-                ? dto.matriculaSigaa().trim()
-                : null;
+        validarDominioEmail(emailLimpo);
 
-        if (repositorio.findByCpf(cpfLimpo).isPresent()) {
-            throw new IllegalArgumentException("Já existe um usuário cadastrado com o CPF informado.");
-        }
         if (repositorio.findByEmail(emailLimpo).isPresent()) {
-            throw new IllegalArgumentException("Já existe um usuário cadastrado com este e-mail.");
+            throw new IllegalArgumentException("Já existe um usuário cadastrado com este e-mail institucional.");
         }
+
+        String matriculaLimpa = null;
         if (dto.perfil() == PerfilUsuario.ALUNO) {
+            matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
+                    ? dto.matriculaSigaa().trim()
+                    : null;
             if (matriculaLimpa == null) {
-                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para o perfil ALUNO.");
+                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para discentes.");
             }
             if (repositorio.findByMatriculaSigaa(matriculaLimpa).isPresent()) {
                 throw new IllegalArgumentException("Já existe um aluno cadastrado com esta Matrícula do SIGAA.");
@@ -61,12 +60,10 @@ public class UsuarioServico {
 
         Usuario usuario = new Usuario();
         usuario.setNomeCompleto(dto.nomeCompleto() != null ? dto.nomeCompleto().trim() : "");
-        usuario.setCpf(cpfLimpo);
         usuario.setEmail(emailLimpo);
         usuario.setSenha(passwordEncoder.encode("Sigea@123"));
         usuario.setPrimeiroAcesso(true);
-        usuario.setCargo(dto.cargo() != null ? dto.cargo().trim() : null);
-        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? matriculaLimpa : null);
+        usuario.setMatriculaSigaa(matriculaLimpa);
         usuario.setPerfil(dto.perfil());
         usuario.setAtivo(true);
 
@@ -78,25 +75,23 @@ public class UsuarioServico {
         Usuario usuario = repositorio.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
 
-        String cpfLimpo = dto.cpf() != null ? dto.cpf().replaceAll("\\D", "") : "";
         String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
-        String matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
-                ? dto.matriculaSigaa().trim()
-                : null;
+        validarDominioEmail(emailLimpo);
 
-        if (repositorio.findByCpfAndIdNot(cpfLimpo, id).isPresent()) {
-            throw new IllegalArgumentException("O CPF informado já está em uso por outro usuário.");
-        }
         if (repositorio.findByEmailAndIdNot(emailLimpo, id).isPresent()) {
             throw new IllegalArgumentException("O e-mail informado já está em uso por outro usuário.");
         }
 
+        String matriculaLimpa = null;
         if (dto.perfil() == PerfilUsuario.ALUNO) {
+            matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
+                    ? dto.matriculaSigaa().trim()
+                    : null;
             if (matriculaLimpa == null) {
-                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para o perfil ALUNO.");
+                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para discentes.");
             }
             if (repositorio.findByMatriculaSigaaAndIdNot(matriculaLimpa, id).isPresent()) {
-                throw new IllegalArgumentException("Esta Matrícula do SIGAA já pertence a outro aluno.");
+                throw new IllegalArgumentException("Esta Matrícula do SIGAA já pertence a outro discente.");
             }
         }
 
@@ -108,11 +103,9 @@ public class UsuarioServico {
         }
 
         usuario.setNomeCompleto(dto.nomeCompleto() != null ? dto.nomeCompleto().trim() : "");
-        usuario.setCpf(cpfLimpo);
         usuario.setEmail(emailLimpo);
-        usuario.setCargo(dto.cargo() != null ? dto.cargo().trim() : null);
         usuario.setPerfil(dto.perfil());
-        usuario.setMatriculaSigaa(dto.perfil() == PerfilUsuario.ALUNO ? matriculaLimpa : null);
+        usuario.setMatriculaSigaa(matriculaLimpa);
 
         return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
     }
@@ -149,5 +142,15 @@ public class UsuarioServico {
                 .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
         usuario.setAtivo(true);
         return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
+    }
+
+    private void validarDominioEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("O e-mail institucional é obrigatório.");
+        }
+        String emailLower = email.trim().toLowerCase();
+        if (!emailLower.endsWith("@academico.ufs.br")) {
+            throw new IllegalArgumentException("O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br");
+        }
     }
 }

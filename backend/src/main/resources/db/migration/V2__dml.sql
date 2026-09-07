@@ -15,7 +15,7 @@ INSERT INTO usuarios (
     ativo
 ) VALUES (
     'Matheus Araujo Pereira',
-    'matheus.pereira@dcomp.ufs.br',
+    'matheusaraujopereira@academico.ufs.br',
     NULL,
     'ADMINISTRADOR',
     '$2a$10$wK1F5n8g1d3a5t2E7e8eYeO3V3eKz0c5L7lQ9t2bX1mZ0k.Sigea.',

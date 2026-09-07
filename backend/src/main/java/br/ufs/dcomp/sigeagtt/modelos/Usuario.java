@@ -32,11 +32,6 @@ public class Usuario {
     private String nomeCompleto;
 
     @NotBlank
-    @Size(min = 11, max = 11)
-    @Column(name = "cpf", nullable = false, unique = true, length = 11)
-    private String cpf;
-
-    @NotBlank
     @Email
     @Size(max = 150)
     @Column(name = "email", nullable = false, unique = true, length = 150)
@@ -50,11 +45,6 @@ public class Usuario {
     @NotNull
     @Column(name = "primeiro_acesso", nullable = false)
     private Boolean primeiroAcesso = true;
-
-    @NotBlank
-    @Size(max = 100)
-    @Column(name = "cargo", nullable = false, length = 100)
-    private String cargo;
 
     @Size(min = 12, max = 12)
     @Column(name = "matricula_sigaa", unique = true, length = 12)

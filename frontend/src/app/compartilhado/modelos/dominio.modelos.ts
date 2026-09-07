@@ -10,9 +10,7 @@ export type GravidadeNccMerp =
 export interface Usuario {
   id: number;
   nomeCompleto: string;
-  cpf: string;
   email: string;
-  cargo: string;
   matriculaSigaa?: string;
   perfil: PerfilUsuario;
   primeiroAcesso?: boolean;

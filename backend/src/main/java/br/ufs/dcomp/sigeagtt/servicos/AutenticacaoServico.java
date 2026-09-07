@@ -39,12 +39,10 @@ public class AutenticacaoServico {
 
     @Transactional(readOnly = true)
     public LoginRespostaDTO autenticar(LoginRequisicaoDTO dto) {
-        String loginLimpo = dto.identificador() != null ? dto.identificador().trim() : "";
+        String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
 
-        Usuario usuario = (loginLimpo.contains("@")
-                ? usuarioRepositorio.findByEmail(loginLimpo.toLowerCase())
-                : usuarioRepositorio.findByCpf(loginLimpo.replaceAll("\\D", "")))
-                .orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas: usuário não encontrado."));
+        Usuario usuario = usuarioRepositorio.findByEmail(emailLimpo)
+                .orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas: e-mail institucional não localizado."));
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
             throw new IllegalStateException("A conta deste usuário está inativa no sistema.");

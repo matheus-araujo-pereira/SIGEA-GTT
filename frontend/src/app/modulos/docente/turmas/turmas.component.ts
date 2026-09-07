@@ -24,7 +24,6 @@ export interface AlunoMatriculadoLinha {
   nome: string;
   matricula: string;
   email: string;
-  cpf: string;
   original: Usuario;
 }
 
@@ -114,7 +113,6 @@ export class TurmasComponent implements OnInit {
       nome: a.nomeCompleto,
       matricula: a.matriculaSigaa || '-',
       email: a.email,
-      cpf: this.formatarCpf(a.cpf),
       original: a
     }));
   });
@@ -280,11 +278,6 @@ export class TurmasComponent implements OnInit {
       },
       error: (err) => this.mensagemErro.set('Erro ao desmatricular aluno: ' + err.message)
     });
-  }
-
-  private formatarCpf(cpf: string): string {
-    if (!cpf || cpf.length !== 11) return cpf;
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   }
 
   private limparMensagens(): void {

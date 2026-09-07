@@ -12,8 +12,6 @@ export interface UsuarioLinha {
   matricula: string;
   ehVoce: boolean;
   email: string;
-  cpf: string;
-  cargo: string;
   perfil: string;
   primeiroAcesso: string;
   status: string;
@@ -61,7 +59,6 @@ export class GerenciarUsuariosComponent implements OnInit {
 
   readonly usuariosLinhasFiltradas = computed<UsuarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    const apenasDigitos = termo.replace(/\D/g, '');
     const perfil = this.filtroPerfil();
     const status = this.filtroStatus();
     const logadoId = this.usuarioLogadoId();
@@ -72,9 +69,8 @@ export class GerenciarUsuariosComponent implements OnInit {
         if (termo.length > 0) {
           const matchNome = u.nomeCompleto ? u.nomeCompleto.toLowerCase().includes(termo) : false;
           const matchEmail = u.email ? u.email.toLowerCase().includes(termo) : false;
-          const matchCpf = apenasDigitos.length > 0 && u.cpf ? u.cpf.includes(apenasDigitos) : false;
           const matchMatricula = u.matriculaSigaa ? u.matriculaSigaa.toLowerCase().includes(termo) : false;
-          matchTermo = matchNome || matchEmail || matchCpf || matchMatricula;
+          matchTermo = matchNome || matchEmail || matchMatricula;
         }
 
         const matchPerfil = perfil === 'TODOS' || u.perfil === perfil;
@@ -88,8 +84,6 @@ export class GerenciarUsuariosComponent implements OnInit {
         matricula: u.matriculaSigaa || '-',
         ehVoce: u.id === logadoId,
         email: u.email,
-        cpf: this.formatarCpf(u.cpf),
-        cargo: u.cargo,
         perfil: `[${u.perfil}]`,
         primeiroAcesso: u.primeiroAcesso ? '[1º ACESSO PENDENTE]' : '[OK]',
         status: u.ativo ? '[ATIVO]' : '[INATIVO]',
@@ -146,9 +140,7 @@ export class GerenciarUsuariosComponent implements OnInit {
     this.idEdicao = usuario.id;
     this.formulario = {
       nomeCompleto: usuario.nomeCompleto,
-      cpf: this.formatarCpf(usuario.cpf),
       email: usuario.email,
-      cargo: usuario.cargo,
       matriculaSigaa: usuario.matriculaSigaa || null,
       perfil: usuario.perfil
     };
@@ -169,23 +161,6 @@ export class GerenciarUsuariosComponent implements OnInit {
     }
   }
 
-  aplicarMascaraCpf(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let num = input.value.replace(/\D/g, '');
-    if (num.length > 11) num = num.slice(0, 11);
-
-    if (num.length > 9) {
-      input.value = num.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-    } else if (num.length > 6) {
-      input.value = num.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    } else if (num.length > 3) {
-      input.value = num.replace(/(\d{3})(\d{1,3})/, '$1.$2');
-    } else {
-      input.value = num;
-    }
-    this.formulario.cpf = input.value;
-  }
-
   aplicarMascaraMatricula(event: Event): void {
     const input = event.target as HTMLInputElement;
     let num = input.value.replace(/\D/g, '');
@@ -195,12 +170,18 @@ export class GerenciarUsuariosComponent implements OnInit {
   }
 
   salvar(): void {
+    const emailLimpo = this.formulario.email ? this.formulario.email.trim().toLowerCase() : '';
+    if (!emailLimpo.endsWith('@academico.ufs.br')) {
+      this.mensagemErro.set('O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br');
+      return;
+    }
+
     this.carregando.set(true);
     this.limparMensagens();
 
     const payload: UsuarioRequisicao = {
       ...this.formulario,
-      cpf: this.formulario.cpf.replace(/\D/g, ''),
+      email: emailLimpo,
       matriculaSigaa: this.formulario.perfil === 'ALUNO' && this.formulario.matriculaSigaa?.trim()
         ? this.formulario.matriculaSigaa.replace(/\D/g, '')
         : null
@@ -263,11 +244,6 @@ export class GerenciarUsuariosComponent implements OnInit {
     });
   }
 
-  private formatarCpf(cpf: string): string {
-    if (!cpf || cpf.length !== 11) return cpf;
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-
   private limparMensagens(): void {
     this.mensagemErro.set(null);
     this.mensagemSucesso.set(null);
@@ -276,9 +252,7 @@ export class GerenciarUsuariosComponent implements OnInit {
   private obterFormularioVazio(): UsuarioRequisicao {
     return {
       nomeCompleto: '',
-      cpf: '',
       email: '',
-      cargo: '',
       matriculaSigaa: null,
       perfil: 'ALUNO'
     };
