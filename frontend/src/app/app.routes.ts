@@ -7,6 +7,7 @@ import { GerenciarUsuariosComponent } from './modulos/administracao/usuarios/ger
 import { GerenciarGatilhosComponent } from './modulos/administracao/gatilhos/gerenciar-gatilhos.component';
 import { GerenciarUnidadesComponent } from './modulos/administracao/unidades/gerenciar-unidades.component';
 import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
+import { ConsensoDuplaComponent } from './modulos/auditoria/consenso/consenso-dupla.component';
 import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
 import { GerenciarCenariosComponent } from './modulos/docente/cenarios/gerenciar-cenarios.component';
 import { GerenciarProntuariosComponent } from './modulos/docente/prontuarios/gerenciar-prontuarios.component';
@@ -78,12 +79,18 @@ export const routes: Routes = [
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
       },
 
-      // Auditoria Discente
+      // Auditoria Discente e Consenso
       {
         path: 'auditoria',
         component: AuditoriaComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO'] }
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] }
+      },
+      {
+        path: 'consenso/:duplaId/:prontuarioId',
+        component: ConsensoDuplaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] }
       }
     ]
   },

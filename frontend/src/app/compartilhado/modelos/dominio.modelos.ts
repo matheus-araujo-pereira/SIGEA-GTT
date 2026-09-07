@@ -165,3 +165,51 @@ export interface AtividadeDiscente {
   finalizada: boolean;
   prontuarios: ProntuarioItemAuditoria[];
 }
+
+export interface ItemConsenso {
+  id?: number;
+  gatilhoId: number;
+  gatilhoCodigo: string;
+  gatilhoDescricao: string;
+  moduloNome: string;
+  confirmouDano: boolean;
+  justificativaDano?: string;
+  danoPresenteAdmissao: boolean;
+  gravidadeConsenso: GravidadeNccMerp;
+  gravidadeHomologada?: GravidadeNccMerp;
+}
+
+export interface ValidacaoDocente {
+  id: number;
+  professorValidadorId: number;
+  professorValidadorNome: string;
+  parecerFormativo: string;
+  homologado: boolean;
+  dataValidacao: string;
+}
+
+export interface ComparativoRevisao {
+  revisor1Id: number;
+  revisor1Nome: string;
+  revisor1Finalizou: boolean;
+  revisor1TempoSegundos: number;
+  revisor1Achados: AchadoGatilho[];
+
+  revisor2Id: number;
+  revisor2Nome: string;
+  revisor2Finalizou: boolean;
+  revisor2TempoSegundos: number;
+  revisor2Achados: AchadoGatilho[];
+}
+
+export interface ConsensoDupla {
+  id: number;
+  duplaId: number;
+  prontuarioId: number;
+  prontuarioAtendimento: string;
+  dataConsenso: string;
+  submetido: boolean;
+  itens: ItemConsenso[];
+  validacao?: ValidacaoDocente;
+  comparativo: ComparativoRevisao;
+}

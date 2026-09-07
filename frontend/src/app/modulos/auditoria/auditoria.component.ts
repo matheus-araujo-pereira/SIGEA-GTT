@@ -81,7 +81,7 @@ import {
                     <th>Danos (EA)</th>
                     <th>Tempo Gasto</th>
                     <th>Status</th>
-                    <th style="width: 160px;" class="text-end pe-3">Ação</th>
+                    <th style="width: 220px;" class="text-end pe-3">Ações</th>
                   </tr>
                 </thead>
                 <tbody class="small">
@@ -550,6 +550,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         this.carregando.set(false);
       }
     });
+  }
+
+  abrirConsenso(at: AtividadeDiscente, p: ProntuarioItemAuditoria): void {
+    window.location.href = `/consenso/${at.duplaId}/${p.prontuarioId}`;
   }
 
   formatarSegundos(totalSegundos: number): string {
