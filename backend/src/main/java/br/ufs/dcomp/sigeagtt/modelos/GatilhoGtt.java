@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "gatilhos_gtt")
@@ -21,9 +19,8 @@ public class GatilhoGtt {
     private String codigo;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "modulo", nullable = false, columnDefinition = "modulo_gtt_enum")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "modulo_id", nullable = false)
     private ModuloGtt modulo;
 
     @NotBlank

@@ -1,13 +1,5 @@
 export type PerfilUsuario = 'ADMINISTRADOR' | 'PROFESSOR' | 'ALUNO';
 
-export type ModuloGtt =
-  | 'CUIDADOS'
-  | 'MEDICACAO'
-  | 'CIRURGICO'
-  | 'TERAPIA_INTENSIVA'
-  | 'PERINATAL'
-  | 'EMERGENCIA';
-
 export type GravidadeNccMerp =
   | 'CATEGORIA_E'
   | 'CATEGORIA_F'
@@ -27,12 +19,20 @@ export interface Usuario {
   ativo: boolean;
 }
 
+export interface ModuloGtt {
+  id: number;
+  codigo: string;
+  nome: string;
+  descricao?: string;
+  ativo: boolean;
+}
+
 export interface GatilhoGtt {
   id: number;
   codigo: string;
   modulo: ModuloGtt;
   descricao: string;
-  limiarReferencia: string;
+  limiarReferencia?: string;
   ativo: boolean;
 }
 
