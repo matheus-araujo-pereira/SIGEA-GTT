@@ -42,3 +42,15 @@ export interface UnidadeHospitalar {
   sigla: string;
   ativa: boolean;
 }
+
+export interface Turma {
+  id: number;
+  codigoDisciplina: string;
+  periodoLetivo: string;
+  anoSemestre: string;
+  ativa: boolean;
+  criadaEm: string;
+  professorResponsavelId: number;
+  professorResponsavelNome: string;
+  totalAlunos: number;
+}

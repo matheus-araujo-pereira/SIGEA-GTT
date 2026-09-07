@@ -62,7 +62,7 @@ export const routes: Routes = [
         path: 'turmas',
         component: TurmasComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR'] }
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
       }
     ]
   },

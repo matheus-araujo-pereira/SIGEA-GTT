@@ -27,6 +27,9 @@ import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.servi
           <!-- Gestão Administrativa -->
           <ng-container *ngIf="usuario()?.perfil === 'ADMINISTRADOR'">
             <div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-1" style="font-size: 0.7rem;">Administração</div>
+            <a routerLink="/turmas" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+              <i class="bi bi-mortarboard"></i> Turmas & Alunos
+            </a>
             <a routerLink="/usuarios" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
               <i class="bi bi-people"></i> Usuários
             </a>
