@@ -1,51 +1,72 @@
 -- =============================================================================
 -- SIGEA-GTT: Sistema Inteligente de Gestão de Eventos Adversos - Global Trigger Tool
--- Script DDL Inicial (PostgreSQL 16+)
+-- Script DDL Consolidado e Zerado (PostgreSQL 16+)
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- 1. TIPOS ENUMERADOS (ENUMS)
+-- 1. LIMPEZA TOTAL (DROP TABLES E TIPOS ENUMERADOS)
 -- -----------------------------------------------------------------------------
+DROP TABLE IF EXISTS ciclos_pdca CASCADE;
+DROP TABLE IF EXISTS planos_acao_5w3h CASCADE;
+DROP TABLE IF EXISTS analises_ishikawa CASCADE;
+DROP TABLE IF EXISTS validacoes_docentes CASCADE;
+DROP TABLE IF EXISTS itens_consenso CASCADE;
+DROP TABLE IF EXISTS consensos_duplas CASCADE;
+DROP TABLE IF EXISTS achados_gatilhos CASCADE;
+DROP TABLE IF EXISTS revisoes_individuais CASCADE;
+DROP TABLE IF EXISTS duplas_revisores CASCADE;
+DROP TABLE IF EXISTS atividades_auditoria CASCADE;
+DROP TABLE IF EXISTS prontuarios_simulados CASCADE;
+DROP TABLE IF EXISTS cenarios_clinicos CASCADE;
+DROP TABLE IF EXISTS turma_alunos CASCADE;
+DROP TABLE IF EXISTS turmas CASCADE;
+DROP TABLE IF EXISTS categorias_eventos_adversos CASCADE;
+DROP TABLE IF EXISTS gatilhos_gtt CASCADE;
+DROP TABLE IF EXISTS modulos_gtt CASCADE;
+DROP TABLE IF EXISTS unidades_hospitalares CASCADE;
+DROP TABLE IF EXISTS usuarios CASCADE;
 
+DROP TYPE IF EXISTS gravidade_ncc_merp_enum CASCADE;
+DROP TYPE IF EXISTS perfil_usuario_enum CASCADE;
+DROP TYPE IF EXISTS modulo_gtt_enum CASCADE;
+
+-- -----------------------------------------------------------------------------
+-- 2. TIPOS ENUMERADOS (ENUMS)
+-- -----------------------------------------------------------------------------
 CREATE TYPE perfil_usuario_enum AS ENUM (
     'ADMINISTRADOR',
     'PROFESSOR',
     'ALUNO'
 );
 
-CREATE TYPE modulo_gtt_enum AS ENUM (
-    'CUIDADOS',
-    'MEDICACAO',
-    'CIRURGICO',
-    'TERAPIA_INTENSIVA',
-    'EMERGENCIA'
-);
-
 CREATE TYPE gravidade_ncc_merp_enum AS ENUM (
     'CATEGORIA_E', -- Dano temporário com necessidade de intervenção
     'CATEGORIA_F', -- Dano temporário com prolongamento de hospitalização
     'CATEGORIA_G', -- Dano permanente
-    'CATEGORIA_H', -- Intervenção para suporte de vida
-    'CATEGORIA_I'  -- Óbito associado ao evento
+    'CATEGORIA_H', -- Intervenção para suporte de vida (< 1h)
+    'CATEGORIA_I'  -- Óbito com cuidado contribuinte
 );
 
 -- -----------------------------------------------------------------------------
--- 2. TABELAS DE GESTÃO DE ACESSO E CONFIGURAÇÕES HOSPITALARES
+-- 3. GESTÃO DE ACESSO E AUTENTICAÇÃO
 -- -----------------------------------------------------------------------------
-
 CREATE TABLE usuarios (
     id BIGSERIAL PRIMARY KEY,
     nome_completo VARCHAR(150) NOT NULL,
     cpf VARCHAR(11) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
     cargo VARCHAR(100) NOT NULL,
     matricula_sigaa VARCHAR(12) UNIQUE,
     perfil perfil_usuario_enum NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    primeiro_acesso BOOLEAN NOT NULL DEFAULT TRUE,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE usuarios IS 'Minimização de dados LGPD: sem armazenamento de senha local (autenticação via LDAP)';
-
+-- -----------------------------------------------------------------------------
+-- 4. CONFIGURAÇÕES HOSPITALARES E METODOLOGIA IHI-GTT
+-- -----------------------------------------------------------------------------
 CREATE TABLE unidades_hospitalares (
     id BIGSERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -53,10 +74,19 @@ CREATE TABLE unidades_hospitalares (
     ativa BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+CREATE TABLE modulos_gtt (
+    id BIGSERIAL PRIMARY KEY,
+    codigo VARCHAR(30) UNIQUE NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE gatilhos_gtt (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(10) NOT NULL UNIQUE,
-    modulo modulo_gtt_enum NOT NULL,
+    modulo_id BIGINT NOT NULL REFERENCES modulos_gtt(id) ON DELETE CASCADE,
     descricao TEXT NOT NULL,
     limiar_referencia VARCHAR(150),
     ativo BOOLEAN NOT NULL DEFAULT TRUE
@@ -70,9 +100,8 @@ CREATE TABLE categorias_eventos_adversos (
 );
 
 -- -----------------------------------------------------------------------------
--- 3. AMBIENTE ACADÊMICO, TURMAS E PRONTUÁRIOS SIMULADOS
+-- 5. AMBIENTE ACADÊMICO, TURMAS E PRONTUÁRIOS SIMULADOS
 -- -----------------------------------------------------------------------------
-
 CREATE TABLE turmas (
     id BIGSERIAL PRIMARY KEY,
     professor_responsavel_id BIGINT NOT NULL REFERENCES usuarios(id),
@@ -136,9 +165,8 @@ CREATE TABLE duplas_revisores (
 );
 
 -- -----------------------------------------------------------------------------
--- 4. REVISÃO RETROSPECTIVA, CONSENSO E ARBITRAGEM MÉDICA
+-- 6. REVISÃO RETROSPECTIVA, CONSENSO E HOMOLOGAÇÃO DOCENTE
 -- -----------------------------------------------------------------------------
-
 CREATE TABLE revisoes_individuais (
     id BIGSERIAL PRIMARY KEY,
     dupla_id BIGINT NOT NULL REFERENCES duplas_revisores(id) ON DELETE CASCADE,
@@ -192,9 +220,8 @@ CREATE TABLE validacoes_docentes (
 );
 
 -- -----------------------------------------------------------------------------
--- 5. FERRAMENTAS DA QUALIDADE INTEGRADAS
+-- 7. FERRAMENTAS DE MELHORIA DA QUALIDADE (ISHIKAWA, 5W3H E PDCA)
 -- -----------------------------------------------------------------------------
-
 CREATE TABLE analises_ishikawa (
     id BIGSERIAL PRIMARY KEY,
     consenso_dupla_id BIGINT NOT NULL UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
@@ -230,9 +257,9 @@ CREATE TABLE ciclos_pdca (
 );
 
 -- -----------------------------------------------------------------------------
--- 6. ÍNDICES EM CHAVES ESTRANGEIRAS (DESEMPENHO E INTEGRIDADE)
+-- 8. ÍNDICES DE PERFORMANCE E CHAVES ESTRANGEIRAS
 -- -----------------------------------------------------------------------------
-
+CREATE INDEX idx_gatilhos_modulo_id ON gatilhos_gtt(modulo_id);
 CREATE INDEX idx_turmas_professor ON turmas(professor_responsavel_id);
 CREATE INDEX idx_turma_alunos_aluno ON turma_alunos(aluno_id);
 CREATE INDEX idx_cenarios_professor ON cenarios_clinicos(professor_criador_id);
