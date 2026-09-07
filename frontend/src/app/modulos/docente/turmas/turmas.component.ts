@@ -6,6 +6,28 @@ import { UsuarioService } from '../../../nucleo/servicos/usuario.service';
 import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 import { Turma, Usuario } from '../../../compartilhado/modelos/dominio.modelos';
 
+export interface TurmaLinha {
+  id: number;
+  codigo: string;
+  periodo: string;
+  semestre: string;
+  professor: string;
+  totalAlunosStr: string;
+  status: string;
+  ativa: boolean;
+  selecionada: boolean;
+  original: Turma;
+}
+
+export interface AlunoMatriculadoLinha {
+  id: number;
+  nome: string;
+  matricula: string;
+  email: string;
+  cpf: string;
+  original: Usuario;
+}
+
 @Component({
   selector: 'app-turmas',
   standalone: true,
@@ -40,20 +62,61 @@ export class TurmasComponent implements OnInit {
 
   readonly termoBusca = signal('');
 
-  readonly turmasFiltradas = computed(() => {
+  readonly totalTurmas = computed(() => this.turmas().length);
+
+  readonly tituloFormTurma = computed(() => {
+    return this.idEdicaoTurma ? `EDITAR TURMA #${this.idEdicaoTurma}` : 'NOVA TURMA';
+  });
+
+  readonly textoBotaoSubmit = computed(() => {
+    return this.idEdicaoTurma ? 'Salvar Alterações' : 'Cadastrar Turma';
+  });
+
+  readonly infoTurmaSelecionada = computed(() => {
+    const t = this.turmaSelecionada();
+    return t ? `[${t.codigoDisciplina}] ${t.periodoLetivo} - Prof. ${t.professorResponsavelNome}` : '';
+  });
+
+  readonly turmasLinhas = computed<TurmaLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    return this.turmas().filter((t) => {
-      return !termo ||
-        t.codigoDisciplina.toLowerCase().includes(termo) ||
-        t.periodoLetivo.toLowerCase().includes(termo) ||
-        t.anoSemestre.toLowerCase().includes(termo) ||
-        t.professorResponsavelNome.toLowerCase().includes(termo);
-    });
+    const selecionadaId = this.turmaSelecionada()?.id;
+
+    return this.turmas()
+      .filter((t) => {
+        return !termo ||
+          t.codigoDisciplina.toLowerCase().includes(termo) ||
+          t.periodoLetivo.toLowerCase().includes(termo) ||
+          t.anoSemestre.toLowerCase().includes(termo) ||
+          t.professorResponsavelNome.toLowerCase().includes(termo);
+      })
+      .map((t) => ({
+        id: t.id,
+        codigo: `[${t.codigoDisciplina}]`,
+        periodo: t.periodoLetivo,
+        semestre: t.anoSemestre,
+        professor: t.professorResponsavelNome,
+        totalAlunosStr: `${t.totalAlunos} aluno(s)`,
+        status: t.ativa ? '[ATIVO]' : '[INATIVO]',
+        ativa: t.ativa,
+        selecionada: t.id === selecionadaId,
+        original: t
+      }));
   });
 
   readonly alunosDisponiveisParaMatricula = computed(() => {
     const matriculadosIds = new Set(this.alunosDaTurma().map((a) => a.id));
     return this.todosAlunos().filter((a) => a.ativo && !matriculadosIds.has(a.id));
+  });
+
+  readonly alunosMatriculadosLinhas = computed<AlunoMatriculadoLinha[]>(() => {
+    return this.alunosDaTurma().map((a) => ({
+      id: a.id,
+      nome: a.nomeCompleto,
+      matricula: a.matriculaSigaa || '-',
+      email: a.email,
+      cpf: this.formatarCpf(a.cpf),
+      original: a
+    }));
   });
 
   ngOnInit(): void {
@@ -122,7 +185,7 @@ export class TurmasComponent implements OnInit {
     if (this.idEdicaoTurma) {
       this.turmaService.editar(this.idEdicaoTurma, this.formTurma).subscribe({
         next: (atualizada) => {
-          this.mensagemSucesso.set(`Turma ${atualizada.codigoDisciplina} atualizada com sucesso!`);
+          this.mensagemSucesso.set(`Turma ${atualizada.codigoDisciplina} atualizada.`);
           this.fecharFormTurma();
           this.carregando.set(false);
           this.carregarTurmas();
@@ -135,7 +198,7 @@ export class TurmasComponent implements OnInit {
     } else {
       this.turmaService.cadastrar(this.formTurma).subscribe({
         next: (criada) => {
-          this.mensagemSucesso.set(`Turma ${criada.codigoDisciplina} (${criada.periodoLetivo}) cadastrada com sucesso!`);
+          this.mensagemSucesso.set(`Turma ${criada.codigoDisciplina} cadastrada.`);
           this.fecharFormTurma();
           this.carregando.set(false);
           this.carregarTurmas();
@@ -189,7 +252,7 @@ export class TurmasComponent implements OnInit {
     this.carregando.set(true);
     this.turmaService.matricularAluno(turma.id, this.idAlunoParaMatricular).subscribe({
       next: () => {
-        this.mensagemSucesso.set('Aluno matriculado com sucesso!');
+        this.mensagemSucesso.set('Aluno matriculado com sucesso.');
         this.idAlunoParaMatricular = null;
         this.carregando.set(false);
         this.carregarAlunosDaTurma(turma.id);
@@ -206,7 +269,7 @@ export class TurmasComponent implements OnInit {
     const turma = this.turmaSelecionada();
     if (!turma) return;
 
-    const conf = confirm(`Deseja desmatricular ${aluno.nomeCompleto} da turma ${turma.codigoDisciplina}?`);
+    const conf = confirm(`Desmatricular ${aluno.nomeCompleto} da turma ${turma.codigoDisciplina}?`);
     if (!conf) return;
 
     this.turmaService.desmatricularAluno(turma.id, aluno.id).subscribe({
@@ -217,6 +280,11 @@ export class TurmasComponent implements OnInit {
       },
       error: (err) => this.mensagemErro.set('Erro ao desmatricular aluno: ' + err.message)
     });
+  }
+
+  private formatarCpf(cpf: string): string {
+    if (!cpf || cpf.length !== 11) return cpf;
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   }
 
   private limparMensagens(): void {
