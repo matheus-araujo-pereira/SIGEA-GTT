@@ -9,6 +9,7 @@ import { GerenciarUnidadesComponent } from './modulos/administracao/unidades/ger
 import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
 import { ConsensoDuplaComponent } from './modulos/auditoria/consenso/consenso-dupla.component';
 import { MelhoriaQualidadeComponent } from './modulos/auditoria/melhoria/melhoria-qualidade.component';
+import { IndicadoresComponent } from './modulos/indicadores/indicadores.component';
 import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
 import { GerenciarCenariosComponent } from './modulos/docente/cenarios/gerenciar-cenarios.component';
 import { GerenciarProntuariosComponent } from './modulos/docente/prontuarios/gerenciar-prontuarios.component';
@@ -80,7 +81,7 @@ export const routes: Routes = [
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
       },
 
-      // Auditoria, Consenso e Melhoria da Qualidade
+      // Auditoria, Consenso, Melhoria e Indicadores
       {
         path: 'auditoria',
         component: AuditoriaComponent,
@@ -98,6 +99,12 @@ export const routes: Routes = [
         component: MelhoriaQualidadeComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] }
+      },
+      {
+        path: 'indicadores',
+        component: IndicadoresComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR', 'ALUNO'] }
       }
     ]
   },

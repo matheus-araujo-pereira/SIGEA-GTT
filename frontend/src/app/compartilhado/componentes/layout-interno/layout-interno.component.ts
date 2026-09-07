@@ -40,6 +40,11 @@ import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.servi
 
           <!-- Gestão Acadêmica Docente (PROFESSOR e ADMINISTRADOR) -->
           <ng-container *ngIf="usuario()?.perfil === 'PROFESSOR' || usuario()?.perfil === 'ADMINISTRADOR'">
+            <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1" style="font-size: 0.7rem;">Epidemiologia</div>
+            <a routerLink="/indicadores" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+              <i class="bi bi-graph-up"></i> Indicadores IHI
+            </a>
+
             <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1" style="font-size: 0.7rem;">Gestão Acadêmica</div>
             <a routerLink="/turmas" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
               <i class="bi bi-mortarboard"></i> Turmas & Alunos

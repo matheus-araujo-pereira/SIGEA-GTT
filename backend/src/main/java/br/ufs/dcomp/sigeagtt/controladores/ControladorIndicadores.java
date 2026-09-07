@@ -1,0 +1,26 @@
+package br.ufs.dcomp.sigeagtt.controladores;
+
+import br.ufs.dcomp.sigeagtt.servicos.IndicadoresEpidemiologicosServico;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/indicadores")
+public class ControladorIndicadores {
+
+    private final IndicadoresEpidemiologicosServico servico;
+
+    public ControladorIndicadores(IndicadoresEpidemiologicosServico servico) {
+        this.servico = servico;
+    }
+
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> calcular(@RequestParam(required = false) Long turmaId) {
+        return ResponseEntity.ok(servico.calcularIndicadores(turmaId));
+    }
+}
