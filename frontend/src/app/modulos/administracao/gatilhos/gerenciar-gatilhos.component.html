@@ -1,337 +1,264 @@
 <div>
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <!-- TOPO -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
     <div>
-      <h1 class="h4 fw-bold text-dark mb-1">Configuração de Gatilhos e Módulos GTT</h1>
-      <p class="text-muted small mb-0">Controle administrativo: criação, alteração e desativação de rastreadores e módulos</p>
+      <h1 class="h5 fw-bold text-dark m-0">Gatilhos e Módulos GTT</h1>
+      <span class="text-secondary small font-monospace">
+        Gatilhos: {{ totalGatilhos() }} | Módulos: {{ totalModulos() }}
+      </span>
     </div>
     <div class="d-flex gap-2">
       @if (abaAtiva() === 'GATILHOS') {
-        <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" (click)="iniciarNovoGatilho()">
-          <i class="bi" [class.bi-x-lg]="exibirFormGatilho" [class.bi-plus-lg]="!exibirFormGatilho"></i>
-          {{ exibirFormGatilho ? 'Fechar' : 'Novo Gatilho' }}
+        <button type="button" class="btn btn-primary btn-sm" (click)="iniciarNovoGatilho()">
+          {{ exibirFormGatilho ? 'FECHAR' : 'NOVO GATILHO' }}
         </button>
       }
       @if (abaAtiva() === 'MODULOS') {
-        <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" (click)="iniciarNovoModulo()">
-          <i class="bi" [class.bi-x-lg]="exibirFormModulo" [class.bi-folder-plus]="!exibirFormModulo"></i>
-          {{ exibirFormModulo ? 'Fechar' : 'Novo Módulo' }}
+        <button type="button" class="btn btn-primary btn-sm" (click)="iniciarNovoModulo()">
+          {{ exibirFormModulo ? 'FECHAR' : 'NOVO MÓDULO' }}
         </button>
       }
     </div>
   </div>
 
+  <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-      <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
-      <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    <div class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between">
+      <span>{{ mensagemSucesso() }}</span>
+      <button type="button" class="btn btn-sm p-0 text-success" (click)="mensagemSucesso.set(null)">[X]</button>
     </div>
   }
 
   @if (mensagemErro()) {
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-      <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
-      <button type="button" class="btn-close" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    <div class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between">
+      <span>{{ mensagemErro() }}</span>
+      <button type="button" class="btn btn-sm p-0 text-danger" (click)="mensagemErro.set(null)">[X]</button>
     </div>
   }
 
-  <ul class="nav nav-pills mb-3 gap-2">
-    <li class="nav-item">
-      <button type="button"
-              class="nav-link px-4 py-2"
-              [class.active]="abaAtiva() === 'GATILHOS'"
-              (click)="abaAtiva.set('GATILHOS')">
-        <i class="bi bi-sliders me-1"></i> Gatilhos ({{ gatilhos().length }})
-      </button>
-    </li>
-    <li class="nav-item">
-      <button type="button"
-              class="nav-link px-4 py-2"
-              [class.active]="abaAtiva() === 'MODULOS'"
-              (click)="abaAtiva.set('MODULOS')">
-        <i class="bi bi-folder-fill me-1"></i> Módulos GTT ({{ modulos().length }})
-      </button>
-    </li>
-  </ul>
+  <!-- ABAS MINIMALISTAS -->
+  <div class="d-flex gap-1 mb-3 b-b">
+    <button type="button"
+            class="btn btn-sm px-3"
+            [class.btn-primary]="abaAtiva() === 'GATILHOS'"
+            [class.btn-outline-secondary]="abaAtiva() !== 'GATILHOS'"
+            (click)="abaAtiva.set('GATILHOS')">
+      GATILHOS ({{ totalGatilhos() }})
+    </button>
+    <button type="button"
+            class="btn btn-sm px-3"
+            [class.btn-primary]="abaAtiva() === 'MODULOS'"
+            [class.btn-outline-secondary]="abaAtiva() !== 'MODULOS'"
+            (click)="abaAtiva.set('MODULOS')">
+      MÓDULOS GTT ({{ totalModulos() }})
+    </button>
+  </div>
 
+  <!-- ABA 1: GATILHOS -->
   @if (abaAtiva() === 'GATILHOS') {
     <div>
       @if (exibirFormGatilho) {
-        <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
-          <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
-            <h2 class="h6 card-title mb-0 fw-bold text-primary">
-              <i class="bi" [class.bi-pencil]="idEdicaoGatilho" [class.bi-plus-circle]="!idEdicaoGatilho"></i>
-              {{ idEdicaoGatilho ? 'Editar Gatilho #' + idEdicaoGatilho : 'Cadastrar Novo Gatilho' }}
-            </h2>
-            <button type="button" class="btn-close" (click)="exibirFormGatilho = false" aria-label="Fechar"></button>
+        <div class="p-3 mb-3 bg-white b-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+            <span class="fw-bold text-dark small font-monospace">{{ tituloFormGatilho() }}</span>
+            <button type="button" class="btn btn-sm p-0 text-muted" (click)="exibirFormGatilho = false">[FECHAR]</button>
           </div>
-          <div class="card-body p-4">
-            <form (ngSubmit)="salvarGatilho()">
-              <div class="row g-3">
-                <div class="col-md-3">
-                  <label for="codigoGatilho" class="form-label small fw-semibold text-secondary">Código do Gatilho</label>
-                  <input id="codigoGatilho"
-                         type="text"
-                         class="form-control form-control-sm text-uppercase font-monospace"
-                         [(ngModel)]="formGatilho.codigo"
-                         name="codigo"
-                         required
-                         maxlength="10"
-                         placeholder="Ex.: C16, M14">
-                </div>
-                <div class="col-md-4">
-                  <label for="moduloVinculado" class="form-label small fw-semibold text-secondary">Módulo Vinculado</label>
-                  <select id="moduloVinculado"
-                          class="form-select form-select-sm"
-                          [(ngModel)]="formGatilho.moduloId"
-                          name="moduloId"
-                          required>
-                    <option [ngValue]="null" disabled>Selecione um módulo...</option>
-                    @for (m of modulos(); track m.id) {
-                      <option [ngValue]="m.id">{{ m.nome }} ({{ m.codigo }})</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-md-5">
-                  <label for="limiarReferencia" class="form-label small fw-semibold text-secondary">Limiar de Referência / Pista</label>
-                  <input id="limiarReferencia"
-                         type="text"
-                         class="form-control form-control-sm"
-                         [(ngModel)]="formGatilho.limiarReferencia"
-                         name="limiarReferencia"
-                         maxlength="150"
-                         placeholder="Ex.: Queda de Hb >= 25%">
-                </div>
-                <div class="col-12">
-                  <label for="descricaoGatilho" class="form-label small fw-semibold text-secondary">Descrição Operacional Padronizada</label>
-                  <textarea id="descricaoGatilho"
-                            class="form-control form-control-sm"
-                            rows="3"
-                            [(ngModel)]="formGatilho.descricao"
-                            name="descricao"
-                            required
-                            placeholder="Texto oficial e diretrizes de investigação do gatilho..."></textarea>
-                </div>
+
+          <form (ngSubmit)="salvarGatilho()">
+            <div class="row g-2">
+              <div class="col-md-2">
+                <label for="codigoGatilho" class="form-label small text-secondary m-0">Código</label>
+                <input id="codigoGatilho" type="text" class="form-control form-control-sm font-monospace text-uppercase" [(ngModel)]="formGatilho.codigo" name="codigo" required maxlength="10">
               </div>
-              <div class="mt-4 text-end">
-                <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="exibirFormGatilho = false">Cancelar</button>
-                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="carregando()">
-                  @if (carregando()) {
-                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+
+              <div class="col-md-4">
+                <label for="moduloVinculado" class="form-label small text-secondary m-0">Módulo</label>
+                <select id="moduloVinculado" class="form-select form-select-sm" [(ngModel)]="formGatilho.moduloId" name="moduloId" required>
+                  @for (m of modulos(); track m.id) {
+                    <option [ngValue]="m.id">{{ m.nome }} ({{ m.codigo }})</option>
                   }
-                  {{ idEdicaoGatilho ? 'Salvar Alterações' : 'Cadastrar Gatilho' }}
-                </button>
+                </select>
               </div>
-            </form>
-          </div>
+
+              <div class="col-md-6">
+                <label for="limiarReferencia" class="form-label small text-secondary m-0">Limiar / Pista</label>
+                <input id="limiarReferencia" type="text" class="form-control form-control-sm" [(ngModel)]="formGatilho.limiarReferencia" name="limiarReferencia" maxlength="150">
+              </div>
+
+              <div class="col-12">
+                <label for="descricaoGatilho" class="form-label small text-secondary m-0">Descrição Operacional</label>
+                <textarea id="descricaoGatilho" class="form-control form-control-sm" rows="2" [(ngModel)]="formGatilho.descricao" name="descricao" required></textarea>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="exibirFormGatilho = false">Cancelar</button>
+              <button type="submit" class="btn btn-primary btn-sm px-3" [disabled]="carregando()">
+                {{ idEdicaoGatilho ? 'Salvar Alterações' : 'Cadastrar Gatilho' }}
+              </button>
+            </div>
+          </form>
         </div>
       }
 
-      <div class="card bg-surface border border-subdued shadow-sm p-3 mb-3 rounded-3">
-        <div class="row g-2 align-items-center">
-          <div class="col-md-7">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-              <input type="text"
-                     class="form-control border-start-0"
-                     [ngModel]="termoBusca()"
-                     (ngModelChange)="termoBusca.set($event)"
-                     placeholder="Pesquisar por código ou palavras na descrição...">
-              @if (termoBusca()) {
-                <button type="button" class="btn btn-light border border-start-0 text-muted" (click)="termoBusca.set('')">
-                  <i class="bi bi-x"></i>
-                </button>
-              }
-            </div>
-          </div>
-          <div class="col-md-5">
-            <select class="form-select form-select-sm"
-                    [ngModel]="filtroModuloId()"
-                    (ngModelChange)="filtroModuloId.set($event)">
-              <option value="TODOS">Todos os Módulos ({{ gatilhos().length }})</option>
-              @for (m of modulos(); track m.id) {
-                <option [value]="m.id">{{ m.nome }}</option>
-              }
-            </select>
-          </div>
-        </div>
+      <!-- FILTRO DE GATILHOS -->
+      <div class="d-flex gap-2 mb-3 bg-white p-2 b-1">
+        <input type="text"
+               class="form-control form-control-sm"
+               [ngModel]="termoBusca()"
+               (ngModelChange)="termoBusca.set($event)"
+               placeholder="Filtrar por código ou descrição...">
+
+        <select class="form-select form-select-sm w-auto"
+                [ngModel]="filtroModuloId()"
+                (ngModelChange)="filtroModuloId.set($event)">
+          <option value="TODOS">Todos os Módulos</option>
+          @for (m of modulos(); track m.id) {
+            <option [value]="m.id">{{ m.nome }}</option>
+          }
+        </select>
+
+        @if (termoBusca()) {
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="termoBusca.set('')">LIMPAR</button>
+        }
       </div>
 
-      <div class="card bg-surface border border-subdued shadow-sm rounded-3">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light small text-muted text-uppercase fs-xxs">
-                <tr>
-                  <th scope="col" class="ps-3 text-nowrap">Código</th>
-                  <th scope="col" class="text-nowrap">Módulo</th>
-                  <th scope="col">Descrição</th>
-                  <th scope="col" class="text-nowrap">Limiar</th>
-                  <th scope="col" class="text-nowrap">Status</th>
-                  <th scope="col" class="text-end pe-3 text-nowrap">Ações ADM</th>
-                </tr>
-              </thead>
-              <tbody class="small">
-                @if (gatilhosFiltrados().length === 0) {
-                  <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
-                      <i class="bi bi-search fs-2 d-block mb-1 text-secondary"></i>
-                      Nenhum gatilho encontrado.
-                    </td>
-                  </tr>
-                }
-                @for (g of gatilhosFiltrados(); track g.id) {
-                  <tr>
-                    <td class="ps-3"><span class="badge bg-dark font-monospace">{{ g.codigo }}</span></td>
-                    <td><span class="badge bg-light text-primary border border-subdued">{{ g.modulo.nome }}</span></td>
-                    <td class="text-secondary">{{ g.descricao }}</td>
-                    <td><code class="text-dark">{{ g.limiarReferencia || '-' }}</code></td>
-                    <td>
-                      <span class="badge" [class.bg-success]="g.ativo" [class.bg-secondary]="!g.ativo">
-                        {{ g.ativo ? 'Ativo' : 'Inativo' }}
-                      </span>
-                    </td>
-                    <td class="text-end pe-3">
-                      <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-primary" (click)="iniciarEdicaoGatilho(g)" title="Editar">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" (click)="alternarStatusGatilho(g.id)" [title]="g.ativo ? 'Desativar' : 'Ativar'">
-                          <i class="bi" [class.bi-toggle-on]="g.ativo" [class.text-success]="g.ativo" [class.bi-toggle-off]="!g.ativo" [class.text-muted]="!g.ativo"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" (click)="excluirGatilho(g)" title="Excluir Definitivamente">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <!-- TABELA DE GATILHOS -->
+      <div class="bg-white b-1">
+        <table class="table table-hover table-sm m-0">
+          <thead class="bg-light text-secondary small font-monospace b-b">
+            <tr>
+              <th scope="col" class="p-2">CÓDIGO</th>
+              <th scope="col" class="p-2">MÓDULO</th>
+              <th scope="col" class="p-2">DESCRIÇÃO OPERACIONAL</th>
+              <th scope="col" class="p-2">LIMIAR</th>
+              <th scope="col" class="p-2">STATUS</th>
+              <th scope="col" class="p-2 text-end">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody class="small font-monospace">
+            @for (g of gatilhosLinhas(); track g.id) {
+              <tr>
+                <td class="p-2 fw-bold text-dark">{{ g.codigo }}</td>
+                <td class="p-2 text-primary font-sans-serif">{{ g.moduloNome }}</td>
+                <td class="p-2 font-sans-serif text-secondary">{{ g.descricao }}</td>
+                <td class="p-2">{{ g.limiar }}</td>
+                <td class="p-2" [class.text-success]="g.ativo" [class.text-muted]="!g.ativo">{{ g.status }}</td>
+                <td class="p-2 text-end text-nowrap">
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 me-1" (click)="iniciarEdicaoGatilho(g.original)">
+                    EDITAR
+                  </button>
+                  <button type="button"
+                          class="btn btn-sm py-0 px-2 me-1"
+                          [class.btn-outline-secondary]="g.ativo"
+                          [class.btn-outline-success]="!g.ativo"
+                          (click)="alternarStatusGatilho(g.id)">
+                    {{ g.ativo ? 'INATIVAR' : 'ATIVAR' }}
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="excluirGatilho(g.original)">
+                    EXCLUIR
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                  Nenhum gatilho encontrado.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   }
 
+  <!-- ABA 2: MÓDULOS -->
   @if (abaAtiva() === 'MODULOS') {
     <div>
       @if (exibirFormModulo) {
-        <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
-          <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
-            <h2 class="h6 card-title mb-0 fw-bold text-primary">
-              <i class="bi" [class.bi-pencil]="idEdicaoModulo" [class.bi-folder-plus]="!idEdicaoModulo"></i>
-              {{ idEdicaoModulo ? 'Editar Módulo #' + idEdicaoModulo : 'Cadastrar Novo Módulo' }}
-            </h2>
-            <button type="button" class="btn-close" (click)="exibirFormModulo = false" aria-label="Fechar"></button>
+        <div class="p-3 mb-3 bg-white b-1">
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+            <span class="fw-bold text-dark small font-monospace">{{ tituloFormModulo() }}</span>
+            <button type="button" class="btn btn-sm p-0 text-muted" (click)="exibirFormModulo = false">[FECHAR]</button>
           </div>
-          <div class="card-body p-4">
-            <form (ngSubmit)="salvarModulo()">
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label for="codigoModulo" class="form-label small fw-semibold text-secondary">Código do Módulo</label>
-                  <input id="codigoModulo"
-                         type="text"
-                         class="form-control form-control-sm text-uppercase font-monospace"
-                         [(ngModel)]="formModulo.codigo"
-                         name="codModulo"
-                         required
-                         maxlength="30"
-                         placeholder="Ex.: ONCOLOGIA">
-                </div>
-                <div class="col-md-8">
-                  <label for="nomeModulo" class="form-label small fw-semibold text-secondary">Nome do Módulo</label>
-                  <input id="nomeModulo"
-                         type="text"
-                         class="form-control form-control-sm"
-                         [(ngModel)]="formModulo.nome"
-                         name="nomeModulo"
-                         required
-                         maxlength="100"
-                         placeholder="Ex.: Módulo Oncologia e Hematologia">
-                </div>
-                <div class="col-12">
-                  <label for="descricaoModulo" class="form-label small fw-semibold text-secondary">Descrição do Escopo Clínico</label>
-                  <textarea id="descricaoModulo"
-                            class="form-control form-control-sm"
-                            rows="2"
-                            [(ngModel)]="formModulo.descricao"
-                            name="descModulo"
-                            placeholder="Descreva o perfil de pacientes ou setor coberto por este módulo..."></textarea>
-                </div>
+
+          <form (ngSubmit)="salvarModulo()">
+            <div class="row g-2">
+              <div class="col-md-3">
+                <label for="codigoModulo" class="form-label small text-secondary m-0">Código</label>
+                <input id="codigoModulo" type="text" class="form-control form-control-sm font-monospace text-uppercase" [(ngModel)]="formModulo.codigo" name="codModulo" required maxlength="30">
               </div>
-              <div class="mt-4 text-end">
-                <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="exibirFormModulo = false">Cancelar</button>
-                <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="carregando()">
-                  @if (carregando()) {
-                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-                  }
-                  {{ idEdicaoModulo ? 'Salvar Alterações' : 'Cadastrar Módulo' }}
-                </button>
+
+              <div class="col-md-9">
+                <label for="nomeModulo" class="form-label small text-secondary m-0">Nome do Módulo</label>
+                <input id="nomeModulo" type="text" class="form-control form-control-sm" [(ngModel)]="formModulo.nome" name="nomeModulo" required maxlength="100">
               </div>
-            </form>
-          </div>
+
+              <div class="col-12">
+                <label for="descricaoModulo" class="form-label small text-secondary m-0">Escopo Clínico</label>
+                <textarea id="descricaoModulo" class="form-control form-control-sm" rows="2" [(ngModel)]="formModulo.descricao" name="descModulo"></textarea>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="exibirFormModulo = false">Cancelar</button>
+              <button type="submit" class="btn btn-primary btn-sm px-3" [disabled]="carregando()">
+                {{ idEdicaoModulo ? 'Salvar Alterações' : 'Cadastrar Módulo' }}
+              </button>
+            </div>
+          </form>
         </div>
       }
 
-      <div class="card bg-surface border border-subdued shadow-sm rounded-3">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light small text-muted text-uppercase fs-xxs">
-                <tr>
-                  <th scope="col" class="ps-3 text-nowrap">ID</th>
-                  <th scope="col" class="text-nowrap">Código</th>
-                  <th scope="col" class="text-nowrap">Nome do Módulo</th>
-                  <th scope="col">Descrição do Escopo</th>
-                  <th scope="col" class="text-nowrap">Gatilhos</th>
-                  <th scope="col" class="text-nowrap">Status</th>
-                  <th scope="col" class="text-end pe-3 text-nowrap">Ações ADM</th>
-                </tr>
-              </thead>
-              <tbody class="small">
-                @if (modulos().length === 0) {
-                  <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">
-                      <i class="bi bi-folder2-open fs-2 d-block mb-1 text-secondary"></i>
-                      Nenhum módulo cadastrado.
-                    </td>
-                  </tr>
-                }
-                @for (m of modulos(); track m.id) {
-                  <tr>
-                    <td class="ps-3 fw-bold text-dark">{{ m.id }}</td>
-                    <td><span class="badge bg-secondary-subtle text-secondary border border-subdued font-monospace">{{ m.codigo }}</span></td>
-                    <td class="fw-semibold text-dark">{{ m.nome }}</td>
-                    <td class="text-muted">{{ m.descricao || '-' }}</td>
-                    <td>
-                      <span class="badge bg-light text-dark border border-subdued">
-                        {{ contarGatilhosPorModulo(m.id) }} gatilhos
-                      </span>
-                    </td>
-                    <td>
-                      <span class="badge" [class.bg-success]="m.ativo" [class.bg-secondary]="!m.ativo">
-                        {{ m.ativo ? 'Ativo' : 'Inativo' }}
-                      </span>
-                    </td>
-                    <td class="text-end pe-3">
-                      <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-primary" (click)="iniciarEdicaoModulo(m)" title="Editar">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" (click)="alternarStatusModulo(m.id)" [title]="m.ativo ? 'Desativar' : 'Ativar'">
-                          <i class="bi" [class.bi-toggle-on]="m.ativo" [class.text-success]="m.ativo" [class.bi-toggle-off]="!m.ativo" [class.text-muted]="!m.ativo"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" (click)="excluirModulo(m)" title="Excluir Módulo e Gatilhos">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <!-- TABELA DE MÓDULOS -->
+      <div class="bg-white b-1">
+        <table class="table table-hover table-sm m-0">
+          <thead class="bg-light text-secondary small font-monospace b-b">
+            <tr>
+              <th scope="col" class="p-2">ID</th>
+              <th scope="col" class="p-2">CÓDIGO</th>
+              <th scope="col" class="p-2">NOME DO MÓDULO</th>
+              <th scope="col" class="p-2">ESCOPO CLÍNICO</th>
+              <th scope="col" class="p-2">GATILHOS</th>
+              <th scope="col" class="p-2">STATUS</th>
+              <th scope="col" class="p-2 text-end">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody class="small font-monospace">
+            @for (m of modulosLinhas(); track m.id) {
+              <tr>
+                <td class="p-2">{{ m.id }}</td>
+                <td class="p-2 fw-bold text-dark">{{ m.codigo }}</td>
+                <td class="p-2 font-sans-serif fw-semibold text-dark">{{ m.nome }}</td>
+                <td class="p-2 font-sans-serif text-secondary">{{ m.descricao }}</td>
+                <td class="p-2 font-sans-serif">{{ m.totalGatilhos }}</td>
+                <td class="p-2" [class.text-success]="m.ativo" [class.text-muted]="!m.ativo">{{ m.status }}</td>
+                <td class="p-2 text-end text-nowrap">
+                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 me-1" (click)="iniciarEdicaoModulo(m.original)">
+                    EDITAR
+                  </button>
+                  <button type="button"
+                          class="btn btn-sm py-0 px-2 me-1"
+                          [class.btn-outline-secondary]="m.ativo"
+                          [class.btn-outline-success]="!m.ativo"
+                          (click)="alternarStatusModulo(m.id)">
+                    {{ m.ativo ? 'INATIVAR' : 'ATIVAR' }}
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="excluirModulo(m.original)">
+                    EXCLUIR
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  Nenhum módulo cadastrado.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   }

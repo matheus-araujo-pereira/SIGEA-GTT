@@ -5,6 +5,28 @@ import { GatilhoService, GatilhoRequisicao } from '../../../nucleo/servicos/gati
 import { ModuloGttService, ModuloRequisicao } from '../../../nucleo/servicos/modulo-gtt.service';
 import { GatilhoGtt, ModuloGtt } from '../../../compartilhado/modelos/dominio.modelos';
 
+export interface GatilhoLinha {
+  id: number;
+  codigo: string;
+  moduloNome: string;
+  descricao: string;
+  limiar: string;
+  status: string;
+  ativo: boolean;
+  original: GatilhoGtt;
+}
+
+export interface ModuloLinha {
+  id: number;
+  codigo: string;
+  nome: string;
+  descricao: string;
+  totalGatilhos: string;
+  status: string;
+  ativo: boolean;
+  original: ModuloGtt;
+}
+
 @Component({
   selector: 'app-gerenciar-gatilhos',
   standalone: true,
@@ -33,18 +55,56 @@ export class GerenciarGatilhosComponent implements OnInit {
   readonly termoBusca = signal('');
   readonly filtroModuloId = signal('TODOS');
 
-  readonly gatilhosFiltrados = computed(() => {
+  readonly totalGatilhos = computed(() => this.gatilhos().length);
+  readonly totalModulos = computed(() => this.modulos().length);
+
+  readonly tituloFormGatilho = computed(() => {
+    return this.idEdicaoGatilho ? `EDITAR GATILHO #${this.idEdicaoGatilho}` : 'NOVO GATILHO';
+  });
+
+  readonly tituloFormModulo = computed(() => {
+    return this.idEdicaoModulo ? `EDITAR MÓDULO #${this.idEdicaoModulo}` : 'NOVO MÓDULO';
+  });
+
+  readonly gatilhosLinhas = computed<GatilhoLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const moduloFiltro = this.filtroModuloId();
 
-    return this.gatilhos().filter((g) => {
-      const matchModulo = moduloFiltro === 'TODOS' || g.modulo.id === Number(moduloFiltro);
-      const matchTermo = !termo ||
-        g.codigo.toLowerCase().includes(termo) ||
-        g.descricao.toLowerCase().includes(termo) ||
-        Boolean(g.limiarReferencia && g.limiarReferencia.toLowerCase().includes(termo));
+    return this.gatilhos()
+      .filter((g) => {
+        const matchModulo = moduloFiltro === 'TODOS' || g.modulo.id === Number(moduloFiltro);
+        const matchTermo = !termo ||
+          g.codigo.toLowerCase().includes(termo) ||
+          g.descricao.toLowerCase().includes(termo) ||
+          Boolean(g.limiarReferencia && g.limiarReferencia.toLowerCase().includes(termo));
 
-      return matchModulo && matchTermo;
+        return matchModulo && matchTermo;
+      })
+      .map((g) => ({
+        id: g.id,
+        codigo: `[${g.codigo}]`,
+        moduloNome: g.modulo.nome,
+        descricao: g.descricao,
+        limiar: g.limiarReferencia || '-',
+        status: g.ativo ? '[ATIVO]' : '[INATIVO]',
+        ativo: g.ativo,
+        original: g
+      }));
+  });
+
+  readonly modulosLinhas = computed<ModuloLinha[]>(() => {
+    return this.modulos().map((m) => {
+      const qtd = this.gatilhos().filter((g) => g.modulo.id === m.id).length;
+      return {
+        id: m.id,
+        codigo: `[${m.codigo}]`,
+        nome: m.nome,
+        descricao: m.descricao || '-',
+        totalGatilhos: `${qtd} gatilho(s)`,
+        status: m.ativo ? '[ATIVO]' : '[INATIVO]',
+        ativo: m.ativo,
+        original: m
+      };
     });
   });
 
@@ -62,10 +122,6 @@ export class GerenciarGatilhosComponent implements OnInit {
       next: (g) => this.gatilhos.set(g),
       error: (err) => this.mensagemErro.set('Erro ao carregar gatilhos: ' + err.message)
     });
-  }
-
-  contarGatilhosPorModulo(moduloId: number): number {
-    return this.gatilhos().filter((g) => g.modulo.id === moduloId).length;
   }
 
   iniciarNovoGatilho(): void {
@@ -95,7 +151,7 @@ export class GerenciarGatilhosComponent implements OnInit {
     if (this.idEdicaoGatilho) {
       this.gatilhoService.editar(this.idEdicaoGatilho, this.formGatilho).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Gatilho ${atualizado.codigo} atualizado com sucesso!`);
+          this.mensagemSucesso.set(`Gatilho ${atualizado.codigo} atualizado com sucesso.`);
           this.exibirFormGatilho = false;
           this.carregando.set(false);
           this.carregarDados();
@@ -108,7 +164,7 @@ export class GerenciarGatilhosComponent implements OnInit {
     } else {
       this.gatilhoService.cadastrar(this.formGatilho).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Gatilho ${criado.codigo} cadastrado com sucesso!`);
+          this.mensagemSucesso.set(`Gatilho ${criado.codigo} cadastrado com sucesso.`);
           this.exibirFormGatilho = false;
           this.carregando.set(false);
           this.carregarDados();
@@ -122,12 +178,12 @@ export class GerenciarGatilhosComponent implements OnInit {
   }
 
   excluirGatilho(g: GatilhoGtt): void {
-    const confirmacao = confirm(`Confirma a exclusão definitiva do gatilho ${g.codigo} - ${g.descricao}?`);
+    const confirmacao = confirm(`Excluir definitivamente o gatilho ${g.codigo}?`);
     if (!confirmacao) return;
 
     this.gatilhoService.excluir(g.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(`Gatilho ${g.codigo} excluído com sucesso.`);
+        this.mensagemSucesso.set(`Gatilho ${g.codigo} excluído.`);
         this.carregarDados();
       },
       error: (err) => this.mensagemErro.set('Erro ao excluir gatilho: ' + err.message)
@@ -163,7 +219,7 @@ export class GerenciarGatilhosComponent implements OnInit {
     if (this.idEdicaoModulo) {
       this.moduloService.editar(this.idEdicaoModulo, this.formModulo).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Módulo ${atualizado.nome} atualizado com sucesso!`);
+          this.mensagemSucesso.set(`Módulo ${atualizado.nome} atualizado.`);
           this.exibirFormModulo = false;
           this.carregando.set(false);
           this.carregarDados();
@@ -176,7 +232,7 @@ export class GerenciarGatilhosComponent implements OnInit {
     } else {
       this.moduloService.cadastrar(this.formModulo).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Módulo ${criado.nome} cadastrado com sucesso!`);
+          this.mensagemSucesso.set(`Módulo ${criado.nome} cadastrado.`);
           this.exibirFormModulo = false;
           this.carregando.set(false);
           this.carregarDados();
@@ -190,10 +246,7 @@ export class GerenciarGatilhosComponent implements OnInit {
   }
 
   excluirModulo(m: ModuloGtt): void {
-    const qtd = this.contarGatilhosPorModulo(m.id);
-    const confirmacao = confirm(
-      `ATENÇÃO: A exclusão do módulo "${m.nome}" (${m.codigo}) removerá também todos os ${qtd} gatilhos vinculados a ele por cascata. Deseja prosseguir?`
-    );
+    const confirmacao = confirm(`ATENÇÃO: Excluir o módulo "${m.nome}" (${m.codigo}) removerá todos os seus gatilhos vinculados. Deseja prosseguir?`);
     if (!confirmacao) return;
 
     this.moduloService.excluir(m.id).subscribe({
