@@ -34,8 +34,8 @@ export class GerenciarUsuariosComponent implements OnInit {
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
-  exibirFormulario = false;
-  idEdicao: number | null = null;
+  readonly exibirFormulario = signal(false);
+  readonly idEdicao = signal<number | null>(null);
   formulario: UsuarioRequisicao = this.obterFormularioVazio();
 
   readonly termoBusca = signal('');
@@ -48,11 +48,12 @@ export class GerenciarUsuariosComponent implements OnInit {
   readonly usuarioLogadoId = computed(() => this.auth.usuarioLogado()?.id);
 
   readonly tituloFormulario = computed(() => {
-    return this.idEdicao ? `EDITAR USUÁRIO #${this.idEdicao}` : 'NOVO USUÁRIO';
+    const id = this.idEdicao();
+    return id ? `EDITAR USUÁRIO #${id}` : 'NOVO USUÁRIO';
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao ? 'Editar Usuário' : 'Cadastrar Usuário';
+    return this.idEdicao() ? 'Editar Usuário' : 'Cadastrar Usuário';
   });
 
   readonly totalUsuarios = computed(() => this.usuarios().length);
@@ -130,28 +131,28 @@ export class GerenciarUsuariosComponent implements OnInit {
   }
 
   iniciarNovoCadastro(): void {
-    this.idEdicao = null;
+    this.idEdicao.set(null);
     this.formulario = this.obterFormularioVazio();
-    this.exibirFormulario = !this.exibirFormulario;
+    this.exibirFormulario.update(v => !v);
     this.limparMensagens();
   }
 
   iniciarEdicao(usuario: Usuario): void {
-    this.idEdicao = usuario.id;
+    this.idEdicao.set(usuario.id);
     this.formulario = {
       nomeCompleto: usuario.nomeCompleto,
       email: usuario.email,
       matriculaSigaa: usuario.matriculaSigaa || null,
       perfil: usuario.perfil
     };
-    this.exibirFormulario = true;
+    this.exibirFormulario.set(true);
     this.limparMensagens();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   fecharFormulario(): void {
-    this.exibirFormulario = false;
-    this.idEdicao = null;
+    this.exibirFormulario.set(false);
+    this.idEdicao.set(null);
     this.formulario = this.obterFormularioVazio();
   }
 
@@ -187,8 +188,9 @@ export class GerenciarUsuariosComponent implements OnInit {
         : null
     };
 
-    if (this.idEdicao) {
-      this.usuarioService.editar(this.idEdicao, payload).subscribe({
+    const idAtual = this.idEdicao();
+    if (idAtual) {
+      this.usuarioService.editar(idAtual, payload).subscribe({
         next: (atualizado) => {
           this.mensagemSucesso.set(`Usuário ${atualizado.nomeCompleto} atualizado com sucesso.`);
           this.fecharFormulario();
