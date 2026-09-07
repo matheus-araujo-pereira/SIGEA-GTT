@@ -47,7 +47,7 @@ public class ManipuladorExcecoesGlobal {
     public ResponseEntity<Map<String, Object>> tratarIntegridadeDados(DataIntegrityViolationException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(construirCorpo(HttpStatus.CONFLICT, "Conflito de integridade de dados", 
+                .body(construirCorpo(HttpStatus.CONFLICT, "Conflito de integridade de dados",
                         "Registro duplicado ou operação viola integridade referencial.", null));
     }
 
@@ -55,7 +55,7 @@ public class ManipuladorExcecoesGlobal {
     public ResponseEntity<Map<String, Object>> tratarMensagemIlegivel(HttpMessageNotReadableException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(construirCorpo(HttpStatus.BAD_REQUEST, "Requisição mal formatada", 
+                .body(construirCorpo(HttpStatus.BAD_REQUEST, "Requisição mal formatada",
                         "Corpo da requisição ausente ou dados com tipos/valores inválidos.", null));
     }
 
@@ -69,7 +69,7 @@ public class ManipuladorExcecoesGlobal {
         String mensagemConsolidada = String.join("; ", camposInvalidos.values());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(construirCorpo(HttpStatus.BAD_REQUEST, "Falha de validação nos dados enviados", 
+                .body(construirCorpo(HttpStatus.BAD_REQUEST, "Falha de validação nos dados enviados",
                         mensagemConsolidada, camposInvalidos));
     }
 }
