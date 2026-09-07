@@ -3,7 +3,22 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService, UsuarioRequisicao } from '../../../../nucleo/servicos/usuario.service';
 import { AutenticacaoService } from '../../../../nucleo/servicos/autenticacao.service';
-import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
+import { Usuario, PerfilUsuario } from '../../../../compartilhado/modelos/dominio.modelos';
+
+export interface UsuarioLinha {
+  id: number;
+  nome: string;
+  matricula: string;
+  ehVoce: boolean;
+  email: string;
+  cpf: string;
+  cargo: string;
+  perfil: string;
+  primeiroAcesso: string;
+  status: string;
+  ativo: boolean;
+  original: Usuario;
+}
 
 @Component({
   selector: 'app-gerenciar-usuarios',
@@ -16,7 +31,7 @@ export class GerenciarUsuariosComponent implements OnInit {
   readonly auth = inject(AutenticacaoService);
 
   readonly usuarios = signal<Usuario[]>([]);
-  readonly carregando = signal<boolean>(false);
+  readonly carregando = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
@@ -24,32 +39,59 @@ export class GerenciarUsuariosComponent implements OnInit {
   idEdicao: number | null = null;
   formulario: UsuarioRequisicao = this.obterFormularioVazio();
 
-  readonly termoBusca = signal<string>('');
-  readonly filtroPerfil = signal<string>('TODOS');
-  readonly filtroStatus = signal<string>('TODOS');
+  readonly termoBusca = signal('');
+  readonly filtroPerfil = signal('TODOS');
+  readonly filtroStatus = signal('TODOS');
 
-  readonly usuariosFiltrados = computed(() => {
+  readonly usuarioLogadoId = computed(() => this.auth.usuarioLogado()?.id);
+
+  readonly tituloFormulario = computed(() => {
+    return this.idEdicao ? `EDITAR USUÁRIO #${this.idEdicao}` : 'NOVO USUÁRIO';
+  });
+
+  readonly textoBotaoSubmit = computed(() => {
+    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Usuário';
+  });
+
+  readonly totalUsuarios = computed(() => this.usuarios().length);
+
+  readonly usuariosLinhas = computed<UsuarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const apenasDigitos = termo.replace(/\D/g, '');
     const perfil = this.filtroPerfil();
     const status = this.filtroStatus();
+    const logadoId = this.usuarioLogadoId();
 
-    return this.usuarios().filter((u) => {
-      let correspondeTermo = true;
-      if (termo.length > 0) {
-        const correspondeNome = u.nomeCompleto ? u.nomeCompleto.toLowerCase().includes(termo) : false;
-        const correspondeEmail = u.email ? u.email.toLowerCase().includes(termo) : false;
-        const correspondeCpf = apenasDigitos.length > 0 && u.cpf ? u.cpf.includes(apenasDigitos) : false;
-        const correspondeMatricula = u.matriculaSigaa ? u.matriculaSigaa.toLowerCase().includes(termo) : false;
+    return this.usuarios()
+      .filter((u) => {
+        let matchTermo = true;
+        if (termo.length > 0) {
+          const matchNome = u.nomeCompleto ? u.nomeCompleto.toLowerCase().includes(termo) : false;
+          const matchEmail = u.email ? u.email.toLowerCase().includes(termo) : false;
+          const matchCpf = apenasDigitos.length > 0 && u.cpf ? u.cpf.includes(apenasDigitos) : false;
+          const matchMatricula = u.matriculaSigaa ? u.matriculaSigaa.toLowerCase().includes(termo) : false;
+          matchTermo = matchNome || matchEmail || matchCpf || matchMatricula;
+        }
 
-        correspondeTermo = correspondeNome || correspondeEmail || correspondeCpf || correspondeMatricula;
-      }
+        const matchPerfil = perfil === 'TODOS' || u.perfil === perfil;
+        const matchStatus = status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
 
-      const correspondePerfil = perfil === 'TODOS' || u.perfil === perfil;
-      const correspondeStatus = status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
-
-      return correspondeTermo && correspondePerfil && correspondeStatus;
-    });
+        return matchTermo && matchPerfil && matchStatus;
+      })
+      .map((u) => ({
+        id: u.id,
+        nome: u.nomeCompleto,
+        matricula: u.matriculaSigaa || '-',
+        ehVoce: u.id === logadoId,
+        email: u.email,
+        cpf: this.formatarCpf(u.cpf),
+        cargo: u.cargo,
+        perfil: `[${u.perfil}]`,
+        primeiroAcesso: u.primeiroAcesso ? '[1º ACESSO PENDENTE]' : '[OK]',
+        status: u.ativo ? '[ATIVO]' : '[INATIVO]',
+        ativo: u.ativo,
+        original: u
+      }));
   });
 
   ngOnInit(): void {
@@ -74,7 +116,7 @@ export class GerenciarUsuariosComponent implements OnInit {
     this.idEdicao = usuario.id;
     this.formulario = {
       nomeCompleto: usuario.nomeCompleto,
-      cpf: this.formatarCpfExibicao(usuario.cpf),
+      cpf: this.formatarCpf(usuario.cpf),
       email: usuario.email,
       cargo: usuario.cargo,
       matriculaSigaa: usuario.matriculaSigaa || null,
@@ -99,32 +141,27 @@ export class GerenciarUsuariosComponent implements OnInit {
 
   aplicarMascaraCpf(event: Event): void {
     const input = event.target as HTMLInputElement;
-    let numeros = input.value.replace(/\D/g, '');
-    if (numeros.length > 11) numeros = numeros.slice(0, 11);
+    let num = input.value.replace(/\D/g, '');
+    if (num.length > 11) num = num.slice(0, 11);
 
-    if (numeros.length > 9) {
-      input.value = numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
-    } else if (numeros.length > 6) {
-      input.value = numeros.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
-    } else if (numeros.length > 3) {
-      input.value = numeros.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+    if (num.length > 9) {
+      input.value = num.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+    } else if (num.length > 6) {
+      input.value = num.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+    } else if (num.length > 3) {
+      input.value = num.replace(/(\d{3})(\d{1,3})/, '$1.$2');
     } else {
-      input.value = numeros;
+      input.value = num;
     }
     this.formulario.cpf = input.value;
   }
 
   aplicarMascaraMatricula(event: Event): void {
     const input = event.target as HTMLInputElement;
-    let numeros = input.value.replace(/\D/g, '');
-    if (numeros.length > 12) numeros = numeros.slice(0, 12);
-    input.value = numeros;
-    this.formulario.matriculaSigaa = numeros;
-  }
-
-  formatarCpfExibicao(cpf: string): string {
-    if (!cpf || cpf.length !== 11) return cpf;
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    let num = input.value.replace(/\D/g, '');
+    if (num.length > 12) num = num.slice(0, 12);
+    input.value = num;
+    this.formulario.matriculaSigaa = num;
   }
 
   salvar(): void {
@@ -142,7 +179,7 @@ export class GerenciarUsuariosComponent implements OnInit {
     if (this.idEdicao) {
       this.usuarioService.editar(this.idEdicao, payload).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Usuário ${atualizado.nomeCompleto} atualizado com sucesso!`);
+          this.mensagemSucesso.set(`Usuário ${atualizado.nomeCompleto} atualizado com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarUsuarios();
@@ -159,7 +196,7 @@ export class GerenciarUsuariosComponent implements OnInit {
     } else {
       this.usuarioService.cadastrar(payload).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Usuário ${criado.nomeCompleto} cadastrado. Senha provisória: Sigea@123`);
+          this.mensagemSucesso.set(`Usuário ${criado.nomeCompleto} cadastrado. Senha temporária: Sigea@123`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarUsuarios();
@@ -173,30 +210,32 @@ export class GerenciarUsuariosComponent implements OnInit {
   }
 
   solicitarResetSenha(usuario: Usuario): void {
-    const confirmar = confirm(`Confirma o reset da senha de ${usuario.nomeCompleto}? A senha retornará para Sigea@123 e o usuário deverá redefini-la no próximo acesso.`);
+    const confirmar = confirm(`Resetar a senha de ${usuario.nomeCompleto} para "Sigea@123"?`);
     if (!confirmar) return;
 
     this.usuarioService.resetarSenha(usuario.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(`Senha do usuário ${usuario.nomeCompleto} resetada para Sigea@123.`);
+        this.mensagemSucesso.set(`Senha de ${usuario.nomeCompleto} resetada.`);
         this.carregarUsuarios();
       },
-      error: (err) => this.mensagemErro.set('Erro ao resetar senha: ' + err.message)
+      error: (err) => this.mensagemErro.set('Erro ao resetar: ' + err.message)
     });
   }
 
-  inativar(id: number): void {
-    this.usuarioService.inativar(id).subscribe({
+  alternarAtivacao(usuario: Usuario): void {
+    const obs = usuario.ativo
+      ? this.usuarioService.inativar(usuario.id)
+      : this.usuarioService.reativar(usuario.id);
+
+    obs.subscribe({
       next: () => this.carregarUsuarios(),
       error: (err) => this.mensagemErro.set(err.error?.mensagem || err.message)
     });
   }
 
-  reativar(id: number): void {
-    this.usuarioService.reativar(id).subscribe({
-      next: () => this.carregarUsuarios(),
-      error: (err) => this.mensagemErro.set(err.error?.mensagem || err.message)
-    });
+  private formatarCpf(cpf: string): string {
+    if (!cpf || cpf.length !== 11) return cpf;
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   }
 
   private limparMensagens(): void {
