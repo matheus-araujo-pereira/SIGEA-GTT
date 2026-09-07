@@ -1,0 +1,158 @@
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-dark mb-1">Unidades Hospitalares (HU-UFS)</h1>
+      <p class="text-muted small mb-0">Controle administrativo: criação, alteração e desativação de setores assistenciais</p>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" (click)="iniciarNovoCadastro()">
+      <i class="bi" [class.bi-x-lg]="exibirFormulario" [class.bi-plus-lg]="!exibirFormulario"></i>
+      {{ exibirFormulario ? 'Fechar Painel' : 'Nova Unidade' }}
+    </button>
+  </div>
+
+  @if (mensagemSucesso()) {
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
+      <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
+      <button type="button" class="btn-close" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (exibirFormulario) {
+    <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
+      <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
+        <h2 class="h6 card-title mb-0 fw-bold text-primary">
+          <i class="bi" [class.bi-pencil]="idEdicao" [class.bi-building-add]="!idEdicao"></i>
+          {{ idEdicao ? 'Editar Unidade #' + idEdicao : 'Cadastrar Nova Unidade Hospitalar' }}
+        </h2>
+        <button type="button" class="btn-close" (click)="fecharFormulario()" aria-label="Fechar"></button>
+      </div>
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="siglaSetor" class="form-label small fw-semibold text-secondary">Sigla do Setor</label>
+              <input id="siglaSetor"
+                     type="text"
+                     class="form-control form-control-sm text-uppercase font-monospace"
+                     [(ngModel)]="formulario.sigla"
+                     name="sigla"
+                     required
+                     maxlength="20"
+                     placeholder="Ex.: CINF">
+            </div>
+            <div class="col-md-8">
+              <label for="nomeUnidade" class="form-label small fw-semibold text-secondary">Nome Completo da Unidade</label>
+              <input id="nomeUnidade"
+                     type="text"
+                     class="form-control form-control-sm"
+                     [(ngModel)]="formulario.nome"
+                     name="nome"
+                     required
+                     maxlength="100"
+                     placeholder="Ex.: Clínica de Doenças Infecciosas">
+            </div>
+          </div>
+
+          <div class="mt-4 text-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm me-2" (click)="fecharFormulario()">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="carregando()">
+              @if (carregando()) {
+                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              }
+              {{ idEdicao ? 'Salvar Alterações' : 'Cadastrar Unidade' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <div class="card bg-surface border border-subdued shadow-sm p-3 mb-3 rounded-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text"
+                 class="form-control border-start-0"
+                 [ngModel]="termoBusca()"
+                 (ngModelChange)="termoBusca.set($event)"
+                 placeholder="Pesquisar por nome ou sigla da unidade...">
+          @if (termoBusca()) {
+            <button type="button" class="btn btn-light border border-start-0 text-muted" (click)="termoBusca.set('')">
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+      <div class="col-md-4">
+        <select class="form-select form-select-sm"
+                [ngModel]="filtroStatus()"
+                (ngModelChange)="filtroStatus.set($event)">
+          <option value="TODOS">Todos os Status ({{ unidades().length }})</option>
+          <option value="ATIVAS">Apenas Ativas</option>
+          <option value="INATIVAS">Apenas Inativas</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-surface border border-subdued shadow-sm rounded-3">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light small text-muted text-uppercase fs-xxs">
+            <tr>
+              <th scope="col" class="ps-3 text-nowrap">ID</th>
+              <th scope="col" class="text-nowrap">Sigla</th>
+              <th scope="col">Nome da Unidade</th>
+              <th scope="col" class="text-nowrap">Status</th>
+              <th scope="col" class="text-end pe-3 text-nowrap">Ações ADM</th>
+            </tr>
+          </thead>
+          <tbody class="small">
+            @if (unidadesFiltradas().length === 0) {
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted">
+                  <i class="bi bi-search fs-2 d-block mb-1 text-secondary"></i>
+                  Nenhuma unidade hospitalar encontrada.
+                </td>
+              </tr>
+            }
+            @for (u of unidadesFiltradas(); track u.id) {
+              <tr>
+                <td class="ps-3 fw-bold text-dark">{{ u.id }}</td>
+                <td><span class="badge bg-light text-dark border border-subdued font-monospace">{{ u.sigla }}</span></td>
+                <td class="fw-semibold text-dark">{{ u.nome }}</td>
+                <td>
+                  <span class="badge" [class.bg-success]="u.ativa" [class.bg-secondary]="!u.ativa">
+                    {{ u.ativa ? 'Ativa' : 'Inativa' }}
+                  </span>
+                </td>
+                <td class="text-end pe-3">
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" (click)="iniciarEdicao(u)" title="Editar dados">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" (click)="alternarStatus(u.id)" [title]="u.ativa ? 'Desativar' : 'Ativar'">
+                      <i class="bi" [class.bi-toggle-on]="u.ativa" [class.text-success]="u.ativa" [class.bi-toggle-off]="!u.ativa" [class.text-muted]="!u.ativa"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" (click)="excluir(u)" title="Excluir Definitivamente">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

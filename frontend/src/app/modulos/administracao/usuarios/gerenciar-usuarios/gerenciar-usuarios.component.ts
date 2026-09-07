@@ -9,246 +9,32 @@ import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
   selector: 'app-gerenciar-usuarios',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div>
-      <!-- Topo: Título e Ação -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-          <h1 class="h4 fw-bold text-dark mb-1">Controle de Usuários e Perfis</h1>
-          <p class="text-muted small mb-0">Parametrização global de acessos, edição e redefinição de credenciais</p>
-        </div>
-        <button class="btn btn-primary btn-sm px-3 shadow-sm" (click)="iniciarNovoCadastro()">
-          <i class="bi" [ngClass]="exibirFormulario ? 'bi-x-lg' : 'bi-person-plus-fill'"></i>
-          {{ exibirFormulario ? 'Fechar Painel' : 'Novo Usuário' }}
-        </button>
-      </div>
-
-      <!-- Alertas de Feedback -->
-      <div *ngIf="mensagemSucesso()" class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-        <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
-        <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)"></button>
-      </div>
-
-      <div *ngIf="mensagemErro()" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
-        <button type="button" class="btn-close" (click)="mensagemErro.set(null)"></button>
-      </div>
-
-      <!-- Painel de Cadastro / Edição -->
-      <div *ngIf="exibirFormulario" class="card shadow-sm border-0 mb-4 rounded-3">
-        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-          <div>
-            <h6 class="card-title mb-0 fw-bold text-primary">
-              <i class="bi" [ngClass]="idEdicao ? 'bi-pencil-square' : 'bi-person-plus'"></i>
-              {{ idEdicao ? 'Editar Usuário #' + idEdicao : 'Cadastrar Novo Usuário' }}
-            </h6>
-            <small class="text-muted" *ngIf="!idEdicao">A senha provisória padrão será <code>Sigea&#64;123</code></small>
-            <small class="text-muted" *ngIf="idEdicao">Atualize os dados e confirme as alterações no banco</small>
-          </div>
-          <button type="button" class="btn-close" (click)="fecharFormulario()"></button>
-        </div>
-
-        <div class="card-body p-4">
-          <form (ngSubmit)="salvar()">
-            <div class="row g-3">
-              <div class="col-md-5">
-                <label class="form-label small fw-semibold">Nome Completo</label>
-                <input type="text" class="form-control form-control-sm" [(ngModel)]="formulario.nomeCompleto" name="nomeCompleto" required maxlength="150" placeholder="Ex.: Maria Souza">
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label small fw-semibold">E-mail</label>
-                <input type="email" class="form-control form-control-sm" [(ngModel)]="formulario.email" name="email" required maxlength="150" placeholder="usuario@ufs.br">
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">CPF (11 dígitos)</label>
-                <input type="text" class="form-control form-control-sm" [value]="formulario.cpf" (input)="aplicarMascaraCpf($event)" name="cpf" required maxlength="14" placeholder="000.000.000-00">
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label small fw-semibold">Perfil de Acesso</label>
-                <select class="form-select form-select-sm" [(ngModel)]="formulario.perfil" name="perfil" (change)="ajustarPerfil()" required>
-                  <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-                  <option value="PROFESSOR">PROFESSOR</option>
-                  <option value="ALUNO">ALUNO</option>
-                </select>
-              </div>
-
-              <div class="col-md-5">
-                <label class="form-label small fw-semibold">Cargo / Função Institucional</label>
-                <input type="text" class="form-control form-control-sm" [(ngModel)]="formulario.cargo" name="cargo" required maxlength="100" placeholder="Ex.: Docente Adjunto, Residente...">
-              </div>
-
-              <div class="col-md-4" *ngIf="formulario.perfil === 'ALUNO'">
-                <label class="form-label small fw-semibold text-primary">Matrícula SIGAA (12 dígitos)</label>
-                <input type="text" class="form-control form-control-sm border-primary" [value]="formulario.matriculaSigaa || ''" (input)="aplicarMascaraMatricula($event)" name="matriculaSigaa" maxlength="12" placeholder="Ex.: 202100114080">
-              </div>
-            </div>
-
-            <div class="mt-4 text-end">
-              <button type="button" class="btn btn-light btn-sm me-2" (click)="fecharFormulario()">Cancelar</button>
-              <button type="submit" class="btn btn-primary btn-sm px-4" [disabled]="carregando()">
-                <span *ngIf="carregando()" class="spinner-border spinner-border-sm me-1"></span>
-                {{ idEdicao ? 'Salvar Alterações' : 'Cadastrar Usuário' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Barra de Filtros Reativos -->
-      <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
-        <div class="row g-2 align-items-center">
-          <div class="col-md-6">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-              <input type="text" 
-                     class="form-control bg-light border-start-0" 
-                     [ngModel]="termoBusca()" 
-                     (ngModelChange)="termoBusca.set($event)" 
-                     placeholder="Pesquisar por nome, CPF, e-mail ou matrícula...">
-              <button *ngIf="termoBusca()" class="btn btn-light border border-start-0 text-muted" type="button" (click)="termoBusca.set('')">
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <select class="form-select form-select-sm" 
-                    [ngModel]="filtroPerfil()" 
-                    (ngModelChange)="filtroPerfil.set($event)">
-              <option value="TODOS">Todos os Perfis</option>
-              <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-              <option value="PROFESSOR">PROFESSOR</option>
-              <option value="ALUNO">ALUNO</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <select class="form-select form-select-sm" 
-                    [ngModel]="filtroStatus()" 
-                    (ngModelChange)="filtroStatus.set($event)">
-              <option value="TODOS">Todos os Status</option>
-              <option value="ATIVOS">Apenas Ativos</option>
-              <option value="INATIVOS">Apenas Inativos</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabela Reativa Filtrada -->
-      <div class="card shadow-sm border-0 rounded-3">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light small text-muted text-uppercase" style="font-size: 0.75rem;">
-                <tr>
-                  <th scope="col" class="ps-3">Usuário</th>
-                  <th scope="col">Contato / CPF</th>
-                  <th scope="col">Cargo / Vínculo</th>
-                  <th scope="col">Perfil</th>
-                  <th scope="col">1º Acesso</th>
-                  <th scope="col">Status</th>
-                  <th scope="col" class="text-end pe-3">Ações Administrativas</th>
-                </tr>
-              </thead>
-              <tbody class="small">
-                <tr *ngIf="usuariosFiltrados().length === 0">
-                  <td colspan="7" class="text-center py-5 text-muted">
-                    <i class="bi bi-search fs-2 d-block mb-1 text-secondary"></i>
-                    Nenhum usuário encontrado para os critérios informados.
-                  </td>
-                </tr>
-                <tr *ngFor="let u of usuariosFiltrados()">
-                  <td class="ps-3">
-                    <div class="fw-bold text-dark d-flex align-items-center gap-1">
-                      {{ u.nomeCompleto }}
-                      <span *ngIf="u.id === auth.usuarioLogado()?.id" class="badge bg-secondary-subtle text-secondary border small" style="font-size: 0.65rem;">Você</span>
-                    </div>
-                    <span class="text-muted small" *ngIf="u.matriculaSigaa">Matrícula: <code>{{ u.matriculaSigaa }}</code></span>
-                  </td>
-                  <td>
-                    <div>{{ u.email }}</div>
-                    <code class="small text-muted">{{ formatarCpfExibicao(u.cpf) }}</code>
-                  </td>
-                  <td>{{ u.cargo }}</td>
-                  <td>
-                    <span class="badge" [ngClass]="{
-                      'bg-danger-subtle text-danger border border-danger-subtle': u.perfil === 'ADMINISTRADOR',
-                      'bg-primary-subtle text-primary border border-primary-subtle': u.perfil === 'PROFESSOR',
-                      'bg-info-subtle text-info-emphasis border border-info-subtle': u.perfil === 'ALUNO'
-                    }">
-                      {{ u.perfil }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="badge" [ngClass]="u.primeiroAcesso ? 'bg-warning-subtle text-warning-emphasis' : 'bg-light text-muted border'">
-                      {{ u.primeiroAcesso ? 'Pendente' : 'Concluído' }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="badge" [ngClass]="u.ativo ? 'bg-success' : 'bg-secondary'">
-                      {{ u.ativo ? 'Ativo' : 'Inativo' }}
-                    </span>
-                  </td>
-                  <td class="text-end pe-3">
-                    <div class="btn-group btn-group-sm">
-                      <button class="btn btn-outline-primary" (click)="iniciarEdicao(u)" title="Editar dados completos">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button class="btn btn-outline-secondary" (click)="solicitarResetSenha(u)" title="Resetar senha para Sigea@123">
-                        <i class="bi bi-key"></i>
-                      </button>
-                      <button *ngIf="u.ativo" 
-                              class="btn btn-outline-warning" 
-                              (click)="inativar(u.id)" 
-                              [disabled]="u.id === auth.usuarioLogado()?.id" 
-                              title="Inativar usuário">
-                        <i class="bi bi-person-x"></i>
-                      </button>
-                      <button *ngIf="!u.ativo" 
-                              class="btn btn-outline-success" 
-                              (click)="reativar(u.id)" 
-                              title="Reativar acesso">
-                        <i class="bi bi-person-check"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './gerenciar-usuarios.component.html'
 })
 export class GerenciarUsuariosComponent implements OnInit {
-  private usuarioService = inject(UsuarioService);
-  auth = inject(AutenticacaoService);
+  private readonly usuarioService = inject(UsuarioService);
+  readonly auth = inject(AutenticacaoService);
 
-  usuarios = signal<Usuario[]>([]);
-  carregando = signal<boolean>(false);
-  mensagemSucesso = signal<string | null>(null);
-  mensagemErro = signal<string | null>(null);
+  readonly usuarios = signal<Usuario[]>([]);
+  readonly carregando = signal<boolean>(false);
+  readonly mensagemSucesso = signal<string | null>(null);
+  readonly mensagemErro = signal<string | null>(null);
 
   exibirFormulario = false;
   idEdicao: number | null = null;
   formulario: UsuarioRequisicao = this.obterFormularioVazio();
 
-  // Sinais Reativos de Filtro
-  termoBusca = signal<string>('');
-  filtroPerfil = signal<string>('TODOS');
-  filtroStatus = signal<string>('TODOS');
+  readonly termoBusca = signal<string>('');
+  readonly filtroPerfil = signal<string>('TODOS');
+  readonly filtroStatus = signal<string>('TODOS');
 
-  // Computação Reativa Automática
-  usuariosFiltrados = computed(() => {
+  readonly usuariosFiltrados = computed(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const apenasDigitos = termo.replace(/\D/g, '');
     const perfil = this.filtroPerfil();
     const status = this.filtroStatus();
 
-    return this.usuarios().filter(u => {
-      // 1. Filtro textual
+    return this.usuarios().filter((u) => {
       let correspondeTermo = true;
       if (termo.length > 0) {
         const correspondeNome = u.nomeCompleto ? u.nomeCompleto.toLowerCase().includes(termo) : false;
@@ -259,10 +45,7 @@ export class GerenciarUsuariosComponent implements OnInit {
         correspondeTermo = correspondeNome || correspondeEmail || correspondeCpf || correspondeMatricula;
       }
 
-      // 2. Filtro de perfil
       const correspondePerfil = perfil === 'TODOS' || u.perfil === perfil;
-
-      // 3. Filtro de status ativo/inativo
       const correspondeStatus = status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
 
       return correspondeTermo && correspondePerfil && correspondeStatus;
