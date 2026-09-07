@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService, UsuarioRequisicao } from '../../../../nucleo/servicos/usuario.service';
 import { AutenticacaoService } from '../../../../nucleo/servicos/autenticacao.service';
-import { Usuario, PerfilUsuario } from '../../../../compartilhado/modelos/dominio.modelos';
+import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
+import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface UsuarioLinha {
   id: number;
@@ -23,7 +24,7 @@ export interface UsuarioLinha {
 @Component({
   selector: 'app-gerenciar-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './gerenciar-usuarios.component.html'
 })
 export class GerenciarUsuariosComponent implements OnInit {
@@ -43,6 +44,9 @@ export class GerenciarUsuariosComponent implements OnInit {
   readonly filtroPerfil = signal('TODOS');
   readonly filtroStatus = signal('TODOS');
 
+  readonly paginaAtual = signal(1);
+  readonly itensPorPagina = 10;
+
   readonly usuarioLogadoId = computed(() => this.auth.usuarioLogado()?.id);
 
   readonly tituloFormulario = computed(() => {
@@ -50,12 +54,12 @@ export class GerenciarUsuariosComponent implements OnInit {
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Usuário';
+    return this.idEdicao ? 'Editar Usuário' : 'Cadastrar Usuário';
   });
 
   readonly totalUsuarios = computed(() => this.usuarios().length);
 
-  readonly usuariosLinhas = computed<UsuarioLinha[]>(() => {
+  readonly usuariosLinhasFiltradas = computed<UsuarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const apenasDigitos = termo.replace(/\D/g, '');
     const perfil = this.filtroPerfil();
@@ -94,6 +98,13 @@ export class GerenciarUsuariosComponent implements OnInit {
       }));
   });
 
+  readonly totalFiltrados = computed(() => this.usuariosLinhasFiltradas().length);
+
+  readonly usuariosLinhasPaginadas = computed<UsuarioLinha[]>(() => {
+    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
+    return this.usuariosLinhasFiltradas().slice(inicio, inicio + this.itensPorPagina);
+  });
+
   ngOnInit(): void {
     this.carregarUsuarios();
   }
@@ -103,6 +114,25 @@ export class GerenciarUsuariosComponent implements OnInit {
       next: (dados) => this.usuarios.set(dados),
       error: (err) => this.mensagemErro.set('Erro ao carregar dados: ' + (err.error?.mensagem || err.message))
     });
+  }
+
+  atualizarBusca(termo: string): void {
+    this.termoBusca.set(termo);
+    this.paginaAtual.set(1);
+  }
+
+  atualizarFiltroPerfil(perfil: string): void {
+    this.filtroPerfil.set(perfil);
+    this.paginaAtual.set(1);
+  }
+
+  atualizarFiltroStatus(status: string): void {
+    this.filtroStatus.set(status);
+    this.paginaAtual.set(1);
+  }
+
+  mudarPagina(novaPagina: number): void {
+    this.paginaAtual.set(novaPagina);
   }
 
   iniciarNovoCadastro(): void {

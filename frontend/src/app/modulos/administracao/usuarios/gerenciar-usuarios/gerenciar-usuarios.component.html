@@ -87,12 +87,12 @@
     <input type="text"
            class="form-control form-control-sm"
            [ngModel]="termoBusca()"
-           (ngModelChange)="termoBusca.set($event)"
+           (ngModelChange)="atualizarBusca($event)"
            placeholder="Filtrar por nome, CPF, e-mail ou matrícula...">
 
     <select class="form-select form-select-sm w-auto"
             [ngModel]="filtroPerfil()"
-            (ngModelChange)="filtroPerfil.set($event)">
+            (ngModelChange)="atualizarFiltroPerfil($event)">
       <option value="TODOS">Todos os Perfis</option>
       <option value="ADMINISTRADOR">ADMINISTRADOR</option>
       <option value="PROFESSOR">PROFESSOR</option>
@@ -101,14 +101,14 @@
 
     <select class="form-select form-select-sm w-auto"
             [ngModel]="filtroStatus()"
-            (ngModelChange)="filtroStatus.set($event)">
+            (ngModelChange)="atualizarFiltroStatus($event)">
       <option value="TODOS">Todos os Status</option>
       <option value="ATIVOS">Ativos</option>
       <option value="INATIVOS">Inativos</option>
     </select>
 
     @if (termoBusca()) {
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="termoBusca.set('')">LIMPAR</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="atualizarBusca('')">LIMPAR</button>
     }
   </div>
 
@@ -117,7 +117,6 @@
     <table class="table table-hover table-sm m-0">
       <thead class="bg-light text-secondary small font-monospace b-b">
         <tr>
-          <th scope="col" class="p-2">ID</th>
           <th scope="col" class="p-2">NOME</th>
           <th scope="col" class="p-2">MATRÍCULA</th>
           <th scope="col" class="p-2">E-MAIL / CPF</th>
@@ -129,9 +128,8 @@
         </tr>
       </thead>
       <tbody class="small font-monospace">
-        @for (u of usuariosLinhas(); track u.id) {
+        @for (u of usuariosLinhasPaginadas(); track u.id) {
           <tr>
-            <td class="p-2">{{ u.id }}</td>
             <td class="p-2 font-sans-serif fw-semibold text-dark">
               {{ u.nome }}
               @if (u.ehVoce) {
@@ -166,12 +164,19 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="9" class="text-center py-4 text-muted">
+            <td colspan="8" class="text-center py-4 text-muted">
               Nenhum usuário encontrado.
             </td>
           </tr>
         }
       </tbody>
     </table>
+
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)">
+    </app-paginacao>
   </div>
 </div>
