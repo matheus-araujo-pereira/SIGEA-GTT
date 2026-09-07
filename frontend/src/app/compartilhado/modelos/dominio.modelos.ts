@@ -17,6 +17,7 @@ export interface Usuario {
   perfil: PerfilUsuario;
   primeiroAcesso?: boolean;
   ativo: boolean;
+  criadoEm?: string;
 }
 
 export interface ModuloGtt {
@@ -25,6 +26,7 @@ export interface ModuloGtt {
   nome: string;
   descricao?: string;
   ativo: boolean;
+  criadoEm?: string;
 }
 
 export interface GatilhoGtt {
@@ -194,7 +196,6 @@ export interface ComparativoRevisao {
   revisor1Finalizou: boolean;
   revisor1TempoSegundos: number;
   revisor1Achados: AchadoGatilho[];
-
   revisor2Id: number;
   revisor2Nome: string;
   revisor2Finalizou: boolean;

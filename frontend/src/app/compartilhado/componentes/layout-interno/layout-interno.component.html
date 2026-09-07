@@ -1,0 +1,74 @@
+<div class="d-flex min-vh-100 bg-light">
+  <aside class="sidebar-layout d-flex flex-column flex-shrink-0 p-3 bg-white border-end border-subdued shadow-sm">
+    <div class="d-flex align-items-center gap-2 mb-4 px-2">
+      <div class="brand-icon bg-primary text-white rounded-3 d-flex align-items-center justify-content-center">
+        <i class="bi bi-hospital fs-5"></i>
+      </div>
+      <div>
+        <span class="fs-6 fw-bold text-dark d-block">SIGEA-GTT</span>
+        <span class="badge bg-light text-secondary border small">UFS / DCOMP</span>
+      </div>
+    </div>
+
+    <nav class="nav nav-pills flex-column mb-auto gap-1">
+      @if (usuario()?.perfil === 'ADMINISTRADOR') {
+        <div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-1 fs-xxs">Administração</div>
+        <a routerLink="/usuarios" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-people"></i> Usuários & Perfis
+        </a>
+        <a routerLink="/gatilhos" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-sliders"></i> Gatilhos & Módulos
+        </a>
+        <a routerLink="/unidades" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-building"></i> Unidades HU
+        </a>
+      }
+
+      @if (usuario()?.perfil === 'PROFESSOR' || usuario()?.perfil === 'ADMINISTRADOR') {
+        <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">Epidemiologia</div>
+        <a routerLink="/indicadores" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-graph-up"></i> Indicadores IHI
+        </a>
+
+        <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">Gestão Acadêmica</div>
+        <a routerLink="/turmas" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-mortarboard"></i> Turmas & Alunos
+        </a>
+        <a routerLink="/cenarios" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-medical"></i> Cenários Clínicos
+        </a>
+        <a routerLink="/prontuarios" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-journal-medical"></i> Prontuários Simulados
+        </a>
+        <a routerLink="/atividades" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-calendar-check"></i> Atividades & Duplas
+        </a>
+      }
+
+      @if (usuario()?.perfil === 'ALUNO') {
+        <div class="text-uppercase text-muted fw-bold px-2 mt-2 mb-1 fs-xxs">Auditoria Clínica</div>
+        <a routerLink="/auditoria" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+          <i class="bi bi-clipboard-pulse"></i> Minhas Auditorias
+        </a>
+      }
+    </nav>
+
+    <div class="pt-3 mt-auto border-top border-subdued">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="overflow-hidden me-2">
+          <div class="fw-semibold text-dark text-truncate small">{{ usuario()?.nomeCompleto }}</div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-xxs">
+            {{ usuario()?.perfil }}
+          </span>
+        </div>
+        <button class="btn btn-sm btn-outline-danger border-0" (click)="sair()" title="Encerrar Sessão">
+          <i class="bi bi-box-arrow-right fs-5"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-grow-1 p-4 overflow-auto bg-light">
+    <router-outlet></router-outlet>
+  </main>
+</div>
