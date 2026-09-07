@@ -1,199 +1,153 @@
 <div>
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <!-- TOPO -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
     <div>
-      <button type="button" class="btn btn-outline-secondary btn-sm mb-2" (click)="voltar()">
-        <i class="bi bi-arrow-left me-1"></i> Voltar ao Consenso
-      </button>
-      <h1 class="h4 fw-bold text-dark mb-1">Ciclo de Melhoria da Qualidade (IHI-GTT)</h1>
-      <p class="text-muted small mb-0">Investigação de Causa-Raiz (Ishikawa), Plano de Ação 5W3H e Ciclo PDCA</p>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="voltar()">
+          VOLTAR
+        </button>
+        <h1 class="h5 fw-bold text-dark m-0">Ciclo de Melhoria da Qualidade (IHI-GTT)</h1>
+      </div>
+      <span class="text-secondary small font-monospace">Consenso #{{ consensoId }} | Causa-Raiz (Ishikawa), 5W3H e Ciclo PDCA</span>
     </div>
 
-    <button type="button" class="btn btn-success btn-sm px-4" (click)="salvar()" [disabled]="carregando()">
-      @if (carregando()) {
-        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-      }
-      <i class="bi bi-save me-1"></i> Salvar Plano de Melhoria
+    <button type="button" class="btn btn-success btn-sm px-3" (click)="salvar()" [disabled]="carregando()">
+      SALVAR PLANO
     </button>
   </div>
 
+  <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-      <i class="bi bi-check-circle me-2"></i>{{ mensagemSucesso() }}
-      <button type="button" class="btn-close" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    <div class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between">
+      <span>{{ mensagemSucesso() }}</span>
+      <button type="button" class="btn btn-sm p-0 text-success" (click)="mensagemSucesso.set(null)">[X]</button>
     </div>
   }
 
   @if (mensagemErro()) {
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-      <i class="bi bi-exclamation-triangle me-2"></i>{{ mensagemErro() }}
-      <button type="button" class="btn-close" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    <div class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between">
+      <span>{{ mensagemErro() }}</span>
+      <button type="button" class="btn btn-sm p-0 text-danger" (click)="mensagemErro.set(null)">[X]</button>
     </div>
   }
 
-  <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
-    <div class="card-header bg-surface py-3 border-bottom border-subdued">
-      <h2 class="h6 card-title mb-0 fw-bold text-primary">
-        <i class="bi bi-diagram-3 me-2"></i> 1. Diagrama de Ishikawa (Análise de Causa-Raiz - 6 M's)
-      </h2>
+  <!-- SEÇÃO 1: ISHIKAWA 6 M'S -->
+  <div class="bg-white b-1 mb-3 p-3">
+    <div class="mb-3 pb-2 b-b">
+      <span class="fw-bold text-dark small font-monospace">1. DIAGRAMA DE ISHIKAWA (INVESTIGAÇÃO DE CAUSA-RAIZ - 6 M'S)</span>
     </div>
-    <div class="card-body p-4">
-      <div class="mb-3">
-        <label for="efeitoPrincipal" class="form-label small fw-bold text-dark">Efeito Principal (Evento Adverso Homologado)</label>
-        <input id="efeitoPrincipal"
-               type="text"
-               class="form-control form-control-sm"
-               [(ngModel)]="ishikawa.efeitoPrincipal"
-               name="efeitoPrincipal"
-               placeholder="Ex.: Ocorrência de lesão renal aguda por dosagem inadequada de antimicrobiano...">
-      </div>
 
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label for="ishikawaMetodo" class="form-label small fw-semibold text-secondary">Método (Procedimentos e Protocolos)</label>
-          <textarea id="ishikawaMetodo"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="ishikawa.metodo"
-                    name="metodo"
-                    placeholder="Falhas em protocolos de checagem dupla..."></textarea>
-        </div>
-        <div class="col-md-4">
-          <label for="ishikawaMaoDeObra" class="form-label small fw-semibold text-secondary">Mão de Obra (Equipe Multiprofissional)</label>
-          <textarea id="ishikawaMaoDeObra"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="ishikawa.maoDeObra"
-                    name="maoDeObra"
-                    placeholder="Sobrecarga de trabalho, falha de comunicação..."></textarea>
-        </div>
-        <div class="col-md-4">
-          <label for="ishikawaMaterial" class="form-label small fw-semibold text-secondary">Material (Insumos e Fármacos)</label>
-          <textarea id="ishikawaMaterial"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="ishikawa.material"
-                    name="material"
-                    placeholder="Aparência semelhante entre ampolas..."></textarea>
-        </div>
-        <div class="col-md-4">
-          <label for="ishikawaMedida" class="form-label small fw-semibold text-secondary">Medida (Métricas e Indicadores)</label>
-          <textarea id="ishikawaMedida"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="ishikawa.medida"
-                    name="medida"
-                    placeholder="Ausência de monitoramento rigoroso de creatinina..."></textarea>
-        </div>
-        <div class="col-md-4">
-          <label for="ishikawaMeioAmbiente" class="form-label small fw-semibold text-secondary">Meio Ambiente (Infraestrutura e Setor)</label>
-          <textarea id="ishikawaMeioAmbiente"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="ishikawa.meioAmbiente"
-                    name="meioAmbiente"
-                    placeholder="Ruído excessivo no posto de enfermagem..."></textarea>
-        </div>
-        <div class="col-md-4">
-          <label for="ishikawaMaquina" class="form-label small fw-semibold text-secondary">Máquina (Equipamentos e Tecnologia)</label>
-          <textarea id="ishikawaMaquina"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="ishikawa.maquina"
-                    name="maquina"
-                    placeholder="Indisponibilidade temporária de alarmes na bomba infusora..."></textarea>
-        </div>
+    <div class="mb-3">
+      <label for="efeitoPrincipal" class="form-label small fw-bold text-dark m-0">Efeito Principal (Evento Adverso Homologado)</label>
+      <input id="efeitoPrincipal" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="ishikawa.efeitoPrincipal" name="efeitoPrincipal" placeholder="Ex.: Ocorrência de lesão renal aguda por dosagem inadequada de antimicrobiano...">
+    </div>
+
+    <div class="row g-2">
+      <div class="col-md-4">
+        <label for="ishikawaMetodo" class="form-label small text-secondary m-0">Método</label>
+        <textarea id="ishikawaMetodo" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="ishikawa.metodo" name="metodo"></textarea>
+      </div>
+      <div class="col-md-4">
+        <label for="ishikawaMaoDeObra" class="form-label small text-secondary m-0">Mão de Obra</label>
+        <textarea id="ishikawaMaoDeObra" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="ishikawa.maoDeObra" name="maoDeObra"></textarea>
+      </div>
+      <div class="col-md-4">
+        <label for="ishikawaMaterial" class="form-label small text-secondary m-0">Material</label>
+        <textarea id="ishikawaMaterial" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="ishikawa.material" name="material"></textarea>
+      </div>
+      <div class="col-md-4">
+        <label for="ishikawaMedida" class="form-label small text-secondary m-0">Medida</label>
+        <textarea id="ishikawaMedida" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="ishikawa.medida" name="medida"></textarea>
+      </div>
+      <div class="col-md-4">
+        <label for="ishikawaMeioAmbiente" class="form-label small text-secondary m-0">Meio Ambiente</label>
+        <textarea id="ishikawaMeioAmbiente" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="ishikawa.meioAmbiente" name="meioAmbiente"></textarea>
+      </div>
+      <div class="col-md-4">
+        <label for="ishikawaMaquina" class="form-label small text-secondary m-0">Máquina</label>
+        <textarea id="ishikawaMaquina" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="ishikawa.maquina" name="maquina"></textarea>
       </div>
     </div>
   </div>
 
-  <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
-    <div class="card-header bg-surface py-3 border-bottom border-subdued d-flex justify-content-between align-items-center">
-      <h2 class="h6 card-title mb-0 fw-bold text-success">
-        <i class="bi bi-list-task me-2"></i> 2. Plano de Ação (Metodologia 5W3H)
-      </h2>
-      <button type="button" class="btn btn-outline-success btn-sm" (click)="adicionarPlano5w3h()">
-        <i class="bi bi-plus-lg me-1"></i> Adicionar Ação
+  <!-- SEÇÃO 2: PLANO DE AÇÃO 5W3H -->
+  <div class="bg-white b-1 mb-3 p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+      <span class="fw-bold text-dark small font-monospace">2. PLANO DE AÇÃO (METODOLOGIA 5W3H) [{{ totalAcoes5w3h() }} AÇÕES]</span>
+      <button type="button" class="btn btn-primary btn-sm py-0 px-2" (click)="adicionarPlano5w3h()">
+        + ADICIONAR AÇÃO
       </button>
     </div>
-    <div class="card-body p-4">
-      @if (planos5w3h.length === 0) {
-        <div class="text-center py-4 text-muted small">
-          Nenhuma ação cadastrada no plano. Clique em "Adicionar Ação".
+
+    @for (p of planos5w3h; track idx; let idx = $index) {
+      <div class="p-2 mb-2 bg-light b-1">
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-1 b-b">
+          <span class="fw-bold text-dark font-monospace small">Ação #{{ idx + 1 }}</span>
+          <button type="button" class="btn btn-sm p-0 text-danger" (click)="removerPlano5w3h(idx)">[REMOVER]</button>
         </div>
-      }
 
-      @for (p of planos5w3h; track idx; let idx = $index) {
-        <div class="card bg-surface-subdued border border-subdued mb-3 p-3 rounded-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge bg-success font-monospace">Ação #{{ idx + 1 }}</span>
-            <button type="button" class="btn btn-sm btn-outline-danger border-0 p-0" (click)="removerPlano5w3h(idx)" title="Remover Ação">
-              <i class="bi bi-trash"></i>
-            </button>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label [for]="'what-' + idx" class="form-label small text-secondary m-0">What (O que?)</label>
+            <input [id]="'what-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.oQue" [name]="'what-' + idx">
           </div>
-
-          <div class="row g-2">
-            <div class="col-md-6">
-              <label [for]="'what-' + idx" class="form-label small fw-semibold text-secondary">What (O que será feito?)</label>
-              <input [id]="'what-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.oQue" [name]="'what-' + idx">
-            </div>
-            <div class="col-md-6">
-              <label [for]="'why-' + idx" class="form-label small fw-semibold text-secondary">Why (Por que será feito?)</label>
-              <input [id]="'why-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.porQue" [name]="'why-' + idx">
-            </div>
-            <div class="col-md-3">
-              <label [for]="'who-' + idx" class="form-label small fw-semibold text-secondary">Who (Quem fará?)</label>
-              <input [id]="'who-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.quem" [name]="'who-' + idx">
-            </div>
-            <div class="col-md-3">
-              <label [for]="'where-' + idx" class="form-label small fw-semibold text-secondary">Where (Onde será feito?)</label>
-              <input [id]="'where-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.onde" [name]="'where-' + idx">
-            </div>
-            <div class="col-md-3">
-              <label [for]="'when-' + idx" class="form-label small fw-semibold text-secondary">When (Quando / Prazo?)</label>
-              <input [id]="'when-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.quando" [name]="'when-' + idx">
-            </div>
-            <div class="col-md-3">
-              <label [for]="'how-' + idx" class="form-label small fw-semibold text-secondary">How (Como será feito?)</label>
-              <input [id]="'how-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.como" [name]="'how-' + idx">
-            </div>
-            <div class="col-md-6">
-              <label [for]="'howMuch-' + idx" class="form-label small fw-semibold text-secondary">How much (Quanto custa? R$)</label>
-              <input [id]="'howMuch-' + idx" type="number" class="form-control form-control-sm" [(ngModel)]="p.quantoCusta" [name]="'howMuch-' + idx">
-            </div>
-            <div class="col-md-6">
-              <label [for]="'howToMeasure-' + idx" class="form-label small fw-semibold text-secondary">How to measure (Como medir o resultado?)</label>
-              <input [id]="'howToMeasure-' + idx" type="text" class="form-control form-control-sm" [(ngModel)]="p.comoMedir" [name]="'howToMeasure-' + idx">
-            </div>
+          <div class="col-md-6">
+            <label [for]="'why-' + idx" class="form-label small text-secondary m-0">Why (Por que?)</label>
+            <input [id]="'why-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.porQue" [name]="'why-' + idx">
+          </div>
+          <div class="col-md-3">
+            <label [for]="'who-' + idx" class="form-label small text-secondary m-0">Who (Quem?)</label>
+            <input [id]="'who-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.quem" [name]="'who-' + idx">
+          </div>
+          <div class="col-md-3">
+            <label [for]="'where-' + idx" class="form-label small text-secondary m-0">Where (Onde?)</label>
+            <input [id]="'where-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.onde" [name]="'where-' + idx">
+          </div>
+          <div class="col-md-3">
+            <label [for]="'when-' + idx" class="form-label small text-secondary m-0">When (Quando?)</label>
+            <input [id]="'when-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.quando" [name]="'when-' + idx">
+          </div>
+          <div class="col-md-3">
+            <label [for]="'how-' + idx" class="form-label small text-secondary m-0">How (Como?)</label>
+            <input [id]="'how-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.como" [name]="'how-' + idx">
+          </div>
+          <div class="col-md-6">
+            <label [for]="'howMuch-' + idx" class="form-label small text-secondary m-0">How much (Custo R$)</label>
+            <input [id]="'howMuch-' + idx" type="number" class="form-control form-control-sm font-monospace" [(ngModel)]="p.quantoCusta" [name]="'howMuch-' + idx">
+          </div>
+          <div class="col-md-6">
+            <label [for]="'howToMeasure-' + idx" class="form-label small text-secondary m-0">How to measure (Métrica)</label>
+            <input [id]="'howToMeasure-' + idx" type="text" class="form-control form-control-sm font-monospace" [(ngModel)]="p.comoMedir" [name]="'howToMeasure-' + idx">
           </div>
         </div>
-      }
-    </div>
+      </div>
+    } @empty {
+      <div class="text-center py-4 text-muted small">Nenhuma ação cadastrada no plano de melhoria.</div>
+    }
   </div>
 
-  <div class="card bg-surface border border-subdued shadow-sm mb-4 rounded-3">
-    <div class="card-header bg-surface py-3 border-bottom border-subdued">
-      <h2 class="h6 card-title mb-0 fw-bold text-info">
-        <i class="bi bi-arrow-repeat me-2"></i> 3. Ciclo PDCA (Planejar, Fazer, Checar, Agir)
-      </h2>
+  <!-- SEÇÃO 3: CICLO PDCA -->
+  <div class="bg-white b-1 p-3">
+    <div class="mb-3 pb-2 b-b">
+      <span class="fw-bold text-dark small font-monospace">3. CICLO PDCA (PLANEJAR, FAZER, CHECAR, AGIR)</span>
     </div>
-    <div class="card-body p-4">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="pdcaPlan" class="form-label small fw-bold text-primary">P - Plan (Planejar intervenção)</label>
-          <textarea id="pdcaPlan" class="form-control form-control-sm" rows="3" [(ngModel)]="pdca.planejar" name="pdcaPlan" placeholder="Estabelecer metas e processos necessários para entregar resultados..."></textarea>
-        </div>
-        <div class="col-md-6">
-          <label for="pdcaDo" class="form-label small fw-bold text-warning">D - Do (Executar o plano)</label>
-          <textarea id="pdcaDo" class="form-control form-control-sm" rows="3" [(ngModel)]="pdca.fazer" name="pdcaDo" placeholder="Implementar o plano de ação na unidade hospitalar..."></textarea>
-        </div>
-        <div class="col-md-6">
-          <label for="pdcaCheck" class="form-label small fw-bold text-info">C - Check (Checar e monitorar)</label>
-          <textarea id="pdcaCheck" class="form-control form-control-sm" rows="3" [(ngModel)]="pdca.checar" name="pdcaCheck" placeholder="Monitorar e avaliar os resultados frente aos objetivos propostos..."></textarea>
-        </div>
-        <div class="col-md-6">
-          <label for="pdcaAct" class="form-label small fw-bold text-success">A - Act (Agir corretivamente)</label>
-          <textarea id="pdcaAct" class="form-control form-control-sm" rows="3" [(ngModel)]="pdca.agir" name="pdcaAct" placeholder="Tomar ações corretivas para padronizar e melhorar continuamente o processo..."></textarea>
-        </div>
+
+    <div class="row g-2">
+      <div class="col-md-6">
+        <label for="pdcaPlan" class="form-label small fw-bold text-dark m-0">P - Plan (Planejar intervenção)</label>
+        <textarea id="pdcaPlan" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="pdca.planejar" name="pdcaPlan"></textarea>
+      </div>
+      <div class="col-md-6">
+        <label for="pdcaDo" class="form-label small fw-bold text-dark m-0">D - Do (Executar o plano)</label>
+        <textarea id="pdcaDo" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="pdca.fazer" name="pdcaDo"></textarea>
+      </div>
+      <div class="col-md-6">
+        <label for="pdcaCheck" class="form-label small fw-bold text-dark m-0">C - Check (Checar e monitorar)</label>
+        <textarea id="pdcaCheck" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="pdca.checar" name="pdcaCheck"></textarea>
+      </div>
+      <div class="col-md-6">
+        <label for="pdcaAct" class="form-label small fw-bold text-dark m-0">A - Act (Agir corretivamente)</label>
+        <textarea id="pdcaAct" class="form-control form-control-sm font-monospace" rows="2" [(ngModel)]="pdca.agir" name="pdcaAct"></textarea>
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MelhoriaQualidadeService } from '../../../nucleo/servicos/melhoria-qualidade.service';
@@ -20,6 +20,7 @@ import {
 export class MelhoriaQualidadeComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly melhoriaService = inject(MelhoriaQualidadeService);
   readonly auth = inject(AutenticacaoService);
 
@@ -31,6 +32,8 @@ export class MelhoriaQualidadeComponent implements OnInit {
   ishikawa: Ishikawa = { efeitoPrincipal: '' };
   planos5w3h: Plano5w3h[] = [];
   pdca: Pdca = { planejar: '', fazer: '', checar: '', agir: '' };
+
+  readonly totalAcoes5w3h = computed(() => this.planos5w3h.length);
 
   ngOnInit(): void {
     this.consensoId = Number(this.route.snapshot.paramMap.get('consensoId'));
@@ -49,7 +52,7 @@ export class MelhoriaQualidadeComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err: any) => {
-        this.mensagemErro.set('Erro ao carregar melhoria de qualidade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set('Erro ao carregar melhoria: ' + (err.error?.mensagem || err.message));
         this.carregando.set(false);
       }
     });
@@ -87,17 +90,21 @@ export class MelhoriaQualidadeComponent implements OnInit {
         if (resp.ishikawa) this.ishikawa = resp.ishikawa;
         if (resp.planos5w3h) this.planos5w3h = resp.planos5w3h;
         if (resp.pdca) this.pdca = resp.pdca;
-        this.mensagemSucesso.set('Ciclo de melhoria da qualidade salvo com sucesso!');
+        this.mensagemSucesso.set('Plano de melhoria salvo com sucesso.');
         this.carregando.set(false);
       },
       error: (err: any) => {
-        this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar melhoria da qualidade.');
+        this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar plano.');
         this.carregando.set(false);
       }
     });
   }
 
   voltar(): void {
-    this.router.navigate(['/consenso', this.consensoId]);
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/auditoria']);
+    }
   }
 }

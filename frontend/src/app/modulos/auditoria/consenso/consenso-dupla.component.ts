@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConsensoDuplaService } from '../../../nucleo/servicos/consenso-dupla.service';
@@ -12,6 +12,26 @@ import {
   GravidadeNccMerp
 } from '../../../compartilhado/modelos/dominio.modelos';
 
+export interface AchadoComparativoLinha {
+  gatilhoCodigo: string;
+  confirmouDano: boolean;
+  statusDanoStr: string;
+  descricao: string;
+  justificativa: string;
+}
+
+export interface ItemConsensoLinha {
+  gatilhoCodigo: string;
+  descricao: string;
+  moduloNome: string;
+  confirmouDano: boolean;
+  statusDanoStr: string;
+  gravidadeConsenso: GravidadeNccMerp;
+  gravidadeHomologada?: GravidadeNccMerp;
+  justificativaDano: string;
+  original: ItemConsenso;
+}
+
 @Component({
   selector: 'app-consenso-dupla',
   standalone: true,
@@ -21,6 +41,7 @@ import {
 export class ConsensoDuplaComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly consensoService = inject(ConsensoDuplaService);
   private readonly gatilhoService = inject(GatilhoService);
   readonly auth = inject(AutenticacaoService);
@@ -54,6 +75,45 @@ export class ConsensoDuplaComponent implements OnInit {
     return Boolean(comp?.revisor1Finalizou && comp?.revisor2Finalizou);
   });
 
+  readonly statusConsensoStr = computed(() => {
+    const c = this.consenso();
+    if (!c?.submetido) return '[EM ACORDO PELA DUPLA]';
+    if (c.validacao?.homologado) return '[HOMOLOGADO PELO DOCENTE]';
+    return '[AGUARDANDO VALIDAÇÃO DOCENTE]';
+  });
+
+  readonly comparativoRevisor1 = computed(() => {
+    const comp = this.consenso()?.comparativo;
+    return {
+      nome: comp?.revisor1Nome || '-',
+      status: comp?.revisor1Finalizou ? '[FINALIZADO]' : '[EM ANDAMENTO]',
+      tempo: this.formatarSegundos(comp?.revisor1TempoSegundos || 0),
+      achados: (comp?.revisor1Achados || []).map((a) => ({
+        gatilhoCodigo: `[${a.gatilhoCodigo}]`,
+        confirmouDano: a.confirmouDano,
+        statusDanoStr: a.confirmouDano ? (a.gravidade ? `[EA: ${a.gravidade}]` : '[EA CONFIRMADO]') : '[SEM DANO]',
+        descricao: a.gatilhoDescricao,
+        justificativa: a.justificativaDano || ''
+      }))
+    };
+  });
+
+  readonly comparativoRevisor2 = computed(() => {
+    const comp = this.consenso()?.comparativo;
+    return {
+      nome: comp?.revisor2Nome || '-',
+      status: comp?.revisor2Finalizou ? '[FINALIZADO]' : '[EM ANDAMENTO]',
+      tempo: this.formatarSegundos(comp?.revisor2TempoSegundos || 0),
+      achados: (comp?.revisor2Achados || []).map((a) => ({
+        gatilhoCodigo: `[${a.gatilhoCodigo}]`,
+        confirmouDano: a.confirmouDano,
+        statusDanoStr: a.confirmouDano ? (a.gravidade ? `[EA: ${a.gravidade}]` : '[EA CONFIRMADO]') : '[SEM DANO]',
+        descricao: a.gatilhoDescricao,
+        justificativa: a.justificativaDano || ''
+      }))
+    };
+  });
+
   ngOnInit(): void {
     const duplaId = Number(this.route.snapshot.paramMap.get('duplaId'));
     const prontuarioId = Number(this.route.snapshot.paramMap.get('prontuarioId'));
@@ -85,7 +145,12 @@ export class ConsensoDuplaComponent implements OnInit {
 
   carregarGatilhos(): void {
     this.gatilhoService.listar().subscribe({
-      next: (g) => this.todosGatilhos.set(g.filter((item) => item.ativo)),
+      next: (g) => {
+        const ordenados = g
+          .filter((item) => item.ativo)
+          .sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }));
+        this.todosGatilhos.set(ordenados);
+      },
       error: (err) => console.error(err)
     });
   }
@@ -94,7 +159,7 @@ export class ConsensoDuplaComponent implements OnInit {
     const c = this.consenso();
     if (!c) return;
 
-    if (submeterFinal && !confirm('Confirma a submissão do consenso? A planilha será enviada para homologação do professor.')) {
+    if (submeterFinal && !confirm('Confirma o envio do consenso para homologação do professor?')) {
       return;
     }
 
@@ -106,7 +171,7 @@ export class ConsensoDuplaComponent implements OnInit {
       next: (atualizado) => {
         this.consenso.set(atualizado);
         this.itensConsenso.set(atualizado.itens || []);
-        this.mensagemSucesso.set(submeterFinal ? 'Consenso submetido com sucesso ao docente!' : 'Planilha de consenso salva.');
+        this.mensagemSucesso.set(submeterFinal ? 'Consenso submetido ao docente.' : 'Planilha de consenso salva.');
         this.carregando.set(false);
       },
       error: (err) => {
@@ -129,7 +194,7 @@ export class ConsensoDuplaComponent implements OnInit {
     }).subscribe({
       next: (atualizado) => {
         this.consenso.set(atualizado);
-        this.mensagemSucesso.set('Validação docente registrada com sucesso!');
+        this.mensagemSucesso.set('Validação docente gravada.');
         this.carregando.set(false);
       },
       error: (err) => {
@@ -174,17 +239,16 @@ export class ConsensoDuplaComponent implements OnInit {
   }
 
   voltar(): void {
-    this.router.navigate(['/auditoria']);
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/auditoria']);
+    }
   }
 
-  formatarSegundos(s: number): string {
+  private formatarSegundos(s: number): string {
     const min = Math.floor(s / 60);
     const seg = s % 60;
     return `${min < 10 ? '0' : ''}${min}:${seg < 10 ? '0' : ''}${seg}`;
-  }
-
-  formatarData(dt: string): string {
-    if (!dt) return '-';
-    return new Date(dt).toLocaleString('pt-BR');
   }
 }

@@ -15,6 +15,35 @@ import {
   GatilhoGtt
 } from '../../compartilhado/modelos/dominio.modelos';
 
+export interface ProntuarioAuditoriaLinha {
+  prontuarioId: number;
+  atendimento: string;
+  cenarioTitulo: string;
+  unidadeSigla: string;
+  idadeStr: string;
+  permanenciaStr: string;
+  totalGatilhosStr: string;
+  totalDanosStr: string;
+  houveDano: boolean;
+  tempoGastoStr: string;
+  statusStr: string;
+  finalizada: boolean;
+  revisaoId?: number;
+  original: ProntuarioItemAuditoria;
+  atividadeOriginal: AtividadeDiscente;
+}
+
+export interface AtividadeAuditoriaCard {
+  atividadeId: number;
+  turmaCodigo: string;
+  atividadeTitulo: string;
+  cenarioTitulo: string;
+  parceiroNome: string;
+  statusStr: string;
+  metaStr: string;
+  prontuarios: ProntuarioAuditoriaLinha[];
+}
+
 @Component({
   selector: 'app-auditoria',
   standalone: true,
@@ -31,6 +60,9 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   readonly atividades = signal<AtividadeDiscente[]>([]);
   readonly todosGatilhos = signal<GatilhoGtt[]>([]);
 
+  readonly termoBuscaAtividades = signal('');
+  readonly filtroStatusAtividades = signal('TODOS');
+
   readonly modoRevisaoAtiva = signal(false);
   readonly atividadeAtiva = signal<AtividadeDiscente | null>(null);
   readonly prontuarioAtivo = signal<ProntuarioSimulado | null>(null);
@@ -38,10 +70,10 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   readonly achados = signal<AchadoGatilho[]>([]);
 
   readonly revisaoFinalizada = computed(() => Boolean(this.revisaoAtiva()?.finalizada));
-
   readonly secaoAtiva = signal<'SUMARIO' | 'MEDICACAO' | 'LABORATORIO' | 'CIRURGICO' | 'EVOLUCOES'>('SUMARIO');
+
   exibirSeletorGatilhos = false;
-  buscaGatilho = '';
+  readonly buscaGatilho = signal('');
 
   readonly carregando = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
@@ -50,14 +82,117 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   readonly cronometroSegundos = signal(0);
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
+  readonly metricasGerais = computed(() => {
+    let totalCasos = 0;
+    let totalConcluidos = 0;
+    let totalPendentes = 0;
+    let totalDanos = 0;
+
+    for (const at of this.atividades()) {
+      for (const p of at.prontuarios) {
+        totalCasos++;
+        if (p.finalizada) {
+          totalConcluidos++;
+        } else {
+          totalPendentes++;
+        }
+        totalDanos += p.totalDanosConfirmados || 0;
+      }
+    }
+
+    return { totalCasos, totalConcluidos, totalPendentes, totalDanos };
+  });
+
+  readonly cronometroFormatado = computed(() => {
+    const s = this.cronometroSegundos();
+    const min = Math.floor(s / 60);
+    const seg = s % 60;
+    return `${min < 10 ? '0' : ''}${min}:${seg < 10 ? '0' : ''}${seg}`;
+  });
+
+  readonly cronometroClasse = computed(() => {
+    const s = this.cronometroSegundos();
+    if (s >= 1200) return 'text-danger fw-bold';
+    if (s >= 900) return 'text-warning fw-bold';
+    return 'text-success fw-bold';
+  });
+
+  readonly infoProntuarioAtivo = computed(() => {
+    const p = this.prontuarioAtivo();
+    if (!p) return '';
+    return `[${p.numeroAtendimento}] ${p.unidadeHospitalarSigla} | Paciente: ${p.idadePaciente} anos | Permanência: ${p.tempoPermanenciaDias} d`;
+  });
+
   readonly gatilhosFiltradosModal = computed(() => {
-    const termo = this.buscaGatilho.trim().toLowerCase();
-    return this.todosGatilhos().filter((g) => {
-      return !termo ||
-        g.codigo.toLowerCase().includes(termo) ||
-        g.descricao.toLowerCase().includes(termo) ||
-        g.modulo.nome.toLowerCase().includes(termo);
-    });
+    const termo = this.buscaGatilho().trim().toLowerCase();
+    const achadosIds = new Set(this.achados().map((a) => a.gatilhoId));
+
+    return this.todosGatilhos()
+      .filter((g) => !achadosIds.has(g.id))
+      .filter((g) => {
+        return !termo ||
+          g.codigo.toLowerCase().includes(termo) ||
+          g.descricao.toLowerCase().includes(termo) ||
+          g.modulo.nome.toLowerCase().includes(termo);
+      });
+  });
+
+  readonly atividadesCards = computed<AtividadeAuditoriaCard[]>(() => {
+    const termo = this.termoBuscaAtividades().trim().toLowerCase();
+    const filtroStatus = this.filtroStatusAtividades();
+
+    return this.atividades()
+      .map((at) => {
+        const prontuariosFiltrados = at.prontuarios
+          .filter((p) => {
+            const matchTermo = !termo ||
+              p.numeroAtendimento.toLowerCase().includes(termo) ||
+              p.unidadeSigla.toLowerCase().includes(termo) ||
+              at.cenarioTitulo.toLowerCase().includes(termo) ||
+              at.atividadeTitulo.toLowerCase().includes(termo);
+
+            const matchStatus = filtroStatus === 'TODOS' ||
+              (filtroStatus === 'CONCLUIDOS' && p.finalizada) ||
+              (filtroStatus === 'PENDENTES' && !p.finalizada);
+
+            return matchTermo && matchStatus;
+          })
+          .map((p) => {
+            let status = '[NÃO INICIADA]';
+            if (p.finalizada) status = '[CONCLUÍDO]';
+            else if (p.revisaoId) status = '[EM ANDAMENTO]';
+
+            return {
+              prontuarioId: p.prontuarioId,
+              atendimento: `[${p.numeroAtendimento}]`,
+              cenarioTitulo: at.cenarioTitulo,
+              unidadeSigla: `[${p.unidadeSigla}]`,
+              idadeStr: `${p.idadePaciente} anos`,
+              permanenciaStr: `${p.tempoPermanenciaDias} d`,
+              totalGatilhosStr: `${p.totalGatilhos} gatilho(s)`,
+              totalDanosStr: `${p.totalDanosConfirmados} EA`,
+              houveDano: p.totalDanosConfirmados > 0,
+              tempoGastoStr: this.formatarSegundos(p.tempoGastoSegundos),
+              statusStr: status,
+              finalizada: p.finalizada,
+              revisaoId: p.revisaoId,
+              original: p,
+              atividadeOriginal: at
+            };
+          });
+
+        return {
+          atividadeId: at.atividadeId,
+          turmaCodigo: `[${at.turmaCodigo}]`,
+          atividadeTitulo: at.atividadeTitulo,
+          cenarioTitulo: at.cenarioTitulo,
+          parceiroNome: at.parceiroNome,
+          statusStr: at.finalizada ? '[ENCERRADA]' : '[ABERTA]',
+          metaStr: `Meta IHI: ${at.tempoLimiteMinutos} min/caso`,
+          prontuarios: prontuariosFiltrados
+        };
+      })
+      .filter((card) => card.prontuarios.length > 0 || !termo);
   });
 
   ngOnInit(): void {
@@ -75,14 +210,19 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
     this.revisaoService.listarMinhasAtividades(usuario.id).subscribe({
       next: (dados) => this.atividades.set(dados),
-      error: (err) => console.error('Erro ao listar atividades do discente:', err)
+      error: (err) => console.error('Erro ao listar atividades:', err)
     });
   }
 
   carregarGatilhos(): void {
     this.gatilhoService.listar().subscribe({
-      next: (dados) => this.todosGatilhos.set(dados.filter((g) => g.ativo)),
-      error: (err) => console.error('Erro ao listar catálogo de gatilhos:', err)
+      next: (dados) => {
+        const ordenados = dados
+          .filter((g) => g.ativo)
+          .sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }));
+        this.todosGatilhos.set(ordenados);
+      },
+      error: (err) => console.error('Erro ao listar catálogo:', err)
     });
   }
 
@@ -153,10 +293,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   adicionarGatilho(g: GatilhoGtt): void {
     const jaExiste = this.achados().some((a) => a.gatilhoId === g.id);
-    if (jaExiste) {
-      alert(`O gatilho ${g.codigo} já foi adicionado a este prontuário.`);
-      return;
-    }
+    if (jaExiste) return;
 
     const novoAchado: AchadoGatilho = {
       gatilhoId: g.id,
@@ -169,7 +306,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     };
 
     this.achados.update((lista) => [...lista, novoAchado]);
-    this.exibirSeletorGatilhos = false;
+    this.buscaGatilho.set('');
   }
 
   removerAchado(index: number): void {
@@ -191,7 +328,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         this.revisaoAtiva.set(atualizada);
         this.carregando.set(false);
         if (exibirAlerta) {
-          this.mensagemSucesso.set('Rascunho da auditoria gravado com sucesso!');
+          this.mensagemSucesso.set('Rascunho da auditoria salvo.');
           setTimeout(() => this.mensagemSucesso.set(null), 3000);
         }
       },
@@ -206,9 +343,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     const rev = this.revisaoAtiva();
     if (!rev) return;
 
-    const confirmacao = confirm(
-      'Atenção: Ao finalizar a revisão, suas anotações serão congeladas para debate no Consenso da Dupla (Fase 4). Deseja submeter agora?'
-    );
+    const confirmacao = confirm('Ao finalizar a revisão individual, as anotações serão congeladas para o Consenso da Dupla. Submeter agora?');
     if (!confirmacao) return;
 
     this.carregando.set(true);
@@ -222,7 +357,6 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         this.revisaoAtiva.set(finalizada);
         this.pararCronometro();
         this.carregando.set(false);
-        alert('Auditoria do prontuário finalizada com sucesso! Seus achados estão prontos para o consenso.');
         this.sairDaRevisao();
       },
       error: (err) => {
@@ -236,12 +370,15 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.router.navigate(['/consenso', at.duplaId, p.prontuarioId]);
   }
 
-  formatarSegundos(totalSegundos: number): string {
+  fecharModalGatilhos(): void {
+    this.exibirSeletorGatilhos = false;
+    this.buscaGatilho.set('');
+  }
+
+  private formatarSegundos(totalSegundos: number): string {
     if (!totalSegundos) return '00:00';
     const min = Math.floor(totalSegundos / 60);
     const seg = totalSegundos % 60;
-    const minStr = min < 10 ? '0' + min : min;
-    const segStr = seg < 10 ? '0' + seg : seg;
-    return `${minStr}:${segStr}`;
+    return `${min < 10 ? '0' : ''}${min}:${seg < 10 ? '0' : ''}${seg}`;
   }
 }
