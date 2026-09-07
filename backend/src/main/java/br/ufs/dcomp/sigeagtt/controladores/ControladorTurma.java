@@ -53,7 +53,6 @@ public class ControladorTurma {
         return ResponseEntity.ok(servico.alternarStatus(id));
     }
 
-    // Rotas de Enturmação
     @GetMapping("/{id}/alunos")
     public ResponseEntity<List<UsuarioRespostaDTO>> listarAlunos(@PathVariable Long id) {
         return ResponseEntity.ok(servico.listarAlunosDaTurma(id));

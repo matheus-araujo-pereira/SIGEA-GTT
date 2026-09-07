@@ -17,12 +17,15 @@ public class ControladorMelhoriaQualidade {
         this.servico = servico;
     }
 
-    @GetMapping("/consenso/{consensoDuplaId}")
+    @GetMapping(value = {"/consenso/{consensoDuplaId}", "/{consensoDuplaId}"})
     public ResponseEntity<MelhoriaQualidadeRespostaDTO> buscarPorConsenso(@PathVariable Long consensoDuplaId) {
         return ResponseEntity.ok(servico.buscarPorConsenso(consensoDuplaId));
     }
 
-    @PutMapping("/consenso/{consensoDuplaId}")
+    @RequestMapping(
+        value = {"/consenso/{consensoDuplaId}", "/{consensoDuplaId}"},
+        method = {RequestMethod.PUT, RequestMethod.POST}
+    )
     public ResponseEntity<MelhoriaQualidadeRespostaDTO> salvar(
             @PathVariable Long consensoDuplaId,
             @Valid @RequestBody SalvarMelhoriaQualidadeDTO dto) {
