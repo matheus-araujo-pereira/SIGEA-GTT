@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AtividadeAuditoriaService, AtividadeAuditoriaRequisicao } from '../../../nucleo/servicos/atividade-auditoria.service';
@@ -6,6 +6,32 @@ import { DuplaRevisoresService, DuplaRevisoresRequisicao } from '../../../nucleo
 import { TurmaService } from '../../../nucleo/servicos/turma.service';
 import { CenarioClinicoService } from '../../../nucleo/servicos/cenario-clinico.service';
 import { AtividadeAuditoria, DuplaRevisores, Turma, CenarioClinico, Usuario } from '../../../compartilhado/modelos/dominio.modelos';
+
+export interface AtividadeLinha {
+  id: number;
+  titulo: string;
+  turmaStr: string;
+  cenarioTitulo: string;
+  periodoStr: string;
+  tempoLimiteStr: string;
+  totalDuplasStr: string;
+  status: string;
+  finalizada: boolean;
+  selecionada: boolean;
+  original: AtividadeAuditoria;
+}
+
+export interface DuplaLinha {
+  id: number;
+  indiceStr: string;
+  revisor1Nome: string;
+  revisor1Matricula: string;
+  revisor2Nome: string;
+  revisor2Matricula: string;
+  status: string;
+  ativa: boolean;
+  original: DuplaRevisores;
+}
 
 @Component({
   selector: 'app-gerenciar-atividades',
@@ -35,6 +61,53 @@ export class GerenciarAtividadesComponent implements OnInit {
 
   formAtividade: AtividadeAuditoriaRequisicao = this.obterFormAtividadeVazio();
   formDupla: DuplaRevisoresRequisicao = { atividadeId: 0, alunoRevisor1Id: 0, alunoRevisor2Id: 0 };
+
+  readonly totalAtividades = computed(() => this.atividades().length);
+
+  readonly tituloFormAtividade = computed(() => {
+    return this.idEdicaoAtividade ? `EDITAR ATIVIDADE #${this.idEdicaoAtividade}` : 'NOVA ATIVIDADE DE AUDITORIA';
+  });
+
+  readonly textoBotaoSubmit = computed(() => {
+    return this.idEdicaoAtividade ? 'Salvar Alterações' : 'Criar Atividade';
+  });
+
+  readonly infoAtividadeSelecionada = computed(() => {
+    const at = this.atividadeSelecionada();
+    return at ? `[${at.turmaCodigo}] ${at.titulo} | Cenário: ${at.cenarioTitulo}` : '';
+  });
+
+  readonly atividadesLinhas = computed<AtividadeLinha[]>(() => {
+    const selecionadaId = this.atividadeSelecionada()?.id;
+
+    return this.atividades().map((at) => ({
+      id: at.id,
+      titulo: at.titulo,
+      turmaStr: `[${at.turmaCodigo}] ${at.turmaPeriodo}`,
+      cenarioTitulo: at.cenarioTitulo,
+      periodoStr: `${this.formatarDataHora(at.dataInicio)} a ${this.formatarDataHora(at.dataFim)}`,
+      tempoLimiteStr: `${at.tempoLimiteMinutos} min/caso`,
+      totalDuplasStr: `${at.totalDuplas} dupla(s)`,
+      status: at.finalizada ? '[ENCERRADA]' : '[ABERTA]',
+      finalizada: at.finalizada,
+      selecionada: at.id === selecionadaId,
+      original: at
+    }));
+  });
+
+  readonly duplasLinhas = computed<DuplaLinha[]>(() => {
+    return this.duplasDaAtividade().map((d, index) => ({
+      id: d.id,
+      indiceStr: `Dupla #${index + 1}`,
+      revisor1Nome: d.alunoRevisor1Nome,
+      revisor1Matricula: d.alunoRevisor1Matricula || '-',
+      revisor2Nome: d.alunoRevisor2Nome,
+      revisor2Matricula: d.alunoRevisor2Matricula || '-',
+      status: d.ativa ? '[ATIVO]' : '[INATIVO]',
+      ativa: d.ativa,
+      original: d
+    }));
+  });
 
   ngOnInit(): void {
     this.carregarDados();
@@ -93,7 +166,7 @@ export class GerenciarAtividadesComponent implements OnInit {
     if (this.idEdicaoAtividade) {
       this.atividadeService.editar(this.idEdicaoAtividade, this.formAtividade).subscribe({
         next: (atualizada) => {
-          this.mensagemSucesso.set(`Atividade "${atualizada.titulo}" atualizada!`);
+          this.mensagemSucesso.set(`Atividade "${atualizada.titulo}" atualizada.`);
           this.fecharFormAtividade();
           this.carregando.set(false);
           this.carregarDados();
@@ -106,7 +179,7 @@ export class GerenciarAtividadesComponent implements OnInit {
     } else {
       this.atividadeService.cadastrar(this.formAtividade).subscribe({
         next: (criada) => {
-          this.mensagemSucesso.set(`Atividade "${criada.titulo}" criada com sucesso!`);
+          this.mensagemSucesso.set(`Atividade "${criada.titulo}" criada com sucesso.`);
           this.fecharFormAtividade();
           this.carregando.set(false);
           this.carregarDados();
@@ -163,7 +236,7 @@ export class GerenciarAtividadesComponent implements OnInit {
     if (!at) return;
 
     if (this.formDupla.alunoRevisor1Id === this.formDupla.alunoRevisor2Id) {
-      this.mensagemErro.set('Selecione alunos diferentes para formar a dupla de revisores.');
+      this.mensagemErro.set('Selecione discentes diferentes para formar a dupla de revisores.');
       return;
     }
 
@@ -173,7 +246,7 @@ export class GerenciarAtividadesComponent implements OnInit {
 
     this.duplaService.cadastrar(this.formDupla).subscribe({
       next: () => {
-        this.mensagemSucesso.set('Dupla de revisores formada com sucesso!');
+        this.mensagemSucesso.set('Dupla de revisores formada com sucesso.');
         this.carregando.set(false);
         this.carregarDuplasDaAtividade(at.id);
         this.carregarDados();
@@ -210,7 +283,7 @@ export class GerenciarAtividadesComponent implements OnInit {
     });
   }
 
-  formatarDataHora(dataHoraStr: string): string {
+  private formatarDataHora(dataHoraStr: string): string {
     if (!dataHoraStr) return '-';
     const d = new Date(dataHoraStr);
     return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
