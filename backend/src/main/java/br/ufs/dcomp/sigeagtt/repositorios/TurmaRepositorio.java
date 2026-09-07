@@ -4,11 +4,8 @@ import br.ufs.dcomp.sigeagtt.modelos.Turma;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
-@Repository
 public interface TurmaRepositorio extends JpaRepository<Turma, Long> {
 
     @Query("SELECT t FROM Turma t JOIN FETCH t.professorResponsavel WHERE t.professorResponsavel.id = :professorId")
