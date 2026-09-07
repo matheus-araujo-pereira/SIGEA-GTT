@@ -6,6 +6,17 @@ import { CenarioClinicoService } from '../../../nucleo/servicos/cenario-clinico.
 import { UnidadeService } from '../../../nucleo/servicos/unidade.service';
 import { ProntuarioSimulado, CenarioClinico, UnidadeHospitalar } from '../../../compartilhado/modelos/dominio.modelos';
 
+export interface ProntuarioLinha {
+  id: number;
+  atendimento: string;
+  cenarioTitulo: string;
+  unidadeSigla: string;
+  idadeStr: string;
+  permanenciaStr: string;
+  periodoStr: string;
+  original: ProntuarioSimulado;
+}
+
 @Component({
   selector: 'app-gerenciar-prontuarios',
   standalone: true,
@@ -32,20 +43,41 @@ export class GerenciarProntuariosComponent implements OnInit {
   readonly termoBusca = signal('');
   readonly filtroCenarioId = signal('TODOS');
 
-  readonly prontuariosFiltrados = computed(() => {
+  readonly totalProntuarios = computed(() => this.prontuarios().length);
+
+  readonly tituloFormulario = computed(() => {
+    return this.idEdicao ? `EDITAR PRONTUÁRIO #${this.idEdicao}` : 'NOVO PRONTUÁRIO SIMULADO (IHI-GTT)';
+  });
+
+  readonly textoBotaoSubmit = computed(() => {
+    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Prontuário';
+  });
+
+  readonly prontuariosLinhas = computed<ProntuarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const cenarioFiltro = this.filtroCenarioId();
 
-    return this.prontuarios().filter((p) => {
-      const matchCenario = cenarioFiltro === 'TODOS' || p.cenarioId === Number(cenarioFiltro);
-      const matchTermo = !termo ||
-        p.numeroAtendimento.toLowerCase().includes(termo) ||
-        p.cenarioTitulo.toLowerCase().includes(termo) ||
-        p.unidadeHospitalarSigla.toLowerCase().includes(termo) ||
-        p.sumarioAlta.toLowerCase().includes(termo);
+    return this.prontuarios()
+      .filter((p) => {
+        const matchCenario = cenarioFiltro === 'TODOS' || p.cenarioId === Number(cenarioFiltro);
+        const matchTermo = !termo ||
+          p.numeroAtendimento.toLowerCase().includes(termo) ||
+          p.cenarioTitulo.toLowerCase().includes(termo) ||
+          p.unidadeHospitalarSigla.toLowerCase().includes(termo) ||
+          p.sumarioAlta.toLowerCase().includes(termo);
 
-      return matchCenario && matchTermo;
-    });
+        return matchCenario && matchTermo;
+      })
+      .map((p) => ({
+        id: p.id,
+        atendimento: `[${p.numeroAtendimento}]`,
+        cenarioTitulo: p.cenarioTitulo,
+        unidadeSigla: `[${p.unidadeHospitalarSigla}]`,
+        idadeStr: `${p.idadePaciente} anos`,
+        permanenciaStr: `${p.tempoPermanenciaDias} d`,
+        periodoStr: `${this.formatarData(p.dataAdmissao)} a ${this.formatarData(p.dataAlta)}`,
+        original: p
+      }));
   });
 
   ngOnInit(): void {
@@ -121,7 +153,7 @@ export class GerenciarProntuariosComponent implements OnInit {
     if (this.idEdicao) {
       this.prontuarioService.editar(this.idEdicao, this.formulario).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Prontuário ${atualizado.numeroAtendimento} atualizado com sucesso!`);
+          this.mensagemSucesso.set(`Prontuário ${atualizado.numeroAtendimento} atualizado com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarDados();
@@ -134,7 +166,7 @@ export class GerenciarProntuariosComponent implements OnInit {
     } else {
       this.prontuarioService.cadastrar(this.formulario).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Prontuário ${criado.numeroAtendimento} criado com sucesso!`);
+          this.mensagemSucesso.set(`Prontuário ${criado.numeroAtendimento} criado com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarDados();
@@ -160,10 +192,13 @@ export class GerenciarProntuariosComponent implements OnInit {
     });
   }
 
-  formatarData(dataStr: string): string {
+  private formatarData(dataStr: string): string {
     if (!dataStr) return '-';
-    const [ano, mes, dia] = dataStr.split('-');
-    return `${dia}/${mes}/${ano}`;
+    const partes = dataStr.split('-');
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return new Date(dataStr).toLocaleDateString('pt-BR');
   }
 
   private limparMensagens(): void {
