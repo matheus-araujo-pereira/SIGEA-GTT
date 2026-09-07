@@ -1,0 +1,51 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light px-3">
+  <div class="card bg-surface border border-subdued shadow-sm rounded-4 p-4 p-md-5 auth-card">
+    <div class="text-center mb-4">
+      <div class="auth-icon bg-primary text-white rounded-3 d-inline-flex align-items-center justify-content-center mb-3">
+        <i class="bi bi-hospital fs-3"></i>
+      </div>
+      <h1 class="h4 fw-bold text-dark mb-1">SIGEA-GTT</h1>
+      <p class="text-muted small mb-0">Sistema de Gestão de Riscos e Auditoria GTT</p>
+    </div>
+
+    @if (mensagemErro()) {
+      <div class="alert alert-danger py-2 px-3 small border border-danger-subtle rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle flex-shrink-0"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="entrar()">
+      <div class="mb-3">
+        <label for="identificador" class="form-label small fw-semibold text-secondary">CPF ou E-mail</label>
+        <input id="identificador"
+               type="text"
+               class="form-control"
+               [(ngModel)]="identificador"
+               name="identificador"
+               placeholder="Digite seu CPF ou E-mail"
+               autocomplete="username"
+               required>
+      </div>
+
+      <div class="mb-4">
+        <label for="senha" class="form-label small fw-semibold text-secondary">Senha</label>
+        <input id="senha"
+               type="password"
+               class="form-control"
+               [(ngModel)]="senha"
+               name="senha"
+               placeholder="••••••••"
+               autocomplete="current-password"
+               required>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" [disabled]="carregando()">
+        @if (carregando()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        }
+        Entrar
+      </button>
+    </form>
+  </div>
+</div>

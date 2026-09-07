@@ -1,0 +1,64 @@
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-light px-3">
+  <div class="card bg-surface border border-subdued shadow-sm rounded-4 p-4 p-md-5 auth-card">
+    <div class="text-center mb-4">
+      <div class="auth-icon bg-warning-subtle text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+        <i class="bi bi-key-fill fs-3"></i>
+      </div>
+      <h2 class="h5 fw-bold text-dark mb-1">Redefinição de Primeiro Acesso</h2>
+      <p class="text-muted small mb-0">Olá, {{ auth.usuarioLogado()?.nomeCompleto }}. Por segurança, cadastre sua nova senha pessoal.</p>
+    </div>
+
+    @if (mensagemErro()) {
+      <div class="alert alert-danger py-2 px-3 small border border-danger-subtle rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle flex-shrink-0"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="confirmarRedefinicao()">
+      <div class="mb-3">
+        <label for="senhaAtual" class="form-label small fw-semibold text-secondary">Senha Atual (Temporária)</label>
+        <input id="senhaAtual"
+               type="password"
+               class="form-control"
+               [(ngModel)]="senhaAtual"
+               name="senhaAtual"
+               placeholder="Ex.: Sigea@123"
+               autocomplete="current-password"
+               required>
+      </div>
+
+      <div class="mb-3">
+        <label for="novaSenha" class="form-label small fw-semibold text-secondary">Nova Senha Pessoal</label>
+        <input id="novaSenha"
+               type="password"
+               class="form-control"
+               [(ngModel)]="novaSenha"
+               name="novaSenha"
+               minlength="6"
+               placeholder="Mínimo 6 caracteres"
+               autocomplete="new-password"
+               required>
+      </div>
+
+      <div class="mb-4">
+        <label for="confirmacao" class="form-label small fw-semibold text-secondary">Confirmar Nova Senha</label>
+        <input id="confirmacao"
+               type="password"
+               class="form-control"
+               [(ngModel)]="confirmacao"
+               name="confirmacao"
+               placeholder="Repita a nova senha"
+               autocomplete="new-password"
+               required>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" [disabled]="carregando()">
+        @if (carregando()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        }
+        Confirmar e Acessar
+      </button>
+    </form>
+  </div>
+</div>
