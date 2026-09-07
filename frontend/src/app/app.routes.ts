@@ -34,25 +34,25 @@ export const routes: Routes = [
     canActivate: [autenticacaoGuard],
     children: [
       { path: '', canActivate: [redirecionamentoInicialGuard], children: [] },
-      
+
       // Administração
       {
         path: 'usuarios',
         component: GerenciarUsuariosComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR'] }
+        data: { perfis: ['ADMINISTRADOR'] },
       },
       {
         path: 'gatilhos',
         component: GerenciarGatilhosComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR'] }
+        data: { perfis: ['ADMINISTRADOR'] },
       },
       {
         path: 'unidades',
         component: GerenciarUnidadesComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR'] }
+        data: { perfis: ['ADMINISTRADOR'] },
       },
 
       // Gestão Acadêmica Docente
@@ -60,25 +60,25 @@ export const routes: Routes = [
         path: 'turmas',
         component: TurmasComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
         path: 'cenarios',
         component: GerenciarCenariosComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
         path: 'prontuarios',
         component: GerenciarProntuariosComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
         path: 'atividades',
         component: GerenciarAtividadesComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
 
       // Auditoria, Consenso, Melhoria e Indicadores
@@ -86,27 +86,27 @@ export const routes: Routes = [
         path: 'auditoria',
         component: AuditoriaComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
         path: 'consenso/:duplaId/:prontuarioId',
         component: ConsensoDuplaComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
         path: 'melhoria/:consensoId',
         component: MelhoriaQualidadeComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] }
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
         path: 'indicadores',
         component: IndicadoresComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR', 'ALUNO'] }
-      }
-    ]
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR', 'ALUNO'] },
+      },
+    ],
   },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' },
 ];
