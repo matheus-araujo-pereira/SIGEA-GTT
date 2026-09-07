@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { GatilhoService, GatilhoRequisicao } from '../../../nucleo/servicos/gatilho.service';
 import { ModuloGttService, ModuloRequisicao } from '../../../nucleo/servicos/modulo-gtt.service';
 import { GatilhoGtt, ModuloGtt } from '../../../compartilhado/modelos/dominio.modelos';
+import { PaginacaoComponent } from '../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface GatilhoLinha {
   id: number;
@@ -30,7 +31,7 @@ export interface ModuloLinha {
 @Component({
   selector: 'app-gerenciar-gatilhos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './gerenciar-gatilhos.component.html'
 })
 export class GerenciarGatilhosComponent implements OnInit {
@@ -54,6 +55,11 @@ export class GerenciarGatilhosComponent implements OnInit {
 
   readonly termoBusca = signal('');
   readonly filtroModuloId = signal('TODOS');
+  readonly filtroStatusGatilho = signal('TODOS');
+
+  readonly paginaGatilhos = signal(1);
+  readonly paginaModulos = signal(1);
+  readonly itensPorPagina = 10;
 
   readonly totalGatilhos = computed(() => this.gatilhos().length);
   readonly totalModulos = computed(() => this.modulos().length);
@@ -66,20 +72,23 @@ export class GerenciarGatilhosComponent implements OnInit {
     return this.idEdicaoModulo ? `EDITAR MÓDULO #${this.idEdicaoModulo}` : 'NOVO MÓDULO';
   });
 
-  readonly gatilhosLinhas = computed<GatilhoLinha[]>(() => {
+  readonly gatilhosLinhasFiltradas = computed<GatilhoLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const moduloFiltro = this.filtroModuloId();
+    const statusFiltro = this.filtroStatusGatilho();
 
     return this.gatilhos()
       .filter((g) => {
         const matchModulo = moduloFiltro === 'TODOS' || g.modulo.id === Number(moduloFiltro);
+        const matchStatus = statusFiltro === 'TODOS' || (statusFiltro === 'ATIVOS' ? g.ativo : !g.ativo);
         const matchTermo = !termo ||
           g.codigo.toLowerCase().includes(termo) ||
           g.descricao.toLowerCase().includes(termo) ||
           Boolean(g.limiarReferencia && g.limiarReferencia.toLowerCase().includes(termo));
 
-        return matchModulo && matchTermo;
+        return matchModulo && matchStatus && matchTermo;
       })
+      .sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }))
       .map((g) => ({
         id: g.id,
         codigo: `[${g.codigo}]`,
@@ -90,6 +99,13 @@ export class GerenciarGatilhosComponent implements OnInit {
         ativo: g.ativo,
         original: g
       }));
+  });
+
+  readonly totalGatilhosFiltrados = computed(() => this.gatilhosLinhasFiltradas().length);
+
+  readonly gatilhosLinhasPaginadas = computed<GatilhoLinha[]>(() => {
+    const inicio = (this.paginaGatilhos() - 1) * this.itensPorPagina;
+    return this.gatilhosLinhasFiltradas().slice(inicio, inicio + this.itensPorPagina);
   });
 
   readonly modulosLinhas = computed<ModuloLinha[]>(() => {
@@ -108,6 +124,13 @@ export class GerenciarGatilhosComponent implements OnInit {
     });
   });
 
+  readonly totalModulosFiltrados = computed(() => this.modulosLinhas().length);
+
+  readonly modulosLinhasPaginadas = computed<ModuloLinha[]>(() => {
+    const inicio = (this.paginaModulos() - 1) * this.itensPorPagina;
+    return this.modulosLinhas().slice(inicio, inicio + this.itensPorPagina);
+  });
+
   ngOnInit(): void {
     this.carregarDados();
   }
@@ -122,6 +145,29 @@ export class GerenciarGatilhosComponent implements OnInit {
       next: (g) => this.gatilhos.set(g),
       error: (err) => this.mensagemErro.set('Erro ao carregar gatilhos: ' + err.message)
     });
+  }
+
+  atualizarBuscaGatilho(termo: string): void {
+    this.termoBusca.set(termo);
+    this.paginaGatilhos.set(1);
+  }
+
+  atualizarFiltroModulo(moduloId: string): void {
+    this.filtroModuloId.set(moduloId);
+    this.paginaGatilhos.set(1);
+  }
+
+  atualizarFiltroStatusGatilho(status: string): void {
+    this.filtroStatusGatilho.set(status);
+    this.paginaGatilhos.set(1);
+  }
+
+  mudarPaginaGatilhos(novaPagina: number): void {
+    this.paginaGatilhos.set(novaPagina);
+  }
+
+  mudarPaginaModulos(novaPagina: number): void {
+    this.paginaModulos.set(novaPagina);
   }
 
   iniciarNovoGatilho(): void {
