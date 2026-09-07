@@ -74,28 +74,27 @@
     <input type="text"
            class="form-control form-control-sm"
            [ngModel]="termoBusca()"
-           (ngModelChange)="termoBusca.set($event)"
+           (ngModelChange)="atualizarBusca($event)"
            placeholder="Filtrar por nome ou sigla...">
 
     <select class="form-select form-select-sm w-auto"
             [ngModel]="filtroStatus()"
-            (ngModelChange)="filtroStatus.set($event)">
+            (ngModelChange)="atualizarFiltroStatus($event)">
       <option value="TODOS">Todos os Status</option>
       <option value="ATIVAS">Ativas</option>
       <option value="INATIVAS">Inativas</option>
     </select>
 
     @if (termoBusca()) {
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="termoBusca.set('')">LIMPAR</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="atualizarBusca('')">LIMPAR</button>
     }
   </div>
 
-  <!-- TABELA DE ALTO CONTRASTE -->
+  <!-- TABELA DE ALTO CONTRASTE (SEM COLUNA ID) -->
   <div class="bg-white b-1">
     <table class="table table-hover table-sm m-0">
       <thead class="bg-light text-secondary small font-monospace b-b">
         <tr>
-          <th scope="col" class="p-2">ID</th>
           <th scope="col" class="p-2">SIGLA</th>
           <th scope="col" class="p-2">NOME DA UNIDADE</th>
           <th scope="col" class="p-2">STATUS</th>
@@ -103,9 +102,8 @@
         </tr>
       </thead>
       <tbody class="small font-monospace">
-        @for (u of unidadesLinhas(); track u.id) {
+        @for (u of unidadesLinhasPaginadas(); track u.id) {
           <tr>
-            <td class="p-2">{{ u.id }}</td>
             <td class="p-2 fw-bold text-dark">{{ u.sigla }}</td>
             <td class="p-2 font-sans-serif fw-semibold text-dark">{{ u.nome }}</td>
             <td class="p-2" [class.text-success]="u.ativa" [class.text-muted]="!u.ativa">{{ u.status }}</td>
@@ -127,12 +125,19 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="5" class="text-center py-4 text-muted">
+            <td colspan="4" class="text-center py-4 text-muted">
               Nenhuma unidade hospitalar encontrada.
             </td>
           </tr>
         }
       </tbody>
     </table>
+
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)">
+    </app-paginacao>
   </div>
 </div>

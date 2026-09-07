@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UnidadeService, UnidadeRequisicao } from '../../../nucleo/servicos/unidade.service';
 import { UnidadeHospitalar } from '../../../compartilhado/modelos/dominio.modelos';
+import { PaginacaoComponent } from '../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface UnidadeLinha {
   id: number;
@@ -16,7 +17,7 @@ export interface UnidadeLinha {
 @Component({
   selector: 'app-gerenciar-unidades',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './gerenciar-unidades.component.html'
 })
 export class GerenciarUnidadesComponent implements OnInit {
@@ -34,6 +35,9 @@ export class GerenciarUnidadesComponent implements OnInit {
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
 
+  readonly paginaAtual = signal(1);
+  readonly itensPorPagina = 10;
+
   readonly totalUnidades = computed(() => this.unidades().length);
 
   readonly tituloFormulario = computed(() => {
@@ -41,10 +45,10 @@ export class GerenciarUnidadesComponent implements OnInit {
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Unidade';
+    return this.idEdicao ? 'Editar Unidade' : 'Cadastrar Unidade';
   });
 
-  readonly unidadesLinhas = computed<UnidadeLinha[]>(() => {
+  readonly unidadesLinhasFiltradas = computed<UnidadeLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const status = this.filtroStatus();
 
@@ -68,6 +72,13 @@ export class GerenciarUnidadesComponent implements OnInit {
       }));
   });
 
+  readonly totalFiltrados = computed(() => this.unidadesLinhasFiltradas().length);
+
+  readonly unidadesLinhasPaginadas = computed<UnidadeLinha[]>(() => {
+    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
+    return this.unidadesLinhasFiltradas().slice(inicio, inicio + this.itensPorPagina);
+  });
+
   ngOnInit(): void {
     this.carregarUnidades();
   }
@@ -77,6 +88,20 @@ export class GerenciarUnidadesComponent implements OnInit {
       next: (dados) => this.unidades.set(dados),
       error: (err) => this.mensagemErro.set('Erro ao listar unidades: ' + err.message)
     });
+  }
+
+  atualizarBusca(termo: string): void {
+    this.termoBusca.set(termo);
+    this.paginaAtual.set(1);
+  }
+
+  atualizarFiltroStatus(status: string): void {
+    this.filtroStatus.set(status);
+    this.paginaAtual.set(1);
+  }
+
+  mudarPagina(novaPagina: number): void {
+    this.paginaAtual.set(novaPagina);
   }
 
   iniciarNovoCadastro(): void {
