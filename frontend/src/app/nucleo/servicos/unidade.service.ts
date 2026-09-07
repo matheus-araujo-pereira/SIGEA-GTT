@@ -19,8 +19,20 @@ export class UnidadeService {
     return this.http.get<UnidadeHospitalar[]>(this.url);
   }
 
+  buscarPorId(id: number): Observable<UnidadeHospitalar> {
+    return this.http.get<UnidadeHospitalar>(`${this.url}/${id}`);
+  }
+
   cadastrar(dto: UnidadeRequisicao): Observable<UnidadeHospitalar> {
     return this.http.post<UnidadeHospitalar>(this.url, dto);
+  }
+
+  editar(id: number, dto: UnidadeRequisicao): Observable<UnidadeHospitalar> {
+    return this.http.put<UnidadeHospitalar>(`${this.url}/${id}`, dto);
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
   }
 
   alternarStatus(id: number): Observable<UnidadeHospitalar> {
