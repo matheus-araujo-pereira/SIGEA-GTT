@@ -50,6 +50,9 @@ import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.servi
             <a routerLink="/prontuarios" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
               <i class="bi bi-journal-medical"></i> Prontuários Simulados
             </a>
+            <a routerLink="/atividades" routerLinkActive="active" class="nav-link text-dark py-2 px-3 rounded-3 d-flex align-items-center gap-2">
+              <i class="bi bi-calendar-check"></i> Atividades & Duplas
+            </a>
           </ng-container>
 
           <!-- Auditoria Discente (ALUNO) -->

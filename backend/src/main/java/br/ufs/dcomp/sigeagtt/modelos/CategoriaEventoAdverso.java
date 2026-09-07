@@ -15,12 +15,8 @@ public class CategoriaEventoAdverso {
 
     @NotBlank
     @Size(max = 100)
-    @Column(name = "nome", nullable = false, unique = true, length = 100)
+    @Column(name = "nome", nullable = false, length = 100)
     private String nome;
-
-    @NotBlank
-    @Column(name = "definicao_operacional", nullable = false, columnDefinition = "TEXT")
-    private String definicaoOperacional;
 
     @NotNull
     @Column(name = "ativa", nullable = false)
@@ -33,9 +29,6 @@ public class CategoriaEventoAdverso {
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
-
-    public String getDefinicaoOperacional() { return definicaoOperacional; }
-    public void setDefinicaoOperacional(String definicaoOperacional) { this.definicaoOperacional = definicaoOperacional; }
 
     public Boolean getAtiva() { return ativa; }
     public void setAtiva(Boolean ativa) { this.ativa = ativa; }

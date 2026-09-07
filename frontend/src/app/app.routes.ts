@@ -10,6 +10,7 @@ import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
 import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
 import { GerenciarCenariosComponent } from './modulos/docente/cenarios/gerenciar-cenarios.component';
 import { GerenciarProntuariosComponent } from './modulos/docente/prontuarios/gerenciar-prontuarios.component';
+import { GerenciarAtividadesComponent } from './modulos/docente/atividades/gerenciar-atividades.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
 import { AutenticacaoService } from './nucleo/servicos/autenticacao.service';
@@ -67,6 +68,12 @@ export const routes: Routes = [
       {
         path: 'prontuarios',
         component: GerenciarProntuariosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+      },
+      {
+        path: 'atividades',
+        component: GerenciarAtividadesComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
       },

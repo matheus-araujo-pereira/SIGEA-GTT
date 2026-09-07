@@ -83,3 +83,85 @@ export interface ProntuarioSimulado {
   relatorioCirurgico?: string;
   evolucoesMultiprofissionais: string;
 }
+
+export interface AtividadeAuditoria {
+  id: number;
+  turmaId: number;
+  turmaCodigo: string;
+  turmaPeriodo: string;
+  cenarioId: number;
+  cenarioTitulo: string;
+  titulo: string;
+  dataInicio: string;
+  dataFim: string;
+  tempoLimiteMinutos: number;
+  finalizada: boolean;
+  totalDuplas: number;
+}
+
+export interface DuplaRevisores {
+  id: number;
+  atividadeId: number;
+  alunoRevisor1Id: number;
+  alunoRevisor1Nome: string;
+  alunoRevisor1Matricula?: string;
+  alunoRevisor2Id: number;
+  alunoRevisor2Nome: string;
+  alunoRevisor2Matricula?: string;
+  ativa: boolean;
+}
+
+export interface AchadoGatilho {
+  id?: number;
+  gatilhoId: number;
+  gatilhoCodigo: string;
+  gatilhoDescricao: string;
+  moduloNome: string;
+  confirmouDano: boolean;
+  justificativaDano?: string;
+  danoPresenteAdmissao: boolean;
+  gravidade?: GravidadeNccMerp;
+}
+
+export interface RevisaoIndividual {
+  id: number;
+  duplaId: number;
+  alunoId: number;
+  alunoNome: string;
+  prontuarioId: number;
+  prontuarioAtendimento: string;
+  tempoGastoSegundos: number;
+  finalizada: boolean;
+  dataSubmissao?: string;
+  achados: AchadoGatilho[];
+}
+
+export interface ProntuarioItemAuditoria {
+  prontuarioId: number;
+  numeroAtendimento: string;
+  unidadeSigla: string;
+  idadePaciente: number;
+  tempoPermanenciaDias: number;
+  revisaoId?: number;
+  finalizada: boolean;
+  tempoGastoSegundos: number;
+  totalGatilhos: number;
+  totalDanosConfirmados: number;
+}
+
+export interface AtividadeDiscente {
+  atividadeId: number;
+  atividadeTitulo: string;
+  turmaId: number;
+  turmaCodigo: string;
+  cenarioId: number;
+  cenarioTitulo: string;
+  duplaId: number;
+  parceiroNome: string;
+  parceiroMatricula?: string;
+  dataInicio: string;
+  dataFim: string;
+  tempoLimiteMinutos: number;
+  finalizada: boolean;
+  prontuarios: ProntuarioItemAuditoria[];
+}

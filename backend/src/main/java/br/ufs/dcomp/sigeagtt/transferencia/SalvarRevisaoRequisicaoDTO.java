@@ -1,0 +1,10 @@
+package br.ufs.dcomp.sigeagtt.transferencia;
+
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
+
+public record SalvarRevisaoRequisicaoDTO(
+    @NotNull Integer tempoGastoSegundos,
+    Boolean finalizar,
+    List<AchadoGatilhoDTO> achados
+) {}
