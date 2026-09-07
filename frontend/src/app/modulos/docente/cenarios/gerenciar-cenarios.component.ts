@@ -6,6 +6,16 @@ import { UsuarioService } from '../../../nucleo/servicos/usuario.service';
 import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 import { CenarioClinico, Usuario } from '../../../compartilhado/modelos/dominio.modelos';
 
+export interface CenarioLinha {
+  id: number;
+  titulo: string;
+  descricaoPedagogica: string;
+  professorCriadorNome: string;
+  objetivosAprendizagem: string;
+  dataCriacao: string;
+  original: CenarioClinico;
+}
+
 @Component({
   selector: 'app-gerenciar-cenarios',
   standalone: true,
@@ -35,15 +45,36 @@ export class GerenciarCenariosComponent implements OnInit {
 
   readonly termoBusca = signal('');
 
-  readonly cenariosFiltrados = computed(() => {
+  readonly totalCenarios = computed(() => this.cenarios().length);
+
+  readonly tituloFormulario = computed(() => {
+    return this.idEdicao ? `EDITAR CENÁRIO #${this.idEdicao}` : 'NOVO CENÁRIO CLÍNICO';
+  });
+
+  readonly textoBotaoSubmit = computed(() => {
+    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Cenário';
+  });
+
+  readonly cenariosLinhas = computed<CenarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    return this.cenarios().filter((c) => {
-      return !termo ||
-        c.titulo.toLowerCase().includes(termo) ||
-        c.descricaoPedagogica.toLowerCase().includes(termo) ||
-        c.objetivosAprendizagem.toLowerCase().includes(termo) ||
-        c.professorCriadorNome.toLowerCase().includes(termo);
-    });
+
+    return this.cenarios()
+      .filter((c) => {
+        return !termo ||
+          c.titulo.toLowerCase().includes(termo) ||
+          c.descricaoPedagogica.toLowerCase().includes(termo) ||
+          c.objetivosAprendizagem.toLowerCase().includes(termo) ||
+          c.professorCriadorNome.toLowerCase().includes(termo);
+      })
+      .map((c) => ({
+        id: c.id,
+        titulo: c.titulo,
+        descricaoPedagogica: c.descricaoPedagogica,
+        professorCriadorNome: c.professorCriadorNome,
+        objetivosAprendizagem: c.objetivosAprendizagem,
+        dataCriacao: c.criadoEm ? new Date(c.criadoEm).toLocaleDateString('pt-BR') : '-',
+        original: c
+      }));
   });
 
   ngOnInit(): void {
@@ -108,7 +139,7 @@ export class GerenciarCenariosComponent implements OnInit {
     if (this.idEdicao) {
       this.cenarioService.editar(this.idEdicao, this.formulario).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Cenário "${atualizado.titulo}" atualizado com sucesso!`);
+          this.mensagemSucesso.set(`Cenário "${atualizado.titulo}" atualizado com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarCenarios();
@@ -121,7 +152,7 @@ export class GerenciarCenariosComponent implements OnInit {
     } else {
       this.cenarioService.cadastrar(this.formulario).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Cenário "${criado.titulo}" cadastrado com sucesso!`);
+          this.mensagemSucesso.set(`Cenário "${criado.titulo}" cadastrado com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarCenarios();
@@ -145,12 +176,6 @@ export class GerenciarCenariosComponent implements OnInit {
       },
       error: (err) => this.mensagemErro.set('Erro ao excluir: ' + (err.error?.mensagem || err.message))
     });
-  }
-
-  formatarData(dataStr: string): string {
-    if (!dataStr) return '-';
-    const d = new Date(dataStr);
-    return d.toLocaleDateString('pt-BR');
   }
 
   private limparMensagens(): void {
