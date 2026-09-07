@@ -4,13 +4,21 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 @Entity
 @Table(name = "gatilhos_gtt")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class GatilhoGtt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotBlank
@@ -34,24 +42,4 @@ public class GatilhoGtt {
     @NotNull
     @Column(name = "ativo", nullable = false)
     private Boolean ativo = true;
-
-    public GatilhoGtt() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
-
-    public ModuloGtt getModulo() { return modulo; }
-    public void setModulo(ModuloGtt modulo) { this.modulo = modulo; }
-
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-
-    public String getLimiarReferencia() { return limiarReferencia; }
-    public void setLimiarReferencia(String limiarReferencia) { this.limiarReferencia = limiarReferencia; }
-
-    public Boolean getAtivo() { return ativo; }
-    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
 }

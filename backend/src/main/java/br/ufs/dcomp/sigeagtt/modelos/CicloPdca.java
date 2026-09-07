@@ -3,6 +3,7 @@ package br.ufs.dcomp.sigeagtt.modelos;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 @Entity
 @Table(
@@ -11,10 +12,17 @@ import jakarta.validation.constraints.NotNull;
         @UniqueConstraint(name = "ciclos_pdca_consenso_dupla_id_key", columnNames = {"consenso_dupla_id"})
     }
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class CicloPdca {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -37,24 +45,4 @@ public class CicloPdca {
     @NotBlank
     @Column(name = "agir", nullable = false, columnDefinition = "TEXT")
     private String agir;
-
-    public CicloPdca() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public ConsensoDupla getConsensoDupla() { return consensoDupla; }
-    public void setConsensoDupla(ConsensoDupla consensoDupla) { this.consensoDupla = consensoDupla; }
-
-    public String getPlanejar() { return planejar; }
-    public void setPlanejar(String planejar) { this.planejar = planejar; }
-
-    public String getFazer() { return fazer; }
-    public void setFazer(String fazer) { this.fazer = fazer; }
-
-    public String getChecar() { return checar; }
-    public void setChecar(String checar) { this.checar = checar; }
-
-    public String getAgir() { return agir; }
-    public void setAgir(String agir) { this.agir = agir; }
 }

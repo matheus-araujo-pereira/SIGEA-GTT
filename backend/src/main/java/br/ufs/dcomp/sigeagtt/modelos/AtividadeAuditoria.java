@@ -4,15 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "atividades_auditoria")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class AtividadeAuditoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -45,30 +53,4 @@ public class AtividadeAuditoria {
     @NotNull
     @Column(name = "finalizada", nullable = false)
     private Boolean finalizada = false;
-
-    public AtividadeAuditoria() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Turma getTurma() { return turma; }
-    public void setTurma(Turma turma) { this.turma = turma; }
-
-    public CenarioClinico getCenario() { return cenario; }
-    public void setCenario(CenarioClinico cenario) { this.cenario = cenario; }
-
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public LocalDateTime getDataInicio() { return dataInicio; }
-    public void setDataInicio(LocalDateTime dataInicio) { this.dataInicio = dataInicio; }
-
-    public LocalDateTime getDataFim() { return dataFim; }
-    public void setDataFim(LocalDateTime dataFim) { this.dataFim = dataFim; }
-
-    public Integer getTempoLimiteMinutos() { return tempoLimiteMinutos; }
-    public void setTempoLimiteMinutos(Integer tempoLimiteMinutos) { this.tempoLimiteMinutos = tempoLimiteMinutos; }
-
-    public Boolean getFinalizada() { return finalizada; }
-    public void setFinalizada(Boolean finalizada) { this.finalizada = finalizada; }
 }

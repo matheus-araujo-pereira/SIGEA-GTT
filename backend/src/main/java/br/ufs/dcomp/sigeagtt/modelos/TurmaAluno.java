@@ -1,18 +1,28 @@
 package br.ufs.dcomp.sigeagtt.modelos;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "turma_alunos")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class TurmaAluno {
 
     @EmbeddedId
+    @EqualsAndHashCode.Include
     private TurmaAlunoId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("turmaId")
     @JoinColumn(name = "turma_id", nullable = false)
+    @ToString.Exclude
     private Turma turma;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -28,24 +38,10 @@ public class TurmaAluno {
         if (this.matriculadoEm == null) this.matriculadoEm = LocalDateTime.now();
     }
 
-    public TurmaAluno() {}
-
     public TurmaAluno(Turma turma, Usuario aluno) {
         this.id = new TurmaAlunoId(turma.getId(), aluno.getId());
         this.turma = turma;
         this.aluno = aluno;
         this.matriculadoEm = LocalDateTime.now();
     }
-
-    public TurmaAlunoId getId() { return id; }
-    public void setId(TurmaAlunoId id) { this.id = id; }
-
-    public Turma getTurma() { return turma; }
-    public void setTurma(Turma turma) { this.turma = turma; }
-
-    public Usuario getAluno() { return aluno; }
-    public void setAluno(Usuario aluno) { this.aluno = aluno; }
-
-    public LocalDateTime getMatriculadoEm() { return matriculadoEm; }
-    public void setMatriculadoEm(LocalDateTime matriculadoEm) { this.matriculadoEm = matriculadoEm; }
 }

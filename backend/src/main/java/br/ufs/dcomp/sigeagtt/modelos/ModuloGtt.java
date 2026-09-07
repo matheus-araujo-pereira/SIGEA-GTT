@@ -4,15 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "modulos_gtt")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class ModuloGtt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotBlank
@@ -40,24 +48,4 @@ public class ModuloGtt {
         if (this.criadoEm == null) this.criadoEm = LocalDateTime.now();
         if (this.ativo == null) this.ativo = true;
     }
-
-    public ModuloGtt() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
-
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-
-    public Boolean getAtivo() { return ativo; }
-    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
-
-    public LocalDateTime getCriadoEm() { return criadoEm; }
-    public void setCriadoEm(LocalDateTime criadoEm) { this.criadoEm = criadoEm; }
 }

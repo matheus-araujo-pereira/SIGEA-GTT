@@ -4,15 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "prontuarios_simulados")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class ProntuarioSimulado {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -64,45 +72,4 @@ public class ProntuarioSimulado {
     @NotBlank
     @Column(name = "evolucoes_multiprofissionais", nullable = false, columnDefinition = "TEXT")
     private String evolucoesMultiprofissionais;
-
-    public ProntuarioSimulado() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public CenarioClinico getCenario() { return cenario; }
-    public void setCenario(CenarioClinico cenario) { this.cenario = cenario; }
-
-    public UnidadeHospitalar getUnidadeHospitalar() { return unidadeHospitalar; }
-    public void setUnidadeHospitalar(UnidadeHospitalar unidadeHospitalar) { this.unidadeHospitalar = unidadeHospitalar; }
-
-    public String getNumeroAtendimento() { return numeroAtendimento; }
-    public void setNumeroAtendimento(String numeroAtendimento) { this.numeroAtendimento = numeroAtendimento; }
-
-    public Integer getIdadePaciente() { return idadePaciente; }
-    public void setIdadePaciente(Integer idadePaciente) { this.idadePaciente = idadePaciente; }
-
-    public LocalDate getDataAdmissao() { return dataAdmissao; }
-    public void setDataAdmissao(LocalDate dataAdmissao) { this.dataAdmissao = dataAdmissao; }
-
-    public LocalDate getDataAlta() { return dataAlta; }
-    public void setDataAlta(LocalDate dataAlta) { this.dataAlta = dataAlta; }
-
-    public Integer getTempoPermanenciaDias() { return tempoPermanenciaDias; }
-    public void setTempoPermanenciaDias(Integer tempoPermanenciaDias) { this.tempoPermanenciaDias = tempoPermanenciaDias; }
-
-    public String getSumarioAlta() { return sumarioAlta; }
-    public void setSumarioAlta(String sumarioAlta) { this.sumarioAlta = sumarioAlta; }
-
-    public String getPrescricoesMedicas() { return prescricoesMedicas; }
-    public void setPrescricoesMedicas(String prescricoesMedicas) { this.prescricoesMedicas = prescricoesMedicas; }
-
-    public String getExamesLaboratoriais() { return examesLaboratoriais; }
-    public void setExamesLaboratoriais(String examesLaboratoriais) { this.examesLaboratoriais = examesLaboratoriais; }
-
-    public String getRelatorioCirurgico() { return relatorioCirurgico; }
-    public void setRelatorioCirurgico(String relatorioCirurgico) { this.relatorioCirurgico = relatorioCirurgico; }
-
-    public String getEvolucoesMultiprofissionais() { return evolucoesMultiprofissionais; }
-    public void setEvolucoesMultiprofissionais(String evolucoesMultiprofissionais) { this.evolucoesMultiprofissionais = evolucoesMultiprofissionais; }
 }

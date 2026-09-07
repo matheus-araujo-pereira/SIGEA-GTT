@@ -4,13 +4,21 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 @Entity
 @Table(name = "categorias_eventos_adversos")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class CategoriaEventoAdverso {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotBlank
@@ -21,15 +29,4 @@ public class CategoriaEventoAdverso {
     @NotNull
     @Column(name = "ativa", nullable = false)
     private Boolean ativa = true;
-
-    public CategoriaEventoAdverso() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-
-    public Boolean getAtiva() { return ativa; }
-    public void setAtiva(Boolean ativa) { this.ativa = ativa; }
 }

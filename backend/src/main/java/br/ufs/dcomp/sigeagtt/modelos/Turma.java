@@ -4,15 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "turmas")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class Turma {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -47,27 +55,4 @@ public class Turma {
         if (this.criadaEm == null) this.criadaEm = LocalDateTime.now();
         if (this.ativa == null) this.ativa = true;
     }
-
-    public Turma() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Usuario getProfessorResponsavel() { return professorResponsavel; }
-    public void setProfessorResponsavel(Usuario professorResponsavel) { this.professorResponsavel = professorResponsavel; }
-
-    public String getCodigoDisciplina() { return codigoDisciplina; }
-    public void setCodigoDisciplina(String codigoDisciplina) { this.codigoDisciplina = codigoDisciplina; }
-
-    public String getPeriodoLetivo() { return periodoLetivo; }
-    public void setPeriodoLetivo(String periodoLetivo) { this.periodoLetivo = periodoLetivo; }
-
-    public String getAnoSemestre() { return anoSemestre; }
-    public void setAnoSemestre(String anoSemestre) { this.anoSemestre = anoSemestre; }
-
-    public Boolean getAtiva() { return ativa; }
-    public void setAtiva(Boolean ativa) { this.ativa = ativa; }
-
-    public LocalDateTime getCriadaEm() { return criadaEm; }
-    public void setCriadaEm(LocalDateTime criadaEm) { this.criadaEm = criadaEm; }
 }

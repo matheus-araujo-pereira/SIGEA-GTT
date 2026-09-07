@@ -2,6 +2,7 @@ package br.ufs.dcomp.sigeagtt.modelos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,10 +18,17 @@ import java.util.List;
         )
     }
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class RevisaoIndividual {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -50,31 +58,6 @@ public class RevisaoIndividual {
     private LocalDateTime dataSubmissao;
 
     @OneToMany(mappedBy = "revisaoIndividual", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<AchadoGatilho> achados = new ArrayList<>();
-
-    public RevisaoIndividual() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public DuplaRevisores getDupla() { return dupla; }
-    public void setDupla(DuplaRevisores dupla) { this.dupla = dupla; }
-
-    public Usuario getAluno() { return aluno; }
-    public void setAluno(Usuario aluno) { this.aluno = aluno; }
-
-    public ProntuarioSimulado getProntuario() { return prontuario; }
-    public void setProntuario(ProntuarioSimulado prontuario) { this.prontuario = prontuario; }
-
-    public Integer getTempoGastoSegundos() { return tempoGastoSegundos; }
-    public void setTempoGastoSegundos(Integer tempoGastoSegundos) { this.tempoGastoSegundos = tempoGastoSegundos; }
-
-    public Boolean getFinalizada() { return finalizada; }
-    public void setFinalizada(Boolean finalizada) { this.finalizada = finalizada; }
-
-    public LocalDateTime getDataSubmissao() { return dataSubmissao; }
-    public void setDataSubmissao(LocalDateTime dataSubmissao) { this.dataSubmissao = dataSubmissao; }
-
-    public List<AchadoGatilho> getAchados() { return achados; }
-    public void setAchados(List<AchadoGatilho> achados) { this.achados = achados; }
 }

@@ -3,6 +3,7 @@ package br.ufs.dcomp.sigeagtt.modelos;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 @Entity
 @Table(
@@ -11,10 +12,17 @@ import jakarta.validation.constraints.NotNull;
         @UniqueConstraint(name = "analises_ishikawa_consenso_dupla_id_key", columnNames = {"consenso_dupla_id"})
     }
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class AnaliseIshikawa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -43,33 +51,4 @@ public class AnaliseIshikawa {
 
     @Column(name = "maquina", columnDefinition = "TEXT")
     private String maquina;
-
-    public AnaliseIshikawa() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public ConsensoDupla getConsensoDupla() { return consensoDupla; }
-    public void setConsensoDupla(ConsensoDupla consensoDupla) { this.consensoDupla = consensoDupla; }
-
-    public String getEfeitoPrincipal() { return efeitoPrincipal; }
-    public void setEfeitoPrincipal(String efeitoPrincipal) { this.efeitoPrincipal = efeitoPrincipal; }
-
-    public String getMetodo() { return metodo; }
-    public void setMetodo(String metodo) { this.metodo = metodo; }
-
-    public String getMaoDeObra() { return maoDeObra; }
-    public void setMaoDeObra(String maoDeObra) { this.maoDeObra = maoDeObra; }
-
-    public String getMaterial() { return material; }
-    public void setMaterial(String material) { this.material = material; }
-
-    public String getMedida() { return medida; }
-    public void setMedida(String medida) { this.medida = medida; }
-
-    public String getMeioAmbiente() { return meioAmbiente; }
-    public void setMeioAmbiente(String meioAmbiente) { this.meioAmbiente = meioAmbiente; }
-
-    public String getMaquina() { return maquina; }
-    public void setMaquina(String maquina) { this.maquina = maquina; }
 }

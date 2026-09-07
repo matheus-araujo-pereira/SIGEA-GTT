@@ -2,6 +2,7 @@ package br.ufs.dcomp.sigeagtt.modelos;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,10 +15,17 @@ import java.util.List;
         @UniqueConstraint(name = "uq_consenso_dupla", columnNames = {"dupla_id", "prontuario_id"})
     }
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class ConsensoDupla {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -39,9 +47,11 @@ public class ConsensoDupla {
     private Boolean submetido = false;
 
     @OneToMany(mappedBy = "consensoDupla", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<ItemConsenso> itens = new ArrayList<>();
 
     @OneToOne(mappedBy = "consensoDupla", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private ValidacaoDocente validacaoDocente;
 
     @PrePersist
@@ -49,27 +59,4 @@ public class ConsensoDupla {
         if (this.dataConsenso == null) this.dataConsenso = LocalDateTime.now();
         if (this.submetido == null) this.submetido = false;
     }
-
-    public ConsensoDupla() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public DuplaRevisores getDupla() { return dupla; }
-    public void setDupla(DuplaRevisores dupla) { this.dupla = dupla; }
-
-    public ProntuarioSimulado getProntuario() { return prontuario; }
-    public void setProntuario(ProntuarioSimulado prontuario) { this.prontuario = prontuario; }
-
-    public LocalDateTime getDataConsenso() { return dataConsenso; }
-    public void setDataConsenso(LocalDateTime dataConsenso) { this.dataConsenso = dataConsenso; }
-
-    public Boolean getSubmetido() { return submetido; }
-    public void setSubmetido(Boolean submetido) { this.submetido = submetido; }
-
-    public List<ItemConsenso> getItens() { return itens; }
-    public void setItens(List<ItemConsenso> itens) { this.itens = itens; }
-
-    public ValidacaoDocente getValidacaoDocente() { return validacaoDocente; }
-    public void setValidacaoDocente(ValidacaoDocente validacaoDocente) { this.validacaoDocente = validacaoDocente; }
 }

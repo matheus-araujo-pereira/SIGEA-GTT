@@ -4,15 +4,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "cenarios_clinicos")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class CenarioClinico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -40,24 +48,4 @@ public class CenarioClinico {
     protected void aoCriar() {
         if (this.criadoEm == null) this.criadoEm = LocalDateTime.now();
     }
-
-    public CenarioClinico() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Usuario getProfessorCriador() { return professorCriador; }
-    public void setProfessorCriador(Usuario professorCriador) { this.professorCriador = professorCriador; }
-
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public String getDescricaoPedagogica() { return descricaoPedagogica; }
-    public void setDescricaoPedagogica(String descricaoPedagogica) { this.descricaoPedagogica = descricaoPedagogica; }
-
-    public String getObjetivosAprendizagem() { return objetivosAprendizagem; }
-    public void setObjetivosAprendizagem(String objetivosAprendizagem) { this.objetivosAprendizagem = objetivosAprendizagem; }
-
-    public LocalDateTime getCriadoEm() { return criadoEm; }
-    public void setCriadoEm(LocalDateTime criadoEm) { this.criadoEm = criadoEm; }
 }

@@ -3,15 +3,23 @@ package br.ufs.dcomp.sigeagtt.modelos;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "validacoes_docentes")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class ValidacaoDocente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotNull
@@ -40,24 +48,4 @@ public class ValidacaoDocente {
     protected void aoCriar() {
         if (this.dataValidacao == null) this.dataValidacao = LocalDateTime.now();
     }
-
-    public ValidacaoDocente() {}
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public ConsensoDupla getConsensoDupla() { return consensoDupla; }
-    public void setConsensoDupla(ConsensoDupla consensoDupla) { this.consensoDupla = consensoDupla; }
-
-    public Usuario getProfessorValidador() { return professorValidador; }
-    public void setProfessorValidador(Usuario professorValidador) { this.professorValidador = professorValidador; }
-
-    public String getParecerFormativo() { return parecerFormativo; }
-    public void setParecerFormativo(String parecerFormativo) { this.parecerFormativo = parecerFormativo; }
-
-    public Boolean getHomologado() { return homologado; }
-    public void setHomologado(Boolean homologado) { this.homologado = homologado; }
-
-    public LocalDateTime getDataValidacao() { return dataValidacao; }
-    public void setDataValidacao(LocalDateTime dataValidacao) { this.dataValidacao = dataValidacao; }
 }
