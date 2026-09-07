@@ -4,13 +4,14 @@ import { LoginComponent } from './modulos/autenticacao/login/login.component';
 import { PrimeiroAcessoComponent } from './modulos/autenticacao/primeiro-acesso/primeiro-acesso.component';
 import { LayoutInternoComponent } from './compartilhado/componentes/layout-interno/layout-interno.component';
 import { GerenciarUsuariosComponent } from './modulos/administracao/usuarios/gerenciar-usuarios/gerenciar-usuarios.component';
+import { GerenciarGatilhosComponent } from './modulos/administracao/gatilhos/gerenciar-gatilhos.component';
+import { GerenciarUnidadesComponent } from './modulos/administracao/unidades/gerenciar-unidades.component';
 import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
 import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
 import { AutenticacaoService } from './nucleo/servicos/autenticacao.service';
 
-// Redireciona a raiz ('') dinamicamente para o módulo padrão do perfil logado
 const redirecionamentoInicialGuard: CanActivateFn = () => {
   const auth = inject(AutenticacaoService);
   const router = inject(Router);
@@ -28,15 +29,27 @@ export const routes: Routes = [
     children: [
       { path: '', canActivate: [redirecionamentoInicialGuard], children: [] },
       
-      // Rotas exclusivas de ADMINISTRADOR
+      // Módulo Administrativo (RBAC: ADMINISTRADOR)
       {
         path: 'usuarios',
         component: GerenciarUsuariosComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR'] }
       },
+      {
+        path: 'gatilhos',
+        component: GerenciarGatilhosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] }
+      },
+      {
+        path: 'unidades',
+        component: GerenciarUnidadesComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] }
+      },
 
-      // Rotas exclusivas de ALUNO
+      // Módulo Discente (RBAC: ALUNO)
       {
         path: 'auditoria',
         component: AuditoriaComponent,
@@ -44,7 +57,7 @@ export const routes: Routes = [
         data: { perfis: ['ALUNO'] }
       },
 
-      // Rotas exclusivas de PROFESSOR
+      // Módulo Docente (RBAC: PROFESSOR)
       {
         path: 'turmas',
         component: TurmasComponent,

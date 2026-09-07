@@ -5,5 +5,6 @@ public enum ModuloGtt {
     MEDICACAO,
     CIRURGICO,
     TERAPIA_INTENSIVA,
+    PERINATAL,
     EMERGENCIA
 }
