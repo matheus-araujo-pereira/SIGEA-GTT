@@ -8,6 +8,8 @@ import { GerenciarGatilhosComponent } from './modulos/administracao/gatilhos/ger
 import { GerenciarUnidadesComponent } from './modulos/administracao/unidades/gerenciar-unidades.component';
 import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
 import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
+import { GerenciarCenariosComponent } from './modulos/docente/cenarios/gerenciar-cenarios.component';
+import { GerenciarProntuariosComponent } from './modulos/docente/prontuarios/gerenciar-prontuarios.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
 import { AutenticacaoService } from './nucleo/servicos/autenticacao.service';
@@ -29,7 +31,7 @@ export const routes: Routes = [
     children: [
       { path: '', canActivate: [redirecionamentoInicialGuard], children: [] },
       
-      // Módulo Administrativo (RBAC: ADMINISTRADOR)
+      // Administração
       {
         path: 'usuarios',
         component: GerenciarUsuariosComponent,
@@ -49,20 +51,32 @@ export const routes: Routes = [
         data: { perfis: ['ADMINISTRADOR'] }
       },
 
-      // Módulo Discente (RBAC: ALUNO)
-      {
-        path: 'auditoria',
-        component: AuditoriaComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO'] }
-      },
-
-      // Módulo Docente (RBAC: PROFESSOR)
+      // Gestão Acadêmica Docente
       {
         path: 'turmas',
         component: TurmasComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+      },
+      {
+        path: 'cenarios',
+        component: GerenciarCenariosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+      },
+      {
+        path: 'prontuarios',
+        component: GerenciarProntuariosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] }
+      },
+
+      // Auditoria Discente
+      {
+        path: 'auditoria',
+        component: AuditoriaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ALUNO'] }
       }
     ]
   },
