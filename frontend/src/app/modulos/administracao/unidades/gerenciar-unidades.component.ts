@@ -4,6 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { UnidadeService, UnidadeRequisicao } from '../../../nucleo/servicos/unidade.service';
 import { UnidadeHospitalar } from '../../../compartilhado/modelos/dominio.modelos';
 
+export interface UnidadeLinha {
+  id: number;
+  sigla: string;
+  nome: string;
+  status: string;
+  ativa: boolean;
+  original: UnidadeHospitalar;
+}
+
 @Component({
   selector: 'app-gerenciar-unidades',
   standalone: true,
@@ -15,29 +24,48 @@ export class GerenciarUnidadesComponent implements OnInit {
 
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly carregando = signal(false);
-  exibirFormulario = false;
-  idEdicao: number | null = null;
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
+  exibirFormulario = false;
+  idEdicao: number | null = null;
   formulario: UnidadeRequisicao = { nome: '', sigla: '' };
 
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
 
-  readonly unidadesFiltradas = computed(() => {
+  readonly totalUnidades = computed(() => this.unidades().length);
+
+  readonly tituloFormulario = computed(() => {
+    return this.idEdicao ? `EDITAR UNIDADE #${this.idEdicao}` : 'NOVA UNIDADE HOSPITALAR';
+  });
+
+  readonly textoBotaoSubmit = computed(() => {
+    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Unidade';
+  });
+
+  readonly unidadesLinhas = computed<UnidadeLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const status = this.filtroStatus();
 
-    return this.unidades().filter((u) => {
-      const matchTermo = !termo ||
-        u.nome.toLowerCase().includes(termo) ||
-        u.sigla.toLowerCase().includes(termo);
+    return this.unidades()
+      .filter((u) => {
+        const matchTermo = !termo ||
+          u.nome.toLowerCase().includes(termo) ||
+          u.sigla.toLowerCase().includes(termo);
 
-      const matchStatus = status === 'TODOS' || (status === 'ATIVAS' ? u.ativa : !u.ativa);
+        const matchStatus = status === 'TODOS' || (status === 'ATIVAS' ? u.ativa : !u.ativa);
 
-      return matchTermo && matchStatus;
-    });
+        return matchTermo && matchStatus;
+      })
+      .map((u) => ({
+        id: u.id,
+        sigla: `[${u.sigla}]`,
+        nome: u.nome,
+        status: u.ativa ? '[ATIVO]' : '[INATIVO]',
+        ativa: u.ativa,
+        original: u
+      }));
   });
 
   ngOnInit(): void {
@@ -79,7 +107,7 @@ export class GerenciarUnidadesComponent implements OnInit {
     if (this.idEdicao) {
       this.unidadeService.editar(this.idEdicao, this.formulario).subscribe({
         next: (atualizada) => {
-          this.mensagemSucesso.set(`Unidade ${atualizada.nome} (${atualizada.sigla}) atualizada com sucesso!`);
+          this.mensagemSucesso.set(`Unidade ${atualizada.nome} (${atualizada.sigla}) atualizada com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarUnidades();
@@ -92,7 +120,7 @@ export class GerenciarUnidadesComponent implements OnInit {
     } else {
       this.unidadeService.cadastrar(this.formulario).subscribe({
         next: (criada) => {
-          this.mensagemSucesso.set(`Unidade ${criada.nome} (${criada.sigla}) cadastrada com sucesso!`);
+          this.mensagemSucesso.set(`Unidade ${criada.nome} (${criada.sigla}) cadastrada com sucesso.`);
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarUnidades();
@@ -106,7 +134,7 @@ export class GerenciarUnidadesComponent implements OnInit {
   }
 
   excluir(u: UnidadeHospitalar): void {
-    const confirmacao = confirm(`Deseja excluir definitivamente a unidade "${u.nome}" (${u.sigla})?`);
+    const confirmacao = confirm(`Deseja excluir a unidade "${u.nome}" (${u.sigla})?`);
     if (!confirmacao) return;
 
     this.unidadeService.excluir(u.id).subscribe({
