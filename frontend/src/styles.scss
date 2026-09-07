@@ -143,3 +143,48 @@ html, body {
     background-color: $color3 !important;
   }
 }
+
+/* OVERLAY GLOBAL DE CARREGAMENTO MINIMALISTA */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(18, 43, 43, 0.45);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-box {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+}
+
+/* ATUALIZAÇÃO DO OVERLAY DO LOADING COM BLUR */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(18, 43, 43, 0.45);
+  backdrop-filter: blur(3px); /* Desfoque suave no fundo */
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-box {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  padding: 2rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+}

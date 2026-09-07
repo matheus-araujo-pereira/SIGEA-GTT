@@ -1,6 +1,6 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 
 export interface ItemMenu {
@@ -22,10 +22,14 @@ export interface GrupoMenu {
 })
 export class LayoutInternoComponent {
   private readonly authService = inject(AutenticacaoService);
+  private readonly router = inject(Router);
+
   readonly usuario = this.authService.usuarioLogado;
 
   readonly nomeUsuario = computed(() => this.usuario()?.nomeCompleto || '');
   readonly perfilUsuario = computed(() => this.usuario()?.perfil ? `[${this.usuario()?.perfil}]` : '');
+
+  readonly exibirModalPerfil = signal(false);
 
   readonly gruposMenu = computed<GrupoMenu[]>(() => {
     const perfil = this.usuario()?.perfil;
@@ -75,7 +79,16 @@ export class LayoutInternoComponent {
     return grupos;
   });
 
+  abrirPerfil(): void {
+    this.exibirModalPerfil.set(true);
+  }
+
+  fecharPerfil(): void {
+    this.exibirModalPerfil.set(false);
+  }
+
   sair(): void {
     this.authService.sair();
+    this.router.navigate(['/login']);
   }
 }
