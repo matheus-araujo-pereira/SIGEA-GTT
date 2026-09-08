@@ -5,10 +5,18 @@ services:
     rootDir: backend
     healthCheckPath: /actuator/health
     envVars:
-      - key: DB_URL
+      - key: DB_HOST
         fromDatabase:
           name: sigea-gtt-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: sigea-gtt-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: sigea-gtt-db
+          property: database
       - key: DB_USERNAME
         fromDatabase:
           name: sigea-gtt-db
@@ -17,6 +25,10 @@ services:
         fromDatabase:
           name: sigea-gtt-db
           property: password
+      - key: FRONTEND_ORIGIN
+        # Render atribui o domínio "<nome-do-serviço>.onrender.com" por padrão.
+        # Se você renomear o serviço "sigea-gtt-frontend", atualize este valor.
+        value: https://sigea-gtt-frontend.onrender.com
 
   - type: web
     name: sigea-gtt-frontend
