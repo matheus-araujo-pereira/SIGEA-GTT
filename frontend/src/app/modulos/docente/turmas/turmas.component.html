@@ -3,63 +3,163 @@
   <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
     <div>
       <h1 class="h5 fw-bold text-dark m-0">Gestão de Turmas e Alunos</h1>
-      <span class="text-secondary small">Total cadastrado: {{ totalTurmas() }}</span>
+      <span class="text-secondary small"
+        >Total cadastrado: {{ totalTurmas() }}</span
+      >
     </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="iniciarNovaTurma()">
-      {{ exibirFormTurma ? 'FECHAR' : 'NOVA TURMA' }}
+    <button
+      type="button"
+      class="btn btn-primary btn-sm"
+      (click)="iniciarNovaTurma()"
+    >
+      {{ exibirFormTurma ? "FECHAR" : "NOVA TURMA" }}
     </button>
   </div>
 
   <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
-    <div class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between">
+    <div
+      class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between"
+    >
       <span>{{ mensagemSucesso() }}</span>
-      <button type="button" class="btn btn-sm p-0 text-success" (click)="mensagemSucesso.set(null)">[X]</button>
+      <button
+        type="button"
+        class="btn btn-sm p-0 text-success"
+        (click)="mensagemSucesso.set(null)"
+      >
+        [X]
+      </button>
     </div>
   }
 
   @if (mensagemErro()) {
-    <div class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between">
+    <div
+      class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between"
+    >
       <span>{{ mensagemErro() }}</span>
-      <button type="button" class="btn btn-sm p-0 text-danger" (click)="mensagemErro.set(null)">[X]</button>
+      <button
+        type="button"
+        class="btn btn-sm p-0 text-danger"
+        (click)="mensagemErro.set(null)"
+      >
+        [X]
+      </button>
     </div>
   }
 
   <!-- FORMULARIO RETANGULAR COMPACTO -->
   @if (exibirFormTurma) {
     <div class="p-3 mb-3 bg-white b-1">
-      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
-        <span class="fw-bold text-dark small font-monospace">{{ tituloFormTurma() }}</span>
-        <button type="button" class="btn btn-sm p-0 text-muted" (click)="fecharFormTurma()">[FECHAR]</button>
+      <div
+        class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b"
+      >
+        <span class="fw-bold text-dark small font-monospace">{{
+          tituloFormTurma()
+        }}</span>
+        <button
+          type="button"
+          class="btn btn-sm p-0 text-muted"
+          (click)="fecharFormTurma()"
+        >
+          [FECHAR]
+        </button>
       </div>
 
       <form (ngSubmit)="salvarTurma()">
         <div class="row g-2">
           <div class="col-md-3">
-            <label for="codigoDisciplina" class="form-label small text-secondary m-0">Código da Disciplina</label>
-            <input id="codigoDisciplina" type="text" class="form-control form-control-sm font-monospace text-uppercase" [(ngModel)]="formTurma.codigoDisciplina" name="codDisciplina" required maxlength="30" placeholder="Ex.: ENF0052">
+            <label
+              for="codigoDisciplina"
+              class="form-label small text-secondary m-0"
+              >Código da Disciplina</label
+            >
+            <input
+              id="codigoDisciplina"
+              type="text"
+              class="form-control form-control-sm font-monospace text-uppercase"
+              [(ngModel)]="formTurma.codigoDisciplina"
+              name="codDisciplina"
+              required
+              maxlength="30"
+              placeholder="Ex.: ENF0052"
+            />
           </div>
           <div class="col-md-3">
-            <label for="periodoLetivo" class="form-label small text-secondary m-0">Período Letivo</label>
-            <input id="periodoLetivo" type="text" class="form-control form-control-sm" [(ngModel)]="formTurma.periodoLetivo" name="periodo" required maxlength="20" placeholder="Ex.: 2026.1">
+            <label
+              for="periodoLetivo"
+              class="form-label small text-secondary m-0"
+              >Período Letivo</label
+            >
+            <input
+              id="periodoLetivo"
+              type="text"
+              class="form-control form-control-sm"
+              [(ngModel)]="formTurma.periodoLetivo"
+              name="periodo"
+              required
+              maxlength="20"
+              placeholder="Ex.: 2026.1"
+            />
           </div>
           <div class="col-md-2">
-            <label for="anoSemestre" class="form-label small text-secondary m-0">Ano / Semestre</label>
-            <input id="anoSemestre" type="text" class="form-control form-control-sm" [(ngModel)]="formTurma.anoSemestre" name="semestre" required maxlength="10" placeholder="Ex.: 2026/1">
+            <label for="anoSemestre" class="form-label small text-secondary m-0"
+              >Ano / Semestre</label
+            >
+            <input
+              id="anoSemestre"
+              type="text"
+              class="form-control form-control-sm"
+              [(ngModel)]="formTurma.anoSemestre"
+              name="semestre"
+              required
+              maxlength="10"
+              placeholder="Ex.: 2026/1"
+            />
           </div>
-          <div class="col-md-4">
-            <label for="profResponsavel" class="form-label small text-secondary m-0">Professor Responsável</label>
-            <select id="profResponsavel" class="form-select form-select-sm" [(ngModel)]="formTurma.professorResponsavelId" name="profResponsavel" required>
-              @for (p of professores(); track p.id) {
-                <option [value]="p.id">{{ p.nomeCompleto }}</option>
-              }
-            </select>
-          </div>
+          @if (ehAdministrador()) {
+            <div class="col-md-4">
+              <label
+                for="profResponsavel"
+                class="form-label small text-secondary m-0"
+                >Professor Responsável</label
+              >
+              <select
+                id="profResponsavel"
+                class="form-select form-select-sm"
+                [(ngModel)]="formTurma.professorResponsavelId"
+                name="profResponsavel"
+                required
+              >
+                @for (p of professores(); track p.id) {
+                  <option [value]="p.id">{{ p.nomeCompleto }}</option>
+                }
+              </select>
+            </div>
+          } @else {
+            <div class="col-md-4">
+              <label class="form-label small text-secondary m-0"
+                >Professor Responsável</label
+              >
+              <div class="form-control form-control-sm bg-light">
+                {{ auth.usuarioLogado()?.nomeCompleto }}
+              </div>
+            </div>
+          }
         </div>
 
         <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fecharFormTurma()">Cancelar</button>
-          <button type="submit" class="btn btn-primary btn-sm px-3" [disabled]="carregando()">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="fecharFormTurma()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary btn-sm px-3"
+            [disabled]="carregando()"
+          >
             {{ textoBotaoSubmit() }}
           </button>
         </div>
@@ -70,29 +170,50 @@
   <!-- PAINEL DE ENTURMAÇÃO RETANGULAR (SEM COLUNA CPF) -->
   @if (turmaSelecionada()) {
     <div class="p-3 mb-3 bg-white b-1 border-primary">
-      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
-        <span class="fw-bold text-dark small font-monospace">ENTURMAÇÃO: {{ infoTurmaSelecionada() }}</span>
-        <button type="button" class="btn btn-sm p-0 text-muted" (click)="turmaSelecionada.set(null)">[FECHAR]</button>
+      <div
+        class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b"
+      >
+        <span class="fw-bold text-dark small font-monospace"
+          >ENTURMAÇÃO: {{ infoTurmaSelecionada() }}</span
+        >
+        <button
+          type="button"
+          class="btn btn-sm p-0 text-muted"
+          (click)="turmaSelecionada.set(null)"
+        >
+          [FECHAR]
+        </button>
       </div>
 
-      <div class="d-flex gap-2 mb-3 bg-light p-2 b-1">
-        <select class="form-select form-select-sm" [(ngModel)]="idAlunoParaMatricular">
-          <option [ngValue]="null" disabled>Selecione um discente disponível...</option>
+      <div class="mb-3 bg-light p-2 b-1">
+        <input
+          type="search"
+          class="form-control form-control-sm"
+          [ngModel]="termoBuscaAlunos()"
+          (ngModelChange)="termoBuscaAlunos.set($event)"
+          placeholder="Buscar aluno por nome, matrícula ou e-mail..."
+        />
+        <div class="mt-2 d-flex flex-wrap gap-1">
           @for (a of alunosDisponiveisParaMatricula(); track a.id) {
-            <option [value]="a.id">
-              {{ a.nomeCompleto }} | Matrícula: {{ a.matriculaSigaa || '-' }}
-            </option>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm"
+              (click)="idAlunoParaMatricular = a.id; matricularAluno()"
+              [disabled]="carregando()"
+            >
+              {{ a.nomeCompleto }} | {{ a.matriculaSigaa || a.email }}
+            </button>
+          } @empty {
+            <span class="small text-muted"
+              >Nenhum aluno disponível para a busca.</span
+            >
           }
-        </select>
-        <button type="button" class="btn btn-primary btn-sm text-nowrap px-3" (click)="matricularAluno()" [disabled]="!idAlunoParaMatricular || carregando()">
-          MATRICULAR
-        </button>
+        </div>
       </div>
 
       <table class="table table-hover table-sm m-0">
         <thead class="bg-light text-secondary small font-monospace b-b">
           <tr>
-            <th scope="col" class="p-2">ID</th>
             <th scope="col" class="p-2">NOME DO DISCENTE</th>
             <th scope="col" class="p-2">MATRÍCULA</th>
             <th scope="col" class="p-2">E-MAIL</th>
@@ -102,19 +223,24 @@
         <tbody class="small font-monospace">
           @for (a of alunosMatriculadosLinhas(); track a.id) {
             <tr>
-              <td class="p-2">{{ a.id }}</td>
-              <td class="p-2 font-sans-serif fw-semibold text-dark">{{ a.nome }}</td>
+              <td class="p-2 font-sans-serif fw-semibold text-dark">
+                {{ a.nome }}
+              </td>
               <td class="p-2">{{ a.matricula }}</td>
               <td class="p-2 font-sans-serif">{{ a.email }}</td>
               <td class="p-2 text-end">
-                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="desmatricularAluno(a.original)">
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm py-0 px-2"
+                  (click)="desmatricularAluno(a.original)"
+                >
                   DESMATRICULAR
                 </button>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="text-center py-3 text-muted">
+              <td colspan="4" class="text-center py-3 text-muted">
                 Nenhum aluno matriculado nesta turma.
               </td>
             </tr>
@@ -124,16 +250,30 @@
     </div>
   }
 
+  @if (turmaSelecionada()) {
+    <app-gerenciar-atividades
+      [turmaIdContextual]="turmaSelecionada()?.id ?? null"
+    ></app-gerenciar-atividades>
+  }
+
   <!-- FILTRO COMPACTO -->
   <div class="d-flex gap-2 mb-3 bg-white p-2 b-1">
-    <input type="text"
-           class="form-control form-control-sm"
-           [ngModel]="termoBusca()"
-           (ngModelChange)="termoBusca.set($event)"
-           placeholder="Filtrar por código da disciplina, período ou professor...">
+    <input
+      type="text"
+      class="form-control form-control-sm"
+      [ngModel]="termoBusca()"
+      (ngModelChange)="termoBusca.set($event)"
+      placeholder="Filtrar por código da disciplina, período ou professor..."
+    />
 
     @if (termoBusca()) {
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="termoBusca.set('')">LIMPAR</button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm"
+        (click)="termoBusca.set('')"
+      >
+        LIMPAR
+      </button>
     }
   </div>
 
@@ -142,7 +282,6 @@
     <table class="table table-hover table-sm m-0">
       <thead class="bg-light text-secondary small font-monospace b-b">
         <tr>
-          <th scope="col" class="p-2">ID</th>
           <th scope="col" class="p-2">DISCIPLINA</th>
           <th scope="col" class="p-2">PERÍODO</th>
           <th scope="col" class="p-2">SEMESTRE</th>
@@ -155,36 +294,57 @@
       <tbody class="small font-monospace">
         @for (t of turmasLinhas(); track t.id) {
           <tr [class.bg-light]="t.selecionada">
-            <td class="p-2">{{ t.id }}</td>
             <td class="p-2 fw-bold text-dark">{{ t.codigo }}</td>
             <td class="p-2">{{ t.periodo }}</td>
             <td class="p-2">{{ t.semestre }}</td>
-            <td class="p-2 font-sans-serif fw-semibold text-dark">{{ t.professor }}</td>
+            <td class="p-2 font-sans-serif fw-semibold text-dark">
+              {{ t.professor }}
+            </td>
             <td class="p-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" (click)="selecionarTurmaParaEnturmar(t.original)">
-                {{ t.totalAlunosStr }}
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm py-0 px-2"
+                (click)="selecionarTurmaParaEnturmar(t.original)"
+              >
+                ALUNOS ({{ t.totalAlunosStr }})
               </button>
             </td>
-            <td class="p-2" [class.text-success]="t.ativa" [class.text-muted]="!t.ativa">{{ t.status }}</td>
+            <td
+              class="p-2"
+              [class.text-success]="t.ativa"
+              [class.text-muted]="!t.ativa"
+            >
+              {{ t.status }}
+            </td>
             <td class="p-2 text-end text-nowrap">
-              <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 me-1" (click)="iniciarEdicaoTurma(t.original)">
-                EDITAR
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm py-0 px-2 me-1"
+                (click)="iniciarEdicaoTurma(t.original)"
+              >
+                EDITAR TURMA
               </button>
-              <button type="button"
-                      class="btn btn-sm py-0 px-2 me-1"
-                      [class.btn-outline-secondary]="t.ativa"
-                      [class.btn-outline-success]="!t.ativa"
-                      (click)="alternarStatusTurma(t.id)">
-                {{ t.ativa ? 'INATIVAR' : 'ATIVAR' }}
+              <button
+                type="button"
+                class="btn btn-sm py-0 px-2 me-1"
+                [class.btn-outline-secondary]="t.ativa"
+                [class.btn-outline-success]="!t.ativa"
+                (click)="alternarStatusTurma(t.id)"
+              >
+                {{ t.ativa ? "INATIVAR" : "ATIVAR" }}
               </button>
-              <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="excluirTurma(t.original)">
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm py-0 px-2"
+                (click)="excluirTurma(t.original)"
+              >
                 EXCLUIR
               </button>
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="text-center py-4 text-muted">
+            <td colspan="7" class="text-center py-4 text-muted">
               Nenhuma turma encontrada.
             </td>
           </tr>

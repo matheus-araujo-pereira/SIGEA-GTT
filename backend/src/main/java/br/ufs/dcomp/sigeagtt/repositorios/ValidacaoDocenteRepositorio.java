@@ -10,4 +10,7 @@ public interface ValidacaoDocenteRepositorio extends JpaRepository<ValidacaoDoce
 
     @Query("SELECT v FROM ValidacaoDocente v JOIN FETCH v.professorValidador WHERE v.consensoDupla.id = :consensoDuplaId")
     Optional<ValidacaoDocente> findByConsensoDuplaId(@Param("consensoDuplaId") Long consensoDuplaId);
+
+    @Query("SELECT v FROM ValidacaoDocente v JOIN FETCH v.professorValidador WHERE v.revisaoIndividual.id = :revisaoId")
+    Optional<ValidacaoDocente> findByRevisaoIndividualId(@Param("revisaoId") Long revisaoId);
 }

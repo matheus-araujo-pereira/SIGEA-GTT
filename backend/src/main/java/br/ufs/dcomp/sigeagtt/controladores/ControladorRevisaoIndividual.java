@@ -5,6 +5,8 @@ import br.ufs.dcomp.sigeagtt.transferencia.AtividadeDiscenteDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.IniciarRevisaoRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.RevisaoIndividualRespostaDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.SalvarRevisaoRequisicaoDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.AuditoriaAlunoDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.CorrigirAuditoriaRequisicaoDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +33,21 @@ public class ControladorRevisaoIndividual {
         return ResponseEntity.ok(servico.obterOuIniciarRevisao(dto));
     }
 
+    @GetMapping("/atividade/{atividadeId}/alunos")
+    public ResponseEntity<List<AuditoriaAlunoDTO>> listarAuditorias(@PathVariable Long atividadeId) {
+        return ResponseEntity.ok(servico.listarAuditoriasDaAtividade(atividadeId));
+    }
+
     @PutMapping("/{id}/salvar")
-    public ResponseEntity<RevisaoIndividualRespostaDTO> salvar(@PathVariable Long id, @Valid @RequestBody SalvarRevisaoRequisicaoDTO dto) {
+    public ResponseEntity<RevisaoIndividualRespostaDTO> salvar(@PathVariable Long id,
+            @Valid @RequestBody SalvarRevisaoRequisicaoDTO dto) {
         return ResponseEntity.ok(servico.salvarAchadosETempo(id, dto));
+    }
+
+    @PutMapping("/{id}/correcao")
+    public ResponseEntity<RevisaoIndividualRespostaDTO> corrigir(@PathVariable Long id,
+            @RequestParam Long professorId,
+            @Valid @RequestBody CorrigirAuditoriaRequisicaoDTO dto) {
+        return ResponseEntity.ok(servico.corrigirAuditoria(id, professorId, dto));
     }
 }

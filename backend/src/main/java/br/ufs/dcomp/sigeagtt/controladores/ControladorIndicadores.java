@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/indicadores")
@@ -20,7 +21,14 @@ public class ControladorIndicadores {
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> calcular(@RequestParam(required = false) Long turmaId) {
-        return ResponseEntity.ok(servico.calcularIndicadores(turmaId));
+    public ResponseEntity<Map<String, Object>> calcular(
+            @RequestParam(required = false) Long turmaId,
+            @RequestParam(required = false) String periodoLetivo,
+            @RequestParam(required = false) Long cenarioId,
+            @RequestParam(required = false) Long unidadeId,
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim) {
+        return ResponseEntity.ok(servico.calcularIndicadoresIndividuais(
+                turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim));
     }
 }

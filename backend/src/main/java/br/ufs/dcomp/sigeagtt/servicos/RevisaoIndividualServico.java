@@ -21,41 +21,44 @@ public class RevisaoIndividualServico {
     private final UsuarioRepositorio usuarioRepositorio;
     private final ProntuarioSimuladoRepositorio prontuarioRepositorio;
     private final GatilhoGttRepositorio gatilhoRepositorio;
+    private final AtividadeAuditoriaRepositorio atividadeRepositorio;
+    private final TurmaAlunoRepositorio turmaAlunoRepositorio;
+    private final ValidacaoDocenteRepositorio validacaoRepositorio;
 
     public RevisaoIndividualServico(RevisaoIndividualRepositorio revisaoRepositorio,
-                                   AchadoGatilhoRepositorio achadoRepositorio,
-                                   DuplaRevisoresRepositorio duplaRepositorio,
-                                   UsuarioRepositorio usuarioRepositorio,
-                                   ProntuarioSimuladoRepositorio prontuarioRepositorio,
-                                   GatilhoGttRepositorio gatilhoRepositorio) {
+            AchadoGatilhoRepositorio achadoRepositorio,
+            DuplaRevisoresRepositorio duplaRepositorio,
+            UsuarioRepositorio usuarioRepositorio,
+            ProntuarioSimuladoRepositorio prontuarioRepositorio,
+            GatilhoGttRepositorio gatilhoRepositorio,
+            AtividadeAuditoriaRepositorio atividadeRepositorio,
+            TurmaAlunoRepositorio turmaAlunoRepositorio,
+            ValidacaoDocenteRepositorio validacaoRepositorio) {
         this.revisaoRepositorio = revisaoRepositorio;
         this.achadoRepositorio = achadoRepositorio;
         this.duplaRepositorio = duplaRepositorio;
         this.usuarioRepositorio = usuarioRepositorio;
         this.prontuarioRepositorio = prontuarioRepositorio;
         this.gatilhoRepositorio = gatilhoRepositorio;
+        this.atividadeRepositorio = atividadeRepositorio;
+        this.turmaAlunoRepositorio = turmaAlunoRepositorio;
+        this.validacaoRepositorio = validacaoRepositorio;
     }
 
     @Transactional(readOnly = true)
     public List<AtividadeDiscenteDTO> listarAtividadesDoAluno(Long alunoId) {
-        List<DuplaRevisores> todasDuplas = duplaRepositorio.findAll();
-        List<DuplaRevisores> duplasDoAluno = todasDuplas.stream()
-                .filter(d -> Boolean.TRUE.equals(d.getAtiva()) &&
-                        (d.getAlunoRevisor1().getId().equals(alunoId) || d.getAlunoRevisor2().getId().equals(alunoId)))
-                .toList();
-
         List<AtividadeDiscenteDTO> resultado = new ArrayList<>();
-
-        for (DuplaRevisores d : duplasDoAluno) {
-            AtividadeAuditoria at = d.getAtividade();
-            Usuario parceiro = d.getAlunoRevisor1().getId().equals(alunoId) ? d.getAlunoRevisor2() : d.getAlunoRevisor1();
+        for (AtividadeAuditoria at : atividadeRepositorio.findAll()) {
+            if (!turmaAlunoRepositorio.existsByTurmaIdAndAlunoId(at.getTurma().getId(), alunoId))
+                continue;
 
             List<ProntuarioSimulado> prontuarios = prontuarioRepositorio.findByCenarioId(at.getCenario().getId());
             List<ProntuarioItemAuditoriaDTO> itensProntuarios = new ArrayList<>();
 
             for (ProntuarioSimulado p : prontuarios) {
-                Optional<RevisaoIndividual> revisaoOpt = revisaoRepositorio.findByDuplaIdAndAlunoIdAndProntuarioId(d.getId(), alunoId, p.getId());
-                
+                Optional<RevisaoIndividual> revisaoOpt = revisaoRepositorio
+                        .findByAtividadeIdAndAlunoIdAndProntuarioId(at.getId(), alunoId, p.getId());
+
                 Long revId = null;
                 Boolean fin = false;
                 Integer tempo = 0;
@@ -74,35 +77,33 @@ public class RevisaoIndividualServico {
                 }
 
                 itensProntuarios.add(new ProntuarioItemAuditoriaDTO(
-                    p.getId(),
-                    p.getNumeroAtendimento(),
-                    p.getUnidadeHospitalar().getSigla(),
-                    p.getIdadePaciente(),
-                    p.getTempoPermanenciaDias(),
-                    revId,
-                    fin,
-                    tempo,
-                    totalGat,
-                    totalDanos
-                ));
+                        p.getId(),
+                        p.getNumeroAtendimento(),
+                        p.getUnidadeHospitalar().getSigla(),
+                        p.getIdadePaciente(),
+                        p.getTempoPermanenciaDias(),
+                        revId,
+                        fin,
+                        tempo,
+                        totalGat,
+                        totalDanos));
             }
 
             resultado.add(new AtividadeDiscenteDTO(
-                at.getId(),
-                at.getTitulo(),
-                at.getTurma().getId(),
-                at.getTurma().getCodigoDisciplina(),
-                at.getCenario().getId(),
-                at.getCenario().getTitulo(),
-                d.getId(),
-                parceiro.getNomeCompleto(),
-                parceiro.getMatriculaSigaa(),
-                at.getDataInicio(),
-                at.getDataFim(),
-                at.getTempoLimiteMinutos(),
-                at.getFinalizada(),
-                itensProntuarios
-            ));
+                    at.getId(),
+                    at.getTitulo(),
+                    at.getTurma().getId(),
+                    at.getTurma().getCodigoDisciplina(),
+                    at.getCenario().getId(),
+                    at.getCenario().getTitulo(),
+                    null,
+                    null,
+                    null,
+                    at.getDataInicio(),
+                    at.getDataFim(),
+                    at.getTempoLimiteMinutos(),
+                    at.getFinalizada(),
+                    itensProntuarios));
         }
 
         return resultado;
@@ -111,17 +112,23 @@ public class RevisaoIndividualServico {
     @Transactional
     public RevisaoIndividualRespostaDTO obterOuIniciarRevisao(IniciarRevisaoRequisicaoDTO dto) {
         RevisaoIndividual revisao = revisaoRepositorio
-                .findByDuplaIdAndAlunoIdAndProntuarioId(dto.duplaId(), dto.alunoId(), dto.prontuarioId())
+                .findByAtividadeIdAndAlunoIdAndProntuarioId(dto.atividadeId(), dto.alunoId(), dto.prontuarioId())
                 .orElseGet(() -> {
-                    DuplaRevisores dupla = duplaRepositorio.findById(dto.duplaId())
-                            .orElseThrow(() -> new NoSuchElementException("Dupla não encontrada: " + dto.duplaId()));
+                    AtividadeAuditoria atividade = atividadeRepositorio.findById(dto.atividadeId())
+                            .orElseThrow(
+                                    () -> new NoSuchElementException("Atividade não encontrada: " + dto.atividadeId()));
                     Usuario aluno = usuarioRepositorio.findById(dto.alunoId())
                             .orElseThrow(() -> new NoSuchElementException("Aluno não encontrado: " + dto.alunoId()));
                     ProntuarioSimulado prontuario = prontuarioRepositorio.findById(dto.prontuarioId())
-                            .orElseThrow(() -> new NoSuchElementException("Prontuário não encontrado: " + dto.prontuarioId()));
+                            .orElseThrow(() -> new NoSuchElementException(
+                                    "Prontuário não encontrado: " + dto.prontuarioId()));
+
+                    if (!turmaAlunoRepositorio.existsByTurmaIdAndAlunoId(atividade.getTurma().getId(), aluno.getId())) {
+                        throw new IllegalArgumentException("O aluno não está matriculado na turma desta atividade.");
+                    }
 
                     RevisaoIndividual nova = new RevisaoIndividual();
-                    nova.setDupla(dupla);
+                    nova.setAtividade(atividade);
                     nova.setAluno(aluno);
                     nova.setProntuario(prontuario);
                     nova.setTempoGastoSegundos(0);
@@ -132,13 +139,55 @@ public class RevisaoIndividualServico {
         return converterParaDTO(revisao);
     }
 
+    @Transactional(readOnly = true)
+    public List<AuditoriaAlunoDTO> listarAuditoriasDaAtividade(Long atividadeId) {
+        AtividadeAuditoria atividade = atividadeRepositorio.findById(atividadeId)
+                .orElseThrow(() -> new NoSuchElementException("Atividade não encontrada: " + atividadeId));
+
+        return turmaAlunoRepositorio.findByTurmaId(atividade.getTurma().getId()).stream()
+                .map(vinculo -> new AuditoriaAlunoDTO(
+                        vinculo.getAluno().getId(),
+                        vinculo.getAluno().getNomeCompleto(),
+                        vinculo.getAluno().getMatriculaSigaa(),
+                        revisaoRepositorio.findByAtividadeIdAndAlunoId(atividadeId, vinculo.getAluno().getId()).stream()
+                                .map(revisao -> converterParaDTO(revisao))
+                                .toList()))
+                .toList();
+    }
+
+    @Transactional
+    public RevisaoIndividualRespostaDTO corrigirAuditoria(Long revisaoId, Long professorId,
+            CorrigirAuditoriaRequisicaoDTO dto) {
+        RevisaoIndividual revisao = revisaoRepositorio.findById(revisaoId)
+                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + revisaoId));
+        Usuario professor = usuarioRepositorio.findById(professorId)
+                .orElseThrow(() -> new NoSuchElementException("Professor não encontrado: " + professorId));
+        if (professor.getPerfil() != PerfilUsuario.PROFESSOR) {
+            throw new IllegalArgumentException("Apenas PROFESSOR pode corrigir auditorias.");
+        }
+        if (revisao.getAtividade() == null
+                || !revisao.getAtividade().getTurma().getProfessorResponsavel().getId().equals(professorId)) {
+            throw new IllegalArgumentException("O professor não é responsável pela turma desta auditoria.");
+        }
+
+        ValidacaoDocente validacao = validacaoRepositorio.findByRevisaoIndividualId(revisaoId)
+                .orElseGet(ValidacaoDocente::new);
+        validacao.setRevisaoIndividual(revisao);
+        validacao.setProfessorValidador(professor);
+        validacao.setParecerFormativo(dto.parecerDocente().trim());
+        validacao.setHomologado(dto.homologada());
+        validacaoRepositorio.save(validacao);
+        return converterParaDTO(revisao);
+    }
+
     @Transactional
     public RevisaoIndividualRespostaDTO salvarAchadosETempo(Long id, SalvarRevisaoRequisicaoDTO dto) {
         RevisaoIndividual revisao = revisaoRepositorio.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + id));
 
         if (Boolean.TRUE.equals(revisao.getFinalizada())) {
-            throw new IllegalStateException("Esta auditoria individual já foi finalizada e não pode mais ser alterada.");
+            throw new IllegalStateException(
+                    "Esta auditoria individual já foi finalizada e não pode mais ser alterada.");
         }
 
         revisao.setTempoGastoSegundos(dto.tempoGastoSegundos());
@@ -174,17 +223,30 @@ public class RevisaoIndividualServico {
     private RevisaoIndividualRespostaDTO converterParaDTO(RevisaoIndividual r) {
         List<AchadoGatilho> achadosEntidade = achadoRepositorio.findByRevisaoIndividualId(r.getId());
         List<AchadoGatilhoDTO> achadosDTO = achadosEntidade.stream().map(a -> new AchadoGatilhoDTO(
-            a.getId(),
-            a.getGatilho().getId(),
-            a.getGatilho().getCodigo(),
-            a.getGatilho().getDescricao(),
-            a.getGatilho().getModulo().getNome(),
-            a.getConfirmouDano(),
-            a.getJustificativaDano(),
-            a.getDanoPresenteAdmissao(),
-            a.getGravidade()
-        )).toList();
+                a.getId(),
+                a.getGatilho().getId(),
+                a.getGatilho().getCodigo(),
+                a.getGatilho().getDescricao(),
+                a.getGatilho().getModulo().getNome(),
+                a.getConfirmouDano(),
+                a.getJustificativaDano(),
+                a.getDanoPresenteAdmissao(),
+                a.getGravidade())).toList();
 
-        return RevisaoIndividualRespostaDTO.deEntidade(r, achadosDTO);
+        ValidacaoDocente validacao = validacaoRepositorio.findByRevisaoIndividualId(r.getId()).orElse(null);
+        return new RevisaoIndividualRespostaDTO(
+                r.getId(),
+                r.getDupla() != null ? r.getDupla().getId() : null,
+                r.getAtividade() != null ? r.getAtividade().getId() : null,
+                r.getAluno().getId(),
+                r.getAluno().getNomeCompleto(),
+                r.getProntuario().getId(),
+                r.getProntuario().getNumeroAtendimento(),
+                r.getTempoGastoSegundos(),
+                r.getFinalizada(),
+                r.getDataSubmissao(),
+                achadosDTO,
+                validacao != null ? validacao.getParecerFormativo() : null,
+                validacao != null && Boolean.TRUE.equals(validacao.getHomologado()));
     }
 }

@@ -9,15 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-    name = "revisoes_individuais",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uq_revisao_individual",
-            columnNames = {"dupla_id", "aluno_id", "prontuario_id"}
-        )
-    }
-)
+@Table(name = "revisoes_individuais", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_revisao_individual", columnNames = { "dupla_id", "aluno_id", "prontuario_id" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,10 +25,13 @@ public class RevisaoIndividual {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "dupla_id", nullable = false)
+    @JoinColumn(name = "dupla_id")
     private DuplaRevisores dupla;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "atividade_id")
+    private AtividadeAuditoria atividade;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)

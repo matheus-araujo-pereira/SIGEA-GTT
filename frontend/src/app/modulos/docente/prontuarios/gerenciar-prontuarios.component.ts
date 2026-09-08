@@ -1,10 +1,18 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProntuarioSimuladoService, ProntuarioSimuladoRequisicao } from '../../../nucleo/servicos/prontuario-simulado.service';
+import { ActivatedRoute } from '@angular/router';
+import {
+  ProntuarioSimuladoService,
+  ProntuarioSimuladoRequisicao,
+} from '../../../nucleo/servicos/prontuario-simulado.service';
 import { CenarioClinicoService } from '../../../nucleo/servicos/cenario-clinico.service';
 import { UnidadeService } from '../../../nucleo/servicos/unidade.service';
-import { ProntuarioSimulado, CenarioClinico, UnidadeHospitalar } from '../../../compartilhado/modelos/dominio.modelos';
+import {
+  ProntuarioSimulado,
+  CenarioClinico,
+  UnidadeHospitalar,
+} from '../../../compartilhado/modelos/dominio.modelos';
 
 export interface ProntuarioLinha {
   id: number;
@@ -21,12 +29,13 @@ export interface ProntuarioLinha {
   selector: 'app-gerenciar-prontuarios',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './gerenciar-prontuarios.component.html'
+  templateUrl: './gerenciar-prontuarios.component.html',
 })
 export class GerenciarProntuariosComponent implements OnInit {
   private readonly prontuarioService = inject(ProntuarioSimuladoService);
   private readonly cenarioService = inject(CenarioClinicoService);
   private readonly unidadeService = inject(UnidadeService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly prontuarios = signal<ProntuarioSimulado[]>([]);
   readonly cenarios = signal<CenarioClinico[]>([]);
@@ -42,11 +51,18 @@ export class GerenciarProntuariosComponent implements OnInit {
 
   readonly termoBusca = signal('');
   readonly filtroCenarioId = signal('TODOS');
+  readonly cenarioContextualId = signal<number | null>(null);
 
   readonly totalProntuarios = computed(() => this.prontuarios().length);
+  readonly cenarioContextual = computed(() => {
+    const id = this.cenarioContextualId();
+    return id ? this.cenarios().find((c) => c.id === id) : null;
+  });
 
   readonly tituloFormulario = computed(() => {
-    return this.idEdicao ? `EDITAR PRONTUÁRIO #${this.idEdicao}` : 'NOVO PRONTUÁRIO SIMULADO (IHI-GTT)';
+    return this.idEdicao
+      ? `EDITAR PRONTUÁRIO #${this.idEdicao}`
+      : 'NOVO PRONTUÁRIO SIMULADO (IHI-GTT)';
   });
 
   readonly textoBotaoSubmit = computed(() => {
@@ -55,12 +71,15 @@ export class GerenciarProntuariosComponent implements OnInit {
 
   readonly prontuariosLinhas = computed<ProntuarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    const cenarioFiltro = this.filtroCenarioId();
+    const cenarioFiltro =
+      this.cenarioContextualId()?.toString() || this.filtroCenarioId();
 
     return this.prontuarios()
       .filter((p) => {
-        const matchCenario = cenarioFiltro === 'TODOS' || p.cenarioId === Number(cenarioFiltro);
-        const matchTermo = !termo ||
+        const matchCenario =
+          cenarioFiltro === 'TODOS' || p.cenarioId === Number(cenarioFiltro);
+        const matchTermo =
+          !termo ||
           p.numeroAtendimento.toLowerCase().includes(termo) ||
           p.cenarioTitulo.toLowerCase().includes(termo) ||
           p.unidadeHospitalarSigla.toLowerCase().includes(termo) ||
@@ -76,36 +95,54 @@ export class GerenciarProntuariosComponent implements OnInit {
         idadeStr: `${p.idadePaciente} anos`,
         permanenciaStr: `${p.tempoPermanenciaDias} d`,
         periodoStr: `${this.formatarData(p.dataAdmissao)} a ${this.formatarData(p.dataAlta)}`,
-        original: p
+        original: p,
       }));
   });
 
   ngOnInit(): void {
+    const cenarioId = Number(this.route.snapshot.paramMap.get('cenarioId'));
+    this.cenarioContextualId.set(
+      Number.isInteger(cenarioId) && cenarioId > 0 ? cenarioId : null,
+    );
     this.carregarDados();
   }
 
   carregarDados(): void {
-    this.cenarioService.listar().subscribe({
-      next: (c) => this.cenarios.set(c),
-      error: (err) => console.error('Erro ao carregar cenários:', err)
-    });
+    const cenarioId = this.cenarioContextualId();
+    if (cenarioId) {
+      this.cenarioService.buscarPorId(cenarioId).subscribe({
+        next: (c) => this.cenarios.set([c]),
+        error: (err) => console.error('Erro ao carregar cenário:', err),
+      });
+    } else {
+      this.cenarioService.listar().subscribe({
+        next: (c) => this.cenarios.set(c),
+        error: (err) => console.error('Erro ao carregar cenários:', err),
+      });
+    }
 
     this.unidadeService.listar().subscribe({
       next: (u) => this.unidades.set(u.filter((item) => item.ativa)),
-      error: (err) => console.error('Erro ao carregar unidades:', err)
+      error: (err) => console.error('Erro ao carregar unidades:', err),
     });
 
-    this.prontuarioService.listar().subscribe({
+    this.prontuarioService.listar(cenarioId || undefined).subscribe({
       next: (p) => this.prontuarios.set(p),
-      error: (err) => this.mensagemErro.set('Erro ao carregar prontuários: ' + err.message)
+      error: (err) =>
+        this.mensagemErro.set('Erro ao carregar prontuários: ' + err.message),
     });
   }
 
   iniciarNovoProntuario(): void {
     this.idEdicao = null;
     this.formulario = this.obterFormularioVazio();
-    if (this.cenarios().length > 0) this.formulario.cenarioId = this.cenarios()[0].id;
-    if (this.unidades().length > 0) this.formulario.unidadeHospitalarId = this.unidades()[0].id;
+    if (this.cenarioContextualId()) {
+      this.formulario.cenarioId = this.cenarioContextualId()!;
+    } else if (this.cenarios().length > 0) {
+      this.formulario.cenarioId = this.cenarios()[0].id;
+    }
+    if (this.unidades().length > 0)
+      this.formulario.unidadeHospitalarId = this.unidades()[0].id;
     this.exibirFormulario = !this.exibirFormulario;
     this.limparMensagens();
   }
@@ -124,7 +161,7 @@ export class GerenciarProntuariosComponent implements OnInit {
       prescricoesMedicas: p.prescricoesMedicas,
       examesLaboratoriais: p.examesLaboratoriais,
       relatorioCirurgico: p.relatorioCirurgico || '',
-      evolucoesMultiprofissionais: p.evolucoesMultiprofissionais
+      evolucoesMultiprofissionais: p.evolucoesMultiprofissionais,
     };
     this.exibirFormulario = true;
     this.limparMensagens();
@@ -153,34 +190,44 @@ export class GerenciarProntuariosComponent implements OnInit {
     if (this.idEdicao) {
       this.prontuarioService.editar(this.idEdicao, this.formulario).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Prontuário ${atualizado.numeroAtendimento} atualizado com sucesso.`);
+          this.mensagemSucesso.set(
+            `Prontuário ${atualizado.numeroAtendimento} atualizado com sucesso.`,
+          );
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarDados();
         },
         error: (err) => {
-          this.mensagemErro.set(err.error?.mensagem || 'Falha ao atualizar prontuário.');
+          this.mensagemErro.set(
+            err.error?.mensagem || 'Falha ao atualizar prontuário.',
+          );
           this.carregando.set(false);
-        }
+        },
       });
     } else {
       this.prontuarioService.cadastrar(this.formulario).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Prontuário ${criado.numeroAtendimento} criado com sucesso.`);
+          this.mensagemSucesso.set(
+            `Prontuário ${criado.numeroAtendimento} criado com sucesso.`,
+          );
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarDados();
         },
         error: (err) => {
-          this.mensagemErro.set(err.error?.mensagem || 'Falha ao cadastrar prontuário.');
+          this.mensagemErro.set(
+            err.error?.mensagem || 'Falha ao cadastrar prontuário.',
+          );
           this.carregando.set(false);
-        }
+        },
       });
     }
   }
 
   excluir(p: ProntuarioSimulado): void {
-    const confirmacao = confirm(`Deseja excluir o prontuário ${p.numeroAtendimento}?`);
+    const confirmacao = confirm(
+      `Deseja excluir o prontuário ${p.numeroAtendimento}?`,
+    );
     if (!confirmacao) return;
 
     this.prontuarioService.excluir(p.id).subscribe({
@@ -188,7 +235,10 @@ export class GerenciarProntuariosComponent implements OnInit {
         this.mensagemSucesso.set('Prontuário excluído com sucesso.');
         this.carregarDados();
       },
-      error: (err) => this.mensagemErro.set('Erro ao excluir: ' + (err.error?.mensagem || err.message))
+      error: (err) =>
+        this.mensagemErro.set(
+          'Erro ao excluir: ' + (err.error?.mensagem || err.message),
+        ),
     });
   }
 
@@ -219,7 +269,7 @@ export class GerenciarProntuariosComponent implements OnInit {
       prescricoesMedicas: '',
       examesLaboratoriais: '',
       relatorioCirurgico: '',
-      evolucoesMultiprofissionais: ''
+      evolucoesMultiprofissionais: '',
     };
   }
 }

@@ -8,4 +8,8 @@ public interface PlanoAcao5w3hRepositorio extends JpaRepository<PlanoAcao5w3h, L
     List<PlanoAcao5w3h> findByConsensoDuplaId(Long consensoDuplaId);
 
     void deleteByConsensoDuplaId(Long consensoDuplaId);
+
+    List<PlanoAcao5w3h> findByRevisaoIndividualId(Long revisaoIndividualId);
+
+    void deleteByRevisaoIndividualId(Long revisaoIndividualId);
 }

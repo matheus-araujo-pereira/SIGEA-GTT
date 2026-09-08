@@ -1,12 +1,28 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AtividadeDiscente, RevisaoIndividual, AchadoGatilho } from '../../compartilhado/modelos/dominio.modelos';
+import {
+  AtividadeDiscente,
+  RevisaoIndividual,
+  AchadoGatilho,
+} from '../../compartilhado/modelos/dominio.modelos';
 
 export interface IniciarRevisaoPayload {
-  duplaId: number;
+  atividadeId: number;
   alunoId: number;
   prontuarioId: number;
+}
+
+export interface AuditoriaAluno {
+  alunoId: number;
+  alunoNome: string;
+  alunoMatricula?: string;
+  revisoes: RevisaoIndividual[];
+}
+
+export interface CorrigirAuditoriaPayload {
+  parecerDocente: string;
+  homologada: boolean;
 }
 
 export interface SalvarRevisaoPayload {
@@ -16,7 +32,7 @@ export interface SalvarRevisaoPayload {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RevisaoIndividualService {
   private readonly http = inject(HttpClient);
@@ -24,14 +40,46 @@ export class RevisaoIndividualService {
 
   listarMinhasAtividades(alunoId: number): Observable<AtividadeDiscente[]> {
     const params = new HttpParams().set('alunoId', alunoId.toString());
-    return this.http.get<AtividadeDiscente[]>(`${this.url}/minhas-atividades`, { params });
+    return this.http.get<AtividadeDiscente[]>(`${this.url}/minhas-atividades`, {
+      params,
+    });
   }
 
-  iniciarRevisao(payload: IniciarRevisaoPayload): Observable<RevisaoIndividual> {
+  iniciarRevisao(
+    payload: IniciarRevisaoPayload,
+  ): Observable<RevisaoIndividual> {
     return this.http.post<RevisaoIndividual>(`${this.url}/iniciar`, payload);
   }
 
-  salvarRevisao(id: number, payload: SalvarRevisaoPayload): Observable<RevisaoIndividual> {
-    return this.http.put<RevisaoIndividual>(`${this.url}/${id}/salvar`, payload);
+  listarAuditoriasDaAtividade(
+    atividadeId: number,
+  ): Observable<AuditoriaAluno[]> {
+    return this.http.get<AuditoriaAluno[]>(
+      `${this.url}/atividade/${atividadeId}/alunos`,
+    );
+  }
+
+  salvarRevisao(
+    id: number,
+    payload: SalvarRevisaoPayload,
+  ): Observable<RevisaoIndividual> {
+    return this.http.put<RevisaoIndividual>(
+      `${this.url}/${id}/salvar`,
+      payload,
+    );
+  }
+
+  corrigirAuditoria(
+    id: number,
+    professorId: number,
+    payload: CorrigirAuditoriaPayload,
+  ): Observable<RevisaoIndividual> {
+    return this.http.put<RevisaoIndividual>(
+      `${this.url}/${id}/correcao`,
+      payload,
+      {
+        params: { professorId: professorId.toString() },
+      },
+    );
   }
 }

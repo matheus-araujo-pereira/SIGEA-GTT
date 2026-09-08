@@ -96,7 +96,7 @@ export interface AtividadeAuditoria {
   dataFim: string;
   tempoLimiteMinutos: number;
   finalizada: boolean;
-  totalDuplas: number;
+  totalAuditorias: number;
 }
 
 export interface DuplaRevisores {
@@ -125,7 +125,8 @@ export interface AchadoGatilho {
 
 export interface RevisaoIndividual {
   id: number;
-  duplaId: number;
+  duplaId?: number | null;
+  atividadeId?: number | null;
   alunoId: number;
   alunoNome: string;
   prontuarioId: number;
@@ -133,6 +134,8 @@ export interface RevisaoIndividual {
   tempoGastoSegundos: number;
   finalizada: boolean;
   dataSubmissao?: string;
+  parecerDocente?: string | null;
+  homologada?: boolean | null;
   achados: AchadoGatilho[];
 }
 
@@ -156,9 +159,9 @@ export interface AtividadeDiscente {
   turmaCodigo: string;
   cenarioId: number;
   cenarioTitulo: string;
-  duplaId: number;
-  parceiroNome: string;
-  parceiroMatricula?: string;
+  duplaId?: number | null;
+  parceiroNome?: string | null;
+  parceiroMatricula?: string | null;
   dataInicio: string;
   dataFim: string;
   tempoLimiteMinutos: number;

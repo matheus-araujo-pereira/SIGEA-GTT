@@ -4,17 +4,39 @@ import { Observable } from 'rxjs';
 import { MelhoriaQualidade } from '../../compartilhado/modelos/dominio.modelos';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MelhoriaQualidadeService {
   private readonly http = inject(HttpClient);
   private readonly url = '/api/melhoria-qualidade';
 
   buscarPorConsenso(consensoDuplaId: number): Observable<MelhoriaQualidade> {
-    return this.http.get<MelhoriaQualidade>(`${this.url}/consenso/${consensoDuplaId}`);
+    return this.http.get<MelhoriaQualidade>(
+      `${this.url}/consenso/${consensoDuplaId}`,
+    );
   }
 
-  salvar(consensoDuplaId: number, payload: MelhoriaQualidade): Observable<MelhoriaQualidade> {
-    return this.http.put<MelhoriaQualidade>(`${this.url}/consenso/${consensoDuplaId}`, payload);
+  salvar(
+    consensoDuplaId: number,
+    payload: MelhoriaQualidade,
+  ): Observable<MelhoriaQualidade> {
+    return this.http.put<MelhoriaQualidade>(
+      `${this.url}/consenso/${consensoDuplaId}`,
+      payload,
+    );
+  }
+
+  buscarPorRevisao(revisaoId: number): Observable<MelhoriaQualidade> {
+    return this.http.get<MelhoriaQualidade>(`${this.url}/revisao/${revisaoId}`);
+  }
+
+  salvarPorRevisao(
+    revisaoId: number,
+    payload: MelhoriaQualidade,
+  ): Observable<MelhoriaQualidade> {
+    return this.http.put<MelhoriaQualidade>(
+      `${this.url}/revisao/${revisaoId}`,
+      payload,
+    );
   }
 }

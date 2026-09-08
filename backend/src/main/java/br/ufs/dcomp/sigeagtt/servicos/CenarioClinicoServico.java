@@ -42,10 +42,12 @@ public class CenarioClinicoServico {
     @Transactional
     public CenarioClinicoRespostaDTO cadastrar(CenarioClinicoRequisicaoDTO dto) {
         Usuario professor = usuarioRepositorio.findById(dto.professorCriadorId())
-                .orElseThrow(() -> new NoSuchElementException("Professor criador não encontrado: " + dto.professorCriadorId()));
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Professor criador não encontrado: " + dto.professorCriadorId()));
 
-        if (professor.getPerfil() != PerfilUsuario.PROFESSOR && professor.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
-            throw new IllegalArgumentException("Apenas docentes ou administradores podem criar cenários clínicos.");
+        if (professor.getPerfil() != PerfilUsuario.PROFESSOR) {
+            throw new IllegalArgumentException(
+                    "Apenas usuários com perfil de PROFESSOR podem ser criadores de cenários clínicos.");
         }
 
         CenarioClinico c = new CenarioClinico();
@@ -63,7 +65,13 @@ public class CenarioClinicoServico {
                 .orElseThrow(() -> new NoSuchElementException("Cenário clínico não encontrado: " + id));
 
         Usuario professor = usuarioRepositorio.findById(dto.professorCriadorId())
-                .orElseThrow(() -> new NoSuchElementException("Professor criador não encontrado: " + dto.professorCriadorId()));
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Professor criador não encontrado: " + dto.professorCriadorId()));
+
+        if (professor.getPerfil() != PerfilUsuario.PROFESSOR) {
+            throw new IllegalArgumentException(
+                    "Apenas usuários com perfil de PROFESSOR podem ser criadores de cenários clínicos.");
+        }
 
         c.setProfessorCriador(professor);
         c.setTitulo(dto.titulo() != null ? dto.titulo().trim() : "");

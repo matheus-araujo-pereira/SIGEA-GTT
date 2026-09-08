@@ -22,10 +22,13 @@ public class ValidacaoDocente {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "consenso_dupla_id", nullable = false, unique = true)
+    @JoinColumn(name = "consenso_dupla_id", unique = true)
     private ConsensoDupla consensoDupla;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "revisao_individual_id", unique = true)
+    private RevisaoIndividual revisaoIndividual;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
@@ -46,6 +49,7 @@ public class ValidacaoDocente {
 
     @PrePersist
     protected void aoCriar() {
-        if (this.dataValidacao == null) this.dataValidacao = LocalDateTime.now();
+        if (this.dataValidacao == null)
+            this.dataValidacao = LocalDateTime.now();
     }
 }

@@ -5,7 +5,7 @@ import br.ufs.dcomp.sigeagtt.modelos.CenarioClinico;
 import br.ufs.dcomp.sigeagtt.modelos.Turma;
 import br.ufs.dcomp.sigeagtt.repositorios.AtividadeAuditoriaRepositorio;
 import br.ufs.dcomp.sigeagtt.repositorios.CenarioClinicoRepositorio;
-import br.ufs.dcomp.sigeagtt.repositorios.DuplaRevisoresRepositorio;
+import br.ufs.dcomp.sigeagtt.repositorios.RevisaoIndividualRepositorio;
 import br.ufs.dcomp.sigeagtt.repositorios.TurmaRepositorio;
 import br.ufs.dcomp.sigeagtt.transferencia.AtividadeAuditoriaRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.transferencia.AtividadeAuditoriaRespostaDTO;
@@ -21,16 +21,16 @@ public class AtividadeAuditoriaServico {
     private final AtividadeAuditoriaRepositorio atividadeRepositorio;
     private final TurmaRepositorio turmaRepositorio;
     private final CenarioClinicoRepositorio cenarioRepositorio;
-    private final DuplaRevisoresRepositorio duplaRepositorio;
+    private final RevisaoIndividualRepositorio revisaoRepositorio;
 
     public AtividadeAuditoriaServico(AtividadeAuditoriaRepositorio atividadeRepositorio,
-                                    TurmaRepositorio turmaRepositorio,
-                                    CenarioClinicoRepositorio cenarioRepositorio,
-                                    DuplaRevisoresRepositorio duplaRepositorio) {
+            TurmaRepositorio turmaRepositorio,
+            CenarioClinicoRepositorio cenarioRepositorio,
+            RevisaoIndividualRepositorio revisaoRepositorio) {
         this.atividadeRepositorio = atividadeRepositorio;
         this.turmaRepositorio = turmaRepositorio;
         this.cenarioRepositorio = cenarioRepositorio;
-        this.duplaRepositorio = duplaRepositorio;
+        this.revisaoRepositorio = revisaoRepositorio;
     }
 
     @Transactional(readOnly = true)
@@ -40,8 +40,8 @@ public class AtividadeAuditoriaServico {
                 : atividadeRepositorio.findAll();
 
         return lista.stream().map(a -> {
-            long totalDuplas = duplaRepositorio.countByAtividadeId(a.getId());
-            return AtividadeAuditoriaRespostaDTO.deEntidade(a, totalDuplas);
+            long totalAuditorias = revisaoRepositorio.countByAtividadeId(a.getId());
+            return AtividadeAuditoriaRespostaDTO.deEntidade(a, totalAuditorias);
         }).toList();
     }
 
@@ -49,8 +49,8 @@ public class AtividadeAuditoriaServico {
     public AtividadeAuditoriaRespostaDTO buscarPorId(Long id) {
         AtividadeAuditoria a = atividadeRepositorio.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Atividade de auditoria não encontrada: " + id));
-        long totalDuplas = duplaRepositorio.countByAtividadeId(a.getId());
-        return AtividadeAuditoriaRespostaDTO.deEntidade(a, totalDuplas);
+        long totalAuditorias = revisaoRepositorio.countByAtividadeId(a.getId());
+        return AtividadeAuditoriaRespostaDTO.deEntidade(a, totalAuditorias);
     }
 
     @Transactional
@@ -99,8 +99,8 @@ public class AtividadeAuditoriaServico {
         a.setDataFim(dto.dataFim());
         a.setTempoLimiteMinutos(dto.tempoLimiteMinutos());
 
-        long totalDuplas = duplaRepositorio.countByAtividadeId(a.getId());
-        return AtividadeAuditoriaRespostaDTO.deEntidade(atividadeRepositorio.save(a), totalDuplas);
+        long totalAuditorias = revisaoRepositorio.countByAtividadeId(a.getId());
+        return AtividadeAuditoriaRespostaDTO.deEntidade(atividadeRepositorio.save(a), totalAuditorias);
     }
 
     @Transactional
@@ -115,7 +115,7 @@ public class AtividadeAuditoriaServico {
         AtividadeAuditoria a = atividadeRepositorio.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Atividade não encontrada: " + id));
         a.setFinalizada(!Boolean.TRUE.equals(a.getFinalizada()));
-        long totalDuplas = duplaRepositorio.countByAtividadeId(a.getId());
-        return AtividadeAuditoriaRespostaDTO.deEntidade(atividadeRepositorio.save(a), totalDuplas);
+        long totalAuditorias = revisaoRepositorio.countByAtividadeId(a.getId());
+        return AtividadeAuditoriaRespostaDTO.deEntidade(atividadeRepositorio.save(a), totalAuditorias);
     }
 }

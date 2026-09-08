@@ -24,8 +24,8 @@ public class TurmaServico {
     private final UsuarioRepositorio usuarioRepositorio;
 
     public TurmaServico(TurmaRepositorio turmaRepositorio,
-                        TurmaAlunoRepositorio turmaAlunoRepositorio,
-                        UsuarioRepositorio usuarioRepositorio) {
+            TurmaAlunoRepositorio turmaAlunoRepositorio,
+            UsuarioRepositorio usuarioRepositorio) {
         this.turmaRepositorio = turmaRepositorio;
         this.turmaAlunoRepositorio = turmaAlunoRepositorio;
         this.usuarioRepositorio = usuarioRepositorio;
@@ -54,10 +54,12 @@ public class TurmaServico {
     @Transactional
     public TurmaRespostaDTO cadastrar(TurmaRequisicaoDTO dto) {
         Usuario professor = usuarioRepositorio.findById(dto.professorResponsavelId())
-                .orElseThrow(() -> new NoSuchElementException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Professor responsável não encontrado: " + dto.professorResponsavelId()));
 
-        if (professor.getPerfil() != PerfilUsuario.PROFESSOR && professor.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
-            throw new IllegalArgumentException("O usuário responsável precisa possuir perfil de PROFESSOR ou ADMINISTRADOR.");
+        if (professor.getPerfil() != PerfilUsuario.PROFESSOR) {
+            throw new IllegalArgumentException(
+                    "Apenas usuários com perfil de PROFESSOR podem ser responsáveis por turmas.");
         }
 
         String cod = dto.codigoDisciplina() != null ? dto.codigoDisciplina().trim().toUpperCase() : "";
@@ -80,7 +82,13 @@ public class TurmaServico {
                 .orElseThrow(() -> new NoSuchElementException("Turma não encontrada: " + id));
 
         Usuario professor = usuarioRepositorio.findById(dto.professorResponsavelId())
-                .orElseThrow(() -> new NoSuchElementException("Professor responsável não encontrado: " + dto.professorResponsavelId()));
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Professor responsável não encontrado: " + dto.professorResponsavelId()));
+
+        if (professor.getPerfil() != PerfilUsuario.PROFESSOR) {
+            throw new IllegalArgumentException(
+                    "Apenas usuários com perfil de PROFESSOR podem ser responsáveis por turmas.");
+        }
 
         String cod = dto.codigoDisciplina() != null ? dto.codigoDisciplina().trim().toUpperCase() : "";
         String periodo = dto.periodoLetivo() != null ? dto.periodoLetivo().trim() : "";
@@ -131,7 +139,8 @@ public class TurmaServico {
         }
 
         if (turmaAlunoRepositorio.existsByTurmaIdAndAlunoId(turmaId, alunoId)) {
-            throw new IllegalArgumentException("O aluno " + aluno.getNomeCompleto() + " já está matriculado nesta turma.");
+            throw new IllegalArgumentException(
+                    "O aluno " + aluno.getNomeCompleto() + " já está matriculado nesta turma.");
         }
 
         TurmaAluno vinculo = new TurmaAluno(turma, aluno);

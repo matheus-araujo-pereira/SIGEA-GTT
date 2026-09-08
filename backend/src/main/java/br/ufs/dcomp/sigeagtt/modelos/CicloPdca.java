@@ -6,12 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table(
-    name = "ciclos_pdca",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "ciclos_pdca_consenso_dupla_id_key", columnNames = {"consenso_dupla_id"})
-    }
-)
+@Table(name = "ciclos_pdca", uniqueConstraints = {
+        @UniqueConstraint(name = "ciclos_pdca_consenso_dupla_id_key", columnNames = { "consenso_dupla_id" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,10 +22,13 @@ public class CicloPdca {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "consenso_dupla_id", nullable = false, unique = true)
+    @JoinColumn(name = "consenso_dupla_id", unique = true)
     private ConsensoDupla consensoDupla;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "revisao_individual_id", unique = true)
+    private RevisaoIndividual revisaoIndividual;
 
     @NotBlank
     @Column(name = "planejar", nullable = false, columnDefinition = "TEXT")

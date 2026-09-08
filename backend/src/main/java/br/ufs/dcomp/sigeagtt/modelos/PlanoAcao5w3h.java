@@ -23,11 +23,15 @@ public class PlanoAcao5w3h {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "consenso_dupla_id", nullable = false)
+    @JoinColumn(name = "consenso_dupla_id")
     @ToString.Exclude
     private ConsensoDupla consensoDupla;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "revisao_individual_id")
+    @ToString.Exclude
+    private RevisaoIndividual revisaoIndividual;
 
     @NotBlank
     @Column(name = "o_que", nullable = false, columnDefinition = "TEXT")

@@ -6,12 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
-@Table(
-    name = "analises_ishikawa",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "analises_ishikawa_consenso_dupla_id_key", columnNames = {"consenso_dupla_id"})
-    }
-)
+@Table(name = "analises_ishikawa", uniqueConstraints = {
+        @UniqueConstraint(name = "analises_ishikawa_consenso_dupla_id_key", columnNames = { "consenso_dupla_id" })
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,10 +22,13 @@ public class AnaliseIshikawa {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "consenso_dupla_id", nullable = false, unique = true)
+    @JoinColumn(name = "consenso_dupla_id", unique = true)
     private ConsensoDupla consensoDupla;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "revisao_individual_id", unique = true)
+    private RevisaoIndividual revisaoIndividual;
 
     @NotBlank
     @Column(name = "efeito_principal", nullable = false, columnDefinition = "TEXT")

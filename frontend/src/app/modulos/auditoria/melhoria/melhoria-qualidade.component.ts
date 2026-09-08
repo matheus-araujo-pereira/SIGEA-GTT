@@ -8,14 +8,14 @@ import {
   MelhoriaQualidade,
   Ishikawa,
   Plano5w3h,
-  Pdca
+  Pdca,
 } from '../../../compartilhado/modelos/dominio.modelos';
 
 @Component({
   selector: 'app-melhoria-qualidade',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './melhoria-qualidade.component.html'
+  templateUrl: './melhoria-qualidade.component.html',
 })
 export class MelhoriaQualidadeComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -24,7 +24,7 @@ export class MelhoriaQualidadeComponent implements OnInit {
   private readonly melhoriaService = inject(MelhoriaQualidadeService);
   readonly auth = inject(AutenticacaoService);
 
-  consensoId = 0;
+  revisaoId = 0;
   readonly carregando = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
@@ -36,15 +36,15 @@ export class MelhoriaQualidadeComponent implements OnInit {
   readonly totalAcoes5w3h = computed(() => this.planos5w3h.length);
 
   ngOnInit(): void {
-    this.consensoId = Number(this.route.snapshot.paramMap.get('consensoId'));
-    if (this.consensoId) {
+    this.revisaoId = Number(this.route.snapshot.paramMap.get('revisaoId'));
+    if (this.revisaoId) {
       this.carregarMelhoria();
     }
   }
 
   carregarMelhoria(): void {
     this.carregando.set(true);
-    this.melhoriaService.buscarPorConsenso(this.consensoId).subscribe({
+    this.melhoriaService.buscarPorRevisao(this.revisaoId).subscribe({
       next: (dados: MelhoriaQualidade) => {
         if (dados.ishikawa) this.ishikawa = dados.ishikawa;
         if (dados.planos5w3h) this.planos5w3h = dados.planos5w3h;
@@ -52,9 +52,11 @@ export class MelhoriaQualidadeComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err: any) => {
-        this.mensagemErro.set('Erro ao carregar melhoria: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar melhoria: ' + (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
-      }
+      },
     });
   }
 
@@ -65,7 +67,7 @@ export class MelhoriaQualidadeComponent implements OnInit {
       quem: '',
       onde: '',
       quando: '',
-      como: ''
+      como: '',
     });
   }
 
@@ -79,13 +81,13 @@ export class MelhoriaQualidadeComponent implements OnInit {
     this.mensagemSucesso.set(null);
 
     const payload: MelhoriaQualidade = {
-      consensoDuplaId: this.consensoId,
+      consensoDuplaId: this.revisaoId,
       ishikawa: this.ishikawa,
       planos5w3h: this.planos5w3h,
-      pdca: this.pdca
+      pdca: this.pdca,
     };
 
-    this.melhoriaService.salvar(this.consensoId, payload).subscribe({
+    this.melhoriaService.salvarPorRevisao(this.revisaoId, payload).subscribe({
       next: (resp: MelhoriaQualidade) => {
         if (resp.ishikawa) this.ishikawa = resp.ishikawa;
         if (resp.planos5w3h) this.planos5w3h = resp.planos5w3h;
@@ -96,7 +98,7 @@ export class MelhoriaQualidadeComponent implements OnInit {
       error: (err: any) => {
         this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar plano.');
         this.carregando.set(false);
-      }
+      },
     });
   }
 

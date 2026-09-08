@@ -16,15 +16,81 @@ public class MelhoriaQualidadeServico {
     private final AnaliseIshikawaRepositorio ishikawaRepositorio;
     private final PlanoAcao5w3hRepositorio planoRepositorio;
     private final CicloPdcaRepositorio pdcaRepositorio;
+    private final RevisaoIndividualRepositorio revisaoRepositorio;
 
     public MelhoriaQualidadeServico(ConsensoDuplaRepositorio consensoRepositorio,
-                                   AnaliseIshikawaRepositorio ishikawaRepositorio,
-                                   PlanoAcao5w3hRepositorio planoRepositorio,
-                                   CicloPdcaRepositorio pdcaRepositorio) {
+            AnaliseIshikawaRepositorio ishikawaRepositorio,
+            PlanoAcao5w3hRepositorio planoRepositorio,
+            CicloPdcaRepositorio pdcaRepositorio,
+            RevisaoIndividualRepositorio revisaoRepositorio) {
         this.consensoRepositorio = consensoRepositorio;
         this.ishikawaRepositorio = ishikawaRepositorio;
         this.planoRepositorio = planoRepositorio;
         this.pdcaRepositorio = pdcaRepositorio;
+        this.revisaoRepositorio = revisaoRepositorio;
+    }
+
+    @Transactional(readOnly = true)
+    public MelhoriaQualidadeRespostaDTO buscarPorRevisao(Long revisaoId) {
+        RevisaoIndividual revisao = revisaoRepositorio.findById(revisaoId)
+                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + revisaoId));
+        IshikawaDTO ishikawa = ishikawaRepositorio.findByRevisaoIndividualId(revisaoId)
+                .map(i -> new IshikawaDTO(i.getId(), i.getEfeitoPrincipal(), i.getMetodo(), i.getMaoDeObra(),
+                        i.getMaterial(), i.getMedida(), i.getMeioAmbiente(), i.getMaquina()))
+                .orElse(null);
+        List<Plano5w3hDTO> planos = planoRepositorio.findByRevisaoIndividualId(revisaoId).stream()
+                .map(p -> new Plano5w3hDTO(p.getId(), p.getOQue(), p.getPorQue(), p.getQuem(), p.getOnde(),
+                        p.getQuando(), p.getComo(), p.getQuantoCusta(), p.getComoMedir()))
+                .toList();
+        PdcaDTO pdca = pdcaRepositorio.findByRevisaoIndividualId(revisaoId)
+                .map(p -> new PdcaDTO(p.getId(), p.getPlanejar(), p.getFazer(), p.getChecar(), p.getAgir()))
+                .orElse(null);
+        return new MelhoriaQualidadeRespostaDTO(revisao.getId(), ishikawa, planos, pdca);
+    }
+
+    @Transactional
+    public MelhoriaQualidadeRespostaDTO salvarPorRevisao(Long revisaoId, SalvarMelhoriaQualidadeDTO dto) {
+        RevisaoIndividual revisao = revisaoRepositorio.findById(revisaoId)
+                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + revisaoId));
+        if (dto.ishikawa() != null) {
+            AnaliseIshikawa ish = ishikawaRepositorio.findByRevisaoIndividualId(revisaoId)
+                    .orElseGet(AnaliseIshikawa::new);
+            ish.setRevisaoIndividual(revisao);
+            ish.setEfeitoPrincipal(dto.ishikawa().efeitoPrincipal());
+            ish.setMetodo(dto.ishikawa().metodo());
+            ish.setMaoDeObra(dto.ishikawa().maoDeObra());
+            ish.setMaterial(dto.ishikawa().material());
+            ish.setMedida(dto.ishikawa().medida());
+            ish.setMeioAmbiente(dto.ishikawa().meioAmbiente());
+            ish.setMaquina(dto.ishikawa().maquina());
+            ishikawaRepositorio.save(ish);
+        }
+        planoRepositorio.deleteByRevisaoIndividualId(revisaoId);
+        if (dto.planos5w3h() != null) {
+            for (Plano5w3hDTO item : dto.planos5w3h()) {
+                PlanoAcao5w3h plano = new PlanoAcao5w3h();
+                plano.setRevisaoIndividual(revisao);
+                plano.setOQue(item.oQue());
+                plano.setPorQue(item.porQue());
+                plano.setQuem(item.quem());
+                plano.setOnde(item.onde());
+                plano.setQuando(item.quando());
+                plano.setComo(item.como());
+                plano.setQuantoCusta(item.quantoCusta());
+                plano.setComoMedir(item.comoMedir());
+                planoRepositorio.save(plano);
+            }
+        }
+        if (dto.pdca() != null) {
+            CicloPdca pdca = pdcaRepositorio.findByRevisaoIndividualId(revisaoId).orElseGet(CicloPdca::new);
+            pdca.setRevisaoIndividual(revisao);
+            pdca.setPlanejar(dto.pdca().planejar());
+            pdca.setFazer(dto.pdca().fazer());
+            pdca.setChecar(dto.pdca().checar());
+            pdca.setAgir(dto.pdca().agir());
+            pdcaRepositorio.save(pdca);
+        }
+        return buscarPorRevisao(revisaoId);
     }
 
     @Transactional(readOnly = true)
@@ -33,11 +99,13 @@ public class MelhoriaQualidadeServico {
                 .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoDuplaId));
 
         IshikawaDTO ishikawaDTO = ishikawaRepositorio.findByConsensoDuplaId(consenso.getId())
-                .map(i -> new IshikawaDTO(i.getId(), i.getEfeitoPrincipal(), i.getMetodo(), i.getMaoDeObra(), i.getMaterial(), i.getMedida(), i.getMeioAmbiente(), i.getMaquina()))
+                .map(i -> new IshikawaDTO(i.getId(), i.getEfeitoPrincipal(), i.getMetodo(), i.getMaoDeObra(),
+                        i.getMaterial(), i.getMedida(), i.getMeioAmbiente(), i.getMaquina()))
                 .orElse(null);
 
         List<Plano5w3hDTO> planosDTO = planoRepositorio.findByConsensoDuplaId(consenso.getId()).stream()
-                .map(p -> new Plano5w3hDTO(p.getId(), p.getOQue(), p.getPorQue(), p.getQuem(), p.getOnde(), p.getQuando(), p.getComo(), p.getQuantoCusta(), p.getComoMedir()))
+                .map(p -> new Plano5w3hDTO(p.getId(), p.getOQue(), p.getPorQue(), p.getQuem(), p.getOnde(),
+                        p.getQuando(), p.getComo(), p.getQuantoCusta(), p.getComoMedir()))
                 .toList();
 
         PdcaDTO pdcaDTO = pdcaRepositorio.findByConsensoDuplaId(consenso.getId())

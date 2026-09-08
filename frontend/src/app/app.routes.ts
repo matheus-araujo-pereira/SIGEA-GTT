@@ -7,13 +7,11 @@ import { GerenciarUsuariosComponent } from './modulos/administracao/usuarios/ger
 import { GerenciarGatilhosComponent } from './modulos/administracao/gatilhos/gerenciar-gatilhos.component';
 import { GerenciarUnidadesComponent } from './modulos/administracao/unidades/gerenciar-unidades.component';
 import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
-import { ConsensoDuplaComponent } from './modulos/auditoria/consenso/consenso-dupla.component';
 import { MelhoriaQualidadeComponent } from './modulos/auditoria/melhoria/melhoria-qualidade.component';
 import { IndicadoresComponent } from './modulos/indicadores/indicadores.component';
 import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
 import { GerenciarCenariosComponent } from './modulos/docente/cenarios/gerenciar-cenarios.component';
 import { GerenciarProntuariosComponent } from './modulos/docente/prontuarios/gerenciar-prontuarios.component';
-import { GerenciarAtividadesComponent } from './modulos/docente/atividades/gerenciar-atividades.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
 import { AutenticacaoService } from './nucleo/servicos/autenticacao.service';
@@ -69,14 +67,8 @@ export const routes: Routes = [
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
-        path: 'prontuarios',
+        path: 'cenarios/:cenarioId/prontuarios',
         component: GerenciarProntuariosComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
-      },
-      {
-        path: 'atividades',
-        component: GerenciarAtividadesComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
@@ -89,13 +81,7 @@ export const routes: Routes = [
         data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
       },
       {
-        path: 'consenso/:duplaId/:prontuarioId',
-        component: ConsensoDuplaComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
-      },
-      {
-        path: 'melhoria/:consensoId',
+        path: 'melhoria/:revisaoId',
         component: MelhoriaQualidadeComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },

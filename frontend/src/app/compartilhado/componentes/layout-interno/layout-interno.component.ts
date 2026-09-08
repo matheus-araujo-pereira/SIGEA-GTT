@@ -1,6 +1,11 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  Router,
+  RouterOutlet,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
 import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 
 export interface ItemMenu {
@@ -18,7 +23,7 @@ export interface GrupoMenu {
   selector: 'app-layout-interno',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
-  templateUrl: './layout-interno.component.html'
+  templateUrl: './layout-interno.component.html',
 })
 export class LayoutInternoComponent {
   private readonly authService = inject(AutenticacaoService);
@@ -27,7 +32,9 @@ export class LayoutInternoComponent {
   readonly usuario = this.authService.usuarioLogado;
 
   readonly nomeUsuario = computed(() => this.usuario()?.nomeCompleto || '');
-  readonly perfilUsuario = computed(() => this.usuario()?.perfil ? `[${this.usuario()?.perfil}]` : '');
+  readonly perfilUsuario = computed(() =>
+    this.usuario()?.perfil ? `[${this.usuario()?.perfil}]` : '',
+  );
 
   readonly exibirModalPerfil = signal(false);
 
@@ -41,10 +48,18 @@ export class LayoutInternoComponent {
       grupos.push({
         titulo: 'Administração',
         itens: [
-          { rota: '/usuarios', rotulo: 'Usuários & Perfis', icone: 'bi-people' },
-          { rota: '/gatilhos', rotulo: 'Gatilhos & Módulos', icone: 'bi-sliders' },
-          { rota: '/unidades', rotulo: 'Unidades HU', icone: 'bi-building' }
-        ]
+          {
+            rota: '/usuarios',
+            rotulo: 'Usuários & Perfis',
+            icone: 'bi-people',
+          },
+          {
+            rota: '/gatilhos',
+            rotulo: 'Gatilhos & Módulos',
+            icone: 'bi-sliders',
+          },
+          { rota: '/unidades', rotulo: 'Unidades HU', icone: 'bi-building' },
+        ],
       });
     }
 
@@ -52,18 +67,28 @@ export class LayoutInternoComponent {
       grupos.push({
         titulo: 'Epidemiologia',
         itens: [
-          { rota: '/indicadores', rotulo: 'Indicadores IHI', icone: 'bi-graph-up' }
-        ]
+          {
+            rota: '/indicadores',
+            rotulo: 'Indicadores IHI',
+            icone: 'bi-graph-up',
+          },
+        ],
       });
 
       grupos.push({
         titulo: 'Gestão Acadêmica',
         itens: [
-          { rota: '/turmas', rotulo: 'Turmas & Alunos', icone: 'bi-mortarboard' },
-          { rota: '/cenarios', rotulo: 'Cenários Clínicos', icone: 'bi-file-earmark-medical' },
-          { rota: '/prontuarios', rotulo: 'Prontuários Simulados', icone: 'bi-journal-medical' },
-          { rota: '/atividades', rotulo: 'Atividades & Duplas', icone: 'bi-calendar-check' }
-        ]
+          {
+            rota: '/turmas',
+            rotulo: 'Turmas & Alunos',
+            icone: 'bi-mortarboard',
+          },
+          {
+            rota: '/cenarios',
+            rotulo: 'Cenários Clínicos',
+            icone: 'bi-file-earmark-medical',
+          },
+        ],
       });
     }
 
@@ -71,8 +96,12 @@ export class LayoutInternoComponent {
       grupos.push({
         titulo: 'Auditoria Clínica',
         itens: [
-          { rota: '/auditoria', rotulo: 'Minhas Auditorias', icone: 'bi-clipboard-pulse' }
-        ]
+          {
+            rota: '/auditoria',
+            rotulo: 'Minhas Auditorias',
+            icone: 'bi-clipboard-pulse',
+          },
+        ],
       });
     }
 

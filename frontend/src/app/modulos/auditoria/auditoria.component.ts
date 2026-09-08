@@ -1,4 +1,11 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,7 +19,7 @@ import {
   ProntuarioSimulado,
   RevisaoIndividual,
   AchadoGatilho,
-  GatilhoGtt
+  GatilhoGtt,
 } from '../../compartilhado/modelos/dominio.modelos';
 
 export interface ProntuarioAuditoriaLinha {
@@ -38,7 +45,7 @@ export interface AtividadeAuditoriaCard {
   turmaCodigo: string;
   atividadeTitulo: string;
   cenarioTitulo: string;
-  parceiroNome: string;
+  parceiroNome?: string | null;
   statusStr: string;
   metaStr: string;
   prontuarios: ProntuarioAuditoriaLinha[];
@@ -48,7 +55,7 @@ export interface AtividadeAuditoriaCard {
   selector: 'app-auditoria',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './auditoria.component.html'
+  templateUrl: './auditoria.component.html',
 })
 export class AuditoriaComponent implements OnInit, OnDestroy {
   private readonly revisaoService = inject(RevisaoIndividualService);
@@ -69,8 +76,12 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   readonly revisaoAtiva = signal<RevisaoIndividual | null>(null);
   readonly achados = signal<AchadoGatilho[]>([]);
 
-  readonly revisaoFinalizada = computed(() => Boolean(this.revisaoAtiva()?.finalizada));
-  readonly secaoAtiva = signal<'SUMARIO' | 'MEDICACAO' | 'LABORATORIO' | 'CIRURGICO' | 'EVOLUCOES'>('SUMARIO');
+  readonly revisaoFinalizada = computed(() =>
+    Boolean(this.revisaoAtiva()?.finalizada),
+  );
+  readonly secaoAtiva = signal<
+    'SUMARIO' | 'MEDICACAO' | 'LABORATORIO' | 'CIRURGICO' | 'EVOLUCOES'
+  >('SUMARIO');
 
   exibirSeletorGatilhos = false;
   readonly buscaGatilho = signal('');
@@ -130,10 +141,12 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     return this.todosGatilhos()
       .filter((g) => !achadosIds.has(g.id))
       .filter((g) => {
-        return !termo ||
+        return (
+          !termo ||
           g.codigo.toLowerCase().includes(termo) ||
           g.descricao.toLowerCase().includes(termo) ||
-          g.modulo.nome.toLowerCase().includes(termo);
+          g.modulo.nome.toLowerCase().includes(termo)
+        );
       });
   });
 
@@ -145,13 +158,15 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       .map((at) => {
         const prontuariosFiltrados = at.prontuarios
           .filter((p) => {
-            const matchTermo = !termo ||
+            const matchTermo =
+              !termo ||
               p.numeroAtendimento.toLowerCase().includes(termo) ||
               p.unidadeSigla.toLowerCase().includes(termo) ||
               at.cenarioTitulo.toLowerCase().includes(termo) ||
               at.atividadeTitulo.toLowerCase().includes(termo);
 
-            const matchStatus = filtroStatus === 'TODOS' ||
+            const matchStatus =
+              filtroStatus === 'TODOS' ||
               (filtroStatus === 'CONCLUIDOS' && p.finalizada) ||
               (filtroStatus === 'PENDENTES' && !p.finalizada);
 
@@ -177,7 +192,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
               finalizada: p.finalizada,
               revisaoId: p.revisaoId,
               original: p,
-              atividadeOriginal: at
+              atividadeOriginal: at,
             };
           });
 
@@ -189,7 +204,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
           parceiroNome: at.parceiroNome,
           statusStr: at.finalizada ? '[ENCERRADA]' : '[ABERTA]',
           metaStr: `Meta IHI: ${at.tempoLimiteMinutos} min/caso`,
-          prontuarios: prontuariosFiltrados
+          prontuarios: prontuariosFiltrados,
         };
       })
       .filter((card) => card.prontuarios.length > 0 || !termo);
@@ -210,7 +225,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
     this.revisaoService.listarMinhasAtividades(usuario.id).subscribe({
       next: (dados) => this.atividades.set(dados),
-      error: (err) => console.error('Erro ao listar atividades:', err)
+      error: (err) => console.error('Erro ao listar atividades:', err),
     });
   }
 
@@ -219,10 +234,15 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       next: (dados) => {
         const ordenados = dados
           .filter((g) => g.ativo)
-          .sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }));
+          .sort((a, b) =>
+            a.codigo.localeCompare(b.codigo, undefined, {
+              numeric: true,
+              sensitivity: 'base',
+            }),
+          );
         this.todosGatilhos.set(ordenados);
       },
-      error: (err) => console.error('Erro ao listar catálogo:', err)
+      error: (err) => console.error('Erro ao listar catálogo:', err),
     });
   }
 
@@ -237,34 +257,36 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         this.prontuarioAtivo.set(prontuarioCompleto);
         this.atividadeAtiva.set(at);
 
-        this.revisaoService.iniciarRevisao({
-          duplaId: at.duplaId,
-          alunoId: usuario.id,
-          prontuarioId: p.prontuarioId
-        }).subscribe({
-          next: (rev) => {
-            this.revisaoAtiva.set(rev);
-            this.achados.set(rev.achados || []);
-            this.cronometroSegundos.set(rev.tempoGastoSegundos || 0);
+        this.revisaoService
+          .iniciarRevisao({
+            atividadeId: at.atividadeId,
+            alunoId: usuario.id,
+            prontuarioId: p.prontuarioId,
+          })
+          .subscribe({
+            next: (rev) => {
+              this.revisaoAtiva.set(rev);
+              this.achados.set(rev.achados || []);
+              this.cronometroSegundos.set(rev.tempoGastoSegundos || 0);
 
-            this.modoRevisaoAtiva.set(true);
-            this.secaoAtiva.set('SUMARIO');
-            this.carregando.set(false);
+              this.modoRevisaoAtiva.set(true);
+              this.secaoAtiva.set('SUMARIO');
+              this.carregando.set(false);
 
-            if (!rev.finalizada) {
-              this.iniciarCronometro();
-            }
-          },
-          error: (err) => {
-            alert('Falha ao inicializar a revisão: ' + err.message);
-            this.carregando.set(false);
-          }
-        });
+              if (!rev.finalizada) {
+                this.iniciarCronometro();
+              }
+            },
+            error: (err) => {
+              alert('Falha ao inicializar a revisão: ' + err.message);
+              this.carregando.set(false);
+            },
+          });
       },
       error: (err) => {
         alert('Erro ao carregar prontuário: ' + err.message);
         this.carregando.set(false);
-      }
+      },
     });
   }
 
@@ -302,7 +324,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       moduloNome: g.modulo.nome,
       confirmouDano: false,
       justificativaDano: '',
-      danoPresenteAdmissao: false
+      danoPresenteAdmissao: false,
     };
 
     this.achados.update((lista) => [...lista, novoAchado]);
@@ -319,55 +341,57 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
     this.carregando.set(true);
 
-    this.revisaoService.salvarRevisao(rev.id, {
-      tempoGastoSegundos: this.cronometroSegundos(),
-      finalizar: false,
-      achados: this.achados()
-    }).subscribe({
-      next: (atualizada) => {
-        this.revisaoAtiva.set(atualizada);
-        this.carregando.set(false);
-        if (exibirAlerta) {
-          this.mensagemSucesso.set('Rascunho da auditoria salvo.');
-          setTimeout(() => this.mensagemSucesso.set(null), 3000);
-        }
-      },
-      error: (err) => {
-        alert('Erro ao salvar rascunho: ' + err.message);
-        this.carregando.set(false);
-      }
-    });
+    this.revisaoService
+      .salvarRevisao(rev.id, {
+        tempoGastoSegundos: this.cronometroSegundos(),
+        finalizar: false,
+        achados: this.achados(),
+      })
+      .subscribe({
+        next: (atualizada) => {
+          this.revisaoAtiva.set(atualizada);
+          this.carregando.set(false);
+          if (exibirAlerta) {
+            this.mensagemSucesso.set('Rascunho da auditoria salvo.');
+            setTimeout(() => this.mensagemSucesso.set(null), 3000);
+          }
+        },
+        error: (err) => {
+          alert('Erro ao salvar rascunho: ' + err.message);
+          this.carregando.set(false);
+        },
+      });
   }
 
   finalizarAuditoria(): void {
     const rev = this.revisaoAtiva();
     if (!rev) return;
 
-    const confirmacao = confirm('Ao finalizar a revisão individual, as anotações serão congeladas para o Consenso da Dupla. Submeter agora?');
+    const confirmacao = confirm(
+      'Ao finalizar a revisão individual, as anotações serão congeladas para correção docente. Submeter agora?',
+    );
     if (!confirmacao) return;
 
     this.carregando.set(true);
 
-    this.revisaoService.salvarRevisao(rev.id, {
-      tempoGastoSegundos: this.cronometroSegundos(),
-      finalizar: true,
-      achados: this.achados()
-    }).subscribe({
-      next: (finalizada) => {
-        this.revisaoAtiva.set(finalizada);
-        this.pararCronometro();
-        this.carregando.set(false);
-        this.sairDaRevisao();
-      },
-      error: (err) => {
-        alert('Erro ao finalizar revisão: ' + err.message);
-        this.carregando.set(false);
-      }
-    });
-  }
-
-  abrirConsenso(at: AtividadeDiscente, p: ProntuarioItemAuditoria): void {
-    this.router.navigate(['/consenso', at.duplaId, p.prontuarioId]);
+    this.revisaoService
+      .salvarRevisao(rev.id, {
+        tempoGastoSegundos: this.cronometroSegundos(),
+        finalizar: true,
+        achados: this.achados(),
+      })
+      .subscribe({
+        next: (finalizada) => {
+          this.revisaoAtiva.set(finalizada);
+          this.pararCronometro();
+          this.carregando.set(false);
+          this.sairDaRevisao();
+        },
+        error: (err) => {
+          alert('Erro ao finalizar revisão: ' + err.message);
+          this.carregando.set(false);
+        },
+      });
   }
 
   fecharModalGatilhos(): void {

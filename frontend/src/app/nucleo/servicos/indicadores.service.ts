@@ -19,17 +19,30 @@ export interface IndicadoresIHI {
   };
 }
 
+export interface FiltrosIndicadores {
+  turmaId?: number;
+  periodoLetivo?: string;
+  cenarioId?: number;
+  unidadeId?: number;
+  dataInicio?: string;
+  dataFim?: string;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class IndicadoresService {
   private readonly http = inject(HttpClient);
   private readonly url = '/api/indicadores';
 
-  obterIndicadores(turmaId?: number): Observable<IndicadoresIHI> {
+  obterIndicadores(
+    filtros: FiltrosIndicadores = {},
+  ): Observable<IndicadoresIHI> {
     let params = new HttpParams();
-    if (turmaId) {
-      params = params.set('turmaId', turmaId.toString());
+    for (const [chave, valor] of Object.entries(filtros)) {
+      if (valor !== undefined && valor !== null && valor !== '') {
+        params = params.set(chave, valor.toString());
+      }
     }
     return this.http.get<IndicadoresIHI>(this.url, { params });
   }
