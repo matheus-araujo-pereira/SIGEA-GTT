@@ -21,7 +21,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @Configuration
 public class SegurancaConfig {
 
-    @Value("${app.frontend-origin:http://localhost:4200}")
+    @Value("${FRONTEND_ORIGIN:http://localhost:4200}")
     private String frontendOrigin;
 
     @Bean
