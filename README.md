@@ -150,26 +150,31 @@ O frontend usa `src/assets/runtime-config.js` para definir `window.__SIGEA_API_U
 
 ## Deploy no Render
 
-O arquivo `render.yaml` na raiz do repositório é um **Blueprint** do Render e provisiona automaticamente:
+O arquivo `render.yaml` na raiz do repositório é um **Blueprint** do Render e provisiona automaticamente, **sem cartão de crédito e 100% no plano gratuito** (`plan: free` já configurado no Blueprint para o backend e o banco):
 
-1. **`sigea-gtt-db`** — banco PostgreSQL gerenciado.
-2. **`sigea-gtt-backend`** — Web Service Docker (usa `backend/Dockerfile`), com health check em `/actuator/health`.
-3. **`sigea-gtt-frontend`** — Static Site Angular, com a URL do backend injetada em tempo de build.
+1. **`sigea-gtt-db`** — banco PostgreSQL gerenciado (Free).
+2. **`sigea-gtt-backend`** — Web Service Docker (usa `backend/Dockerfile`), com health check em `/actuator/health` (Free).
+3. **`sigea-gtt-frontend`** — Static Site Angular, com a URL do backend injetada em tempo de build (Static Sites são gratuitos por padrão, não têm campo de plano).
 
-### Passo a passo
+### Passo a passo (deploy gratuito para homologação)
 
 1. Faça commit e push do repositório (incluindo `render.yaml`) para o GitHub/GitLab.
-2. No painel do Render, clique em **New +** → **Blueprint**.
-3. Selecione o repositório. O Render lê `render.yaml` e propõe os três recursos (banco + 2 serviços).
-4. Confirme a criação. O Render provisiona o banco primeiro, depois builda e sobe o backend, depois builda o frontend estático já apontando para a URL pública do backend.
-5. Aguarde o backend ficar **Live** (o health check `/actuator/health` precisa responder `200`).
-6. Acesse a URL do serviço `sigea-gtt-frontend` (algo como `https://sigea-gtt-frontend.onrender.com`).
-7. Faça login com o administrador seed e **troque a senha padrão imediatamente**.
+2. Crie uma conta gratuita em [render.com](https://render.com) (não pede cartão de crédito para os planos Free).
+3. No painel do Render, clique em **New +** → **Blueprint**.
+4. Conecte sua conta do GitHub/GitLab e selecione o repositório `SIGEA-GTT`.
+5. O Render lê o `render.yaml` e mostra os três recursos que serão criados, todos com plano **Free** pré-selecionado. Clique em **Apply**.
+6. Aguarde: o Render provisiona o banco primeiro, depois builda e sobe o backend, depois builda o frontend estático já apontando para a URL pública do backend.
+7. Acompanhe os logs de build do serviço `sigea-gtt-backend` até aparecer **Live** (o health check `/actuator/health` precisa responder `200`).
+8. Acesse a URL do serviço `sigea-gtt-frontend` (algo como `https://sigea-gtt-frontend.onrender.com`).
+9. Faça login com o administrador seed e **troque a senha padrão imediatamente**.
 
-### Pontos de atenção específicos do Render
+### Limitações do plano gratuito do Render (importante para homologação)
 
+- **Backend "dorme" após ~15 minutos sem requisições.** A primeira requisição depois disso demora de 30 a 60 segundos para "acordar" o serviço (cold start) — normal, não é erro.
+- **Banco PostgreSQL gratuito expira em 90 dias** após a criação e é apagado automaticamente pelo Render. Para uma homologação mais longa, anote a data de criação e recrie o Blueprint (ou faça backup/restauração) antes do vencimento.
+- **750 horas gratuitas por mês**, compartilhadas entre todos os Web Services gratuitos da conta. Um único serviço rodando o mês inteiro cabe tranquilamente nesse limite.
+- Não há domínio customizado nem SSL próprio no plano gratuito — você usa o subdomínio `*.onrender.com` (já vem com HTTPS).
 - Se você **renomear** o serviço `sigea-gtt-frontend` no Blueprint, atualize também o valor fixo de `FRONTEND_ORIGIN` no serviço backend (usado para liberar o CORS), pois o Render atribui o domínio `https://<nome-do-serviço>.onrender.com`.
-- O plano gratuito de Web Service "dorme" após inatividade; a primeira requisição após o período ocioso pode demorar mais (cold start).
 - As migrações Flyway rodam automaticamente na inicialização do backend — não é necessário rodar SQL manualmente no banco do Render.
 
 ---

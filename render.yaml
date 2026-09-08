@@ -2,6 +2,7 @@ services:
   - type: web
     name: sigea-gtt-backend
     runtime: docker
+    plan: free
     rootDir: backend
     healthCheckPath: /actuator/health
     envVars:
@@ -49,3 +50,4 @@ services:
 
 databases:
   - name: sigea-gtt-db
+    plan: free
