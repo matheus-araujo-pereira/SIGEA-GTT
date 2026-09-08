@@ -38,12 +38,6 @@ services:
     buildCommand: echo 'window.__SIGEA_API_URL__ = "https://sigea-gtt-backend.onrender.com";' > src/assets/runtime-config.js && npm install && npm run build
     # O builder "application" do Angular 17 gera o site em dist/frontend/browser, não em dist/frontend.
     staticPublishPath: dist/frontend/browser
-    envVars:
-      - key: BACKEND_URL
-        fromService:
-          name: sigea-gtt-backend
-          type: web
-          property: host
     routes:
       - type: rewrite
         source: /*
