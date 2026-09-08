@@ -167,7 +167,8 @@ CREATE TABLE duplas_revisores (
 -- -----------------------------------------------------------------------------
 CREATE TABLE revisoes_individuais (
     id BIGSERIAL PRIMARY KEY,
-    dupla_id BIGINT NOT NULL REFERENCES duplas_revisores(id) ON DELETE CASCADE,
+    dupla_id BIGINT REFERENCES duplas_revisores(id) ON DELETE CASCADE,
+    atividade_id BIGINT REFERENCES atividades_auditoria(id),
     aluno_id BIGINT NOT NULL REFERENCES usuarios(id),
     prontuario_id BIGINT NOT NULL REFERENCES prontuarios_simulados(id),
     tempo_gasto_segundos INTEGER NOT NULL DEFAULT 0,
@@ -210,7 +211,8 @@ CREATE TABLE itens_consenso (
 
 CREATE TABLE validacoes_docentes (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT NOT NULL UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    consenso_dupla_id BIGINT UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    revisao_individual_id BIGINT UNIQUE REFERENCES revisoes_individuais(id),
     professor_validador_id BIGINT NOT NULL REFERENCES usuarios(id),
     parecer_formativo TEXT NOT NULL,
     homologado BOOLEAN NOT NULL DEFAULT FALSE,
@@ -222,7 +224,8 @@ CREATE TABLE validacoes_docentes (
 -- -----------------------------------------------------------------------------
 CREATE TABLE analises_ishikawa (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT NOT NULL UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    consenso_dupla_id BIGINT UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    revisao_individual_id BIGINT UNIQUE REFERENCES revisoes_individuais(id),
     efeito_principal TEXT NOT NULL,
     metodo TEXT,
     mao_de_obra TEXT,
@@ -234,7 +237,8 @@ CREATE TABLE analises_ishikawa (
 
 CREATE TABLE planos_acao_5w3h (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT NOT NULL REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    consenso_dupla_id BIGINT REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    revisao_individual_id BIGINT REFERENCES revisoes_individuais(id),
     o_que TEXT NOT NULL,
     por_que TEXT NOT NULL,
     quem VARCHAR(100) NOT NULL,
@@ -247,7 +251,8 @@ CREATE TABLE planos_acao_5w3h (
 
 CREATE TABLE ciclos_pdca (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT NOT NULL UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    consenso_dupla_id BIGINT UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
+    revisao_individual_id BIGINT UNIQUE REFERENCES revisoes_individuais(id),
     planejar TEXT NOT NULL,
     fazer TEXT NOT NULL,
     checar TEXT NOT NULL,
@@ -269,6 +274,10 @@ CREATE INDEX idx_duplas_atividade ON duplas_revisores(atividade_id);
 CREATE INDEX idx_duplas_aluno1 ON duplas_revisores(aluno_revisor_1_id);
 CREATE INDEX idx_duplas_aluno2 ON duplas_revisores(aluno_revisor_1_id);
 CREATE INDEX idx_revisoes_dupla ON revisoes_individuais(dupla_id);
+CREATE INDEX idx_revisoes_atividade ON revisoes_individuais(atividade_id);
+CREATE UNIQUE INDEX uq_revisao_individual_direta
+    ON revisoes_individuais(atividade_id, aluno_id, prontuario_id)
+    WHERE atividade_id IS NOT NULL;
 CREATE INDEX idx_revisoes_aluno ON revisoes_individuais(aluno_id);
 CREATE INDEX idx_revisoes_prontuario ON revisoes_individuais(prontuario_id);
 CREATE INDEX idx_achados_revisao ON achados_gatilhos(revisao_individual_id);
@@ -280,4 +289,15 @@ CREATE INDEX idx_itens_consenso ON itens_consenso(consenso_dupla_id);
 CREATE INDEX idx_itens_gatilho ON itens_consenso(gatilho_id);
 CREATE INDEX idx_itens_categoria ON itens_consenso(categoria_ea_id);
 CREATE INDEX idx_validacoes_professor ON validacoes_docentes(professor_validador_id);
+CREATE UNIQUE INDEX uq_validacao_revisao_individual
+    ON validacoes_docentes(revisao_individual_id)
+    WHERE revisao_individual_id IS NOT NULL;
+CREATE UNIQUE INDEX uq_ishikawa_revisao_individual
+    ON analises_ishikawa(revisao_individual_id)
+    WHERE revisao_individual_id IS NOT NULL;
+CREATE INDEX idx_planos_5w3h_revisao_individual
+    ON planos_acao_5w3h(revisao_individual_id);
+CREATE UNIQUE INDEX uq_pdca_revisao_individual
+    ON ciclos_pdca(revisao_individual_id)
+    WHERE revisao_individual_id IS NOT NULL;
 CREATE INDEX idx_planos_5w3h_consenso ON planos_acao_5w3h(consenso_dupla_id);
