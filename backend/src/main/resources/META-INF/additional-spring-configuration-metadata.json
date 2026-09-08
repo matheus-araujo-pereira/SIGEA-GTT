@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "app.frontend-origin",
+      "type": "java.lang.String",
+      "description": "Origem permitida do frontend para CORS."
+    }
+  ]
+}
