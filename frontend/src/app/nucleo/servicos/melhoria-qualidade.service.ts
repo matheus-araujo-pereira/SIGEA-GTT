@@ -10,22 +10,6 @@ export class MelhoriaQualidadeService {
   private readonly http = inject(HttpClient);
   private readonly url = '/api/melhoria-qualidade';
 
-  buscarPorConsenso(consensoDuplaId: number): Observable<MelhoriaQualidade> {
-    return this.http.get<MelhoriaQualidade>(
-      `${this.url}/consenso/${consensoDuplaId}`,
-    );
-  }
-
-  salvar(
-    consensoDuplaId: number,
-    payload: MelhoriaQualidade,
-  ): Observable<MelhoriaQualidade> {
-    return this.http.put<MelhoriaQualidade>(
-      `${this.url}/consenso/${consensoDuplaId}`,
-      payload,
-    );
-  }
-
   buscarPorRevisao(revisaoId: number): Observable<MelhoriaQualidade> {
     return this.http.get<MelhoriaQualidade>(`${this.url}/revisao/${revisaoId}`);
   }

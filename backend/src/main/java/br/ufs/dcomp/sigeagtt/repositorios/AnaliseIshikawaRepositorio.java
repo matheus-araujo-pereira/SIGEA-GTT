@@ -5,7 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface AnaliseIshikawaRepositorio extends JpaRepository<AnaliseIshikawa, Long> {
-    Optional<AnaliseIshikawa> findByConsensoDuplaId(Long consensoDuplaId);
-
     Optional<AnaliseIshikawa> findByRevisaoIndividualId(Long revisaoIndividualId);
 }

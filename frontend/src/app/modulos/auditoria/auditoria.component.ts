@@ -201,7 +201,6 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
           turmaCodigo: `[${at.turmaCodigo}]`,
           atividadeTitulo: at.atividadeTitulo,
           cenarioTitulo: at.cenarioTitulo,
-          parceiroNome: at.parceiroNome,
           statusStr: at.finalizada ? '[ENCERRADA]' : '[ABERTA]',
           metaStr: `Meta IHI: ${at.tempoLimiteMinutos} min/caso`,
           prontuarios: prontuariosFiltrados,

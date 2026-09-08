@@ -99,18 +99,6 @@ export interface AtividadeAuditoria {
   totalAuditorias: number;
 }
 
-export interface DuplaRevisores {
-  id: number;
-  atividadeId: number;
-  alunoRevisor1Id: number;
-  alunoRevisor1Nome: string;
-  alunoRevisor1Matricula?: string;
-  alunoRevisor2Id: number;
-  alunoRevisor2Nome: string;
-  alunoRevisor2Matricula?: string;
-  ativa: boolean;
-}
-
 export interface AchadoGatilho {
   id?: number;
   gatilhoId: number;
@@ -125,7 +113,6 @@ export interface AchadoGatilho {
 
 export interface RevisaoIndividual {
   id: number;
-  duplaId?: number | null;
   atividadeId?: number | null;
   alunoId: number;
   alunoNome: string;
@@ -159,27 +146,11 @@ export interface AtividadeDiscente {
   turmaCodigo: string;
   cenarioId: number;
   cenarioTitulo: string;
-  duplaId?: number | null;
-  parceiroNome?: string | null;
-  parceiroMatricula?: string | null;
   dataInicio: string;
   dataFim: string;
   tempoLimiteMinutos: number;
   finalizada: boolean;
   prontuarios: ProntuarioItemAuditoria[];
-}
-
-export interface ItemConsenso {
-  id?: number;
-  gatilhoId: number;
-  gatilhoCodigo: string;
-  gatilhoDescricao: string;
-  moduloNome: string;
-  confirmouDano: boolean;
-  justificativaDano?: string;
-  danoPresenteAdmissao: boolean;
-  gravidadeConsenso: GravidadeNccMerp;
-  gravidadeHomologada?: GravidadeNccMerp;
 }
 
 export interface ValidacaoDocente {
@@ -189,31 +160,6 @@ export interface ValidacaoDocente {
   parecerFormativo: string;
   homologado: boolean;
   dataValidacao: string;
-}
-
-export interface ComparativoRevisao {
-  revisor1Id: number;
-  revisor1Nome: string;
-  revisor1Finalizou: boolean;
-  revisor1TempoSegundos: number;
-  revisor1Achados: AchadoGatilho[];
-  revisor2Id: number;
-  revisor2Nome: string;
-  revisor2Finalizou: boolean;
-  revisor2TempoSegundos: number;
-  revisor2Achados: AchadoGatilho[];
-}
-
-export interface ConsensoDupla {
-  id: number;
-  duplaId: number;
-  prontuarioId: number;
-  prontuarioAtendimento: string;
-  dataConsenso: string;
-  submetido: boolean;
-  itens: ItemConsenso[];
-  validacao?: ValidacaoDocente;
-  comparativo: ComparativoRevisao;
 }
 
 export interface Ishikawa {
@@ -248,7 +194,7 @@ export interface Pdca {
 }
 
 export interface MelhoriaQualidade {
-  consensoDuplaId: number;
+  revisaoIndividualId: number;
   ishikawa?: Ishikawa;
   planos5w3h: Plano5w3h[];
   pdca?: Pdca;

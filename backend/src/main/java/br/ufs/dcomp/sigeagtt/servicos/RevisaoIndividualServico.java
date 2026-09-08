@@ -17,7 +17,6 @@ public class RevisaoIndividualServico {
 
     private final RevisaoIndividualRepositorio revisaoRepositorio;
     private final AchadoGatilhoRepositorio achadoRepositorio;
-    private final DuplaRevisoresRepositorio duplaRepositorio;
     private final UsuarioRepositorio usuarioRepositorio;
     private final ProntuarioSimuladoRepositorio prontuarioRepositorio;
     private final GatilhoGttRepositorio gatilhoRepositorio;
@@ -27,7 +26,6 @@ public class RevisaoIndividualServico {
 
     public RevisaoIndividualServico(RevisaoIndividualRepositorio revisaoRepositorio,
             AchadoGatilhoRepositorio achadoRepositorio,
-            DuplaRevisoresRepositorio duplaRepositorio,
             UsuarioRepositorio usuarioRepositorio,
             ProntuarioSimuladoRepositorio prontuarioRepositorio,
             GatilhoGttRepositorio gatilhoRepositorio,
@@ -36,7 +34,6 @@ public class RevisaoIndividualServico {
             ValidacaoDocenteRepositorio validacaoRepositorio) {
         this.revisaoRepositorio = revisaoRepositorio;
         this.achadoRepositorio = achadoRepositorio;
-        this.duplaRepositorio = duplaRepositorio;
         this.usuarioRepositorio = usuarioRepositorio;
         this.prontuarioRepositorio = prontuarioRepositorio;
         this.gatilhoRepositorio = gatilhoRepositorio;
@@ -236,7 +233,6 @@ public class RevisaoIndividualServico {
         ValidacaoDocente validacao = validacaoRepositorio.findByRevisaoIndividualId(r.getId()).orElse(null);
         return new RevisaoIndividualRespostaDTO(
                 r.getId(),
-                r.getDupla() != null ? r.getDupla().getId() : null,
                 r.getAtividade() != null ? r.getAtividade().getId() : null,
                 r.getAluno().getId(),
                 r.getAluno().getNomeCompleto(),

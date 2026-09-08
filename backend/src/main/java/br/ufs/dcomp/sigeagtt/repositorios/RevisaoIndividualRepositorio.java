@@ -9,10 +9,6 @@ import java.util.Optional;
 
 public interface RevisaoIndividualRepositorio extends JpaRepository<RevisaoIndividual, Long> {
 
-    @Query("SELECT r FROM RevisaoIndividual r JOIN FETCH r.dupla d JOIN FETCH d.alunoRevisor1 JOIN FETCH d.alunoRevisor2 JOIN FETCH r.aluno JOIN FETCH r.prontuario WHERE r.dupla.id = :duplaId AND r.aluno.id = :alunoId AND r.prontuario.id = :prontuarioId")
-    Optional<RevisaoIndividual> findByDuplaIdAndAlunoIdAndProntuarioId(@Param("duplaId") Long duplaId,
-            @Param("alunoId") Long alunoId, @Param("prontuarioId") Long prontuarioId);
-
     @Query("SELECT r FROM RevisaoIndividual r JOIN FETCH r.aluno JOIN FETCH r.prontuario WHERE r.atividade.id = :atividadeId AND r.aluno.id = :alunoId AND r.prontuario.id = :prontuarioId")
     Optional<RevisaoIndividual> findByAtividadeIdAndAlunoIdAndProntuarioId(@Param("atividadeId") Long atividadeId,
             @Param("alunoId") Long alunoId, @Param("prontuarioId") Long prontuarioId);
@@ -23,9 +19,6 @@ public interface RevisaoIndividualRepositorio extends JpaRepository<RevisaoIndiv
 
     long countByAtividadeId(Long atividadeId);
 
-    @Query("SELECT r FROM RevisaoIndividual r JOIN FETCH r.dupla d JOIN FETCH r.aluno JOIN FETCH r.prontuario WHERE r.aluno.id = :alunoId")
+    @Query("SELECT r FROM RevisaoIndividual r JOIN FETCH r.aluno JOIN FETCH r.prontuario WHERE r.aluno.id = :alunoId")
     List<RevisaoIndividual> findByAlunoId(@Param("alunoId") Long alunoId);
-
-    @Query("SELECT r FROM RevisaoIndividual r JOIN FETCH r.dupla d JOIN FETCH r.aluno JOIN FETCH r.prontuario WHERE r.dupla.id = :duplaId")
-    List<RevisaoIndividual> findByDuplaId(@Param("duplaId") Long duplaId);
 }

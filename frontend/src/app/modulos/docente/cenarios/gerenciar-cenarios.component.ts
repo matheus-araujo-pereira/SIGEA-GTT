@@ -65,7 +65,7 @@ export class GerenciarCenariosComponent implements OnInit {
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Cenário';
+    return this.idEdicao ? 'Editar Cenário' : 'Cadastrar Cenário';
   });
 
   readonly cenariosLinhas = computed<CenarioLinha[]>(() => {

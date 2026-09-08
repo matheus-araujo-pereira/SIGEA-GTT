@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "revisoes_individuais", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_revisao_individual", columnNames = { "dupla_id", "aluno_id", "prontuario_id" })
+        @UniqueConstraint(name = "uq_revisao_individual", columnNames = { "atividade_id", "aluno_id", "prontuario_id" })
 })
 @Getter
 @Setter
@@ -25,12 +25,9 @@ public class RevisaoIndividual {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "dupla_id")
-    private DuplaRevisores dupla;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "atividade_id")
+    @JoinColumn(name = "atividade_id", nullable = false)
     private AtividadeAuditoria atividade;
 
     @NotNull

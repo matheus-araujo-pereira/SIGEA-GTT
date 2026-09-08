@@ -50,7 +50,6 @@ export class GerenciarProntuariosComponent implements OnInit {
   formulario: ProntuarioSimuladoRequisicao = this.obterFormularioVazio();
 
   readonly termoBusca = signal('');
-  readonly filtroCenarioId = signal('TODOS');
   readonly cenarioContextualId = signal<number | null>(null);
 
   readonly totalProntuarios = computed(() => this.prontuarios().length);
@@ -66,26 +65,23 @@ export class GerenciarProntuariosComponent implements OnInit {
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao ? 'Salvar Alterações' : 'Cadastrar Prontuário';
+    return this.idEdicao ? 'Editar Prontuário' : 'Cadastrar Prontuário';
   });
 
   readonly prontuariosLinhas = computed<ProntuarioLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    const cenarioFiltro =
-      this.cenarioContextualId()?.toString() || this.filtroCenarioId();
-
     return this.prontuarios()
       .filter((p) => {
-        const matchCenario =
-          cenarioFiltro === 'TODOS' || p.cenarioId === Number(cenarioFiltro);
         const matchTermo =
           !termo ||
           p.numeroAtendimento.toLowerCase().includes(termo) ||
           p.cenarioTitulo.toLowerCase().includes(termo) ||
           p.unidadeHospitalarSigla.toLowerCase().includes(termo) ||
-          p.sumarioAlta.toLowerCase().includes(termo);
+          p.sumarioAlta.toLowerCase().includes(termo) ||
+          p.prescricoesMedicas.toLowerCase().includes(termo) ||
+          p.examesLaboratoriais.toLowerCase().includes(termo);
 
-        return matchCenario && matchTermo;
+        return matchTermo;
       })
       .map((p) => ({
         id: p.id,
@@ -138,8 +134,6 @@ export class GerenciarProntuariosComponent implements OnInit {
     this.formulario = this.obterFormularioVazio();
     if (this.cenarioContextualId()) {
       this.formulario.cenarioId = this.cenarioContextualId()!;
-    } else if (this.cenarios().length > 0) {
-      this.formulario.cenarioId = this.cenarios()[0].id;
     }
     if (this.unidades().length > 0)
       this.formulario.unidadeHospitalarId = this.unidades()[0].id;

@@ -15,10 +15,6 @@ import {
   AtividadeAuditoriaService,
   AtividadeAuditoriaRequisicao,
 } from '../../../nucleo/servicos/atividade-auditoria.service';
-import {
-  DuplaRevisoresService,
-  DuplaRevisoresRequisicao,
-} from '../../../nucleo/servicos/dupla-revisores.service';
 import { TurmaService } from '../../../nucleo/servicos/turma.service';
 import { CenarioClinicoService } from '../../../nucleo/servicos/cenario-clinico.service';
 import {
@@ -29,7 +25,6 @@ import {
 import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
 import {
   AtividadeAuditoria,
-  DuplaRevisores,
   Turma,
   CenarioClinico,
   Usuario,
@@ -49,18 +44,6 @@ export interface AtividadeLinha {
   original: AtividadeAuditoria;
 }
 
-export interface DuplaLinha {
-  id: number;
-  indiceStr: string;
-  revisor1Nome: string;
-  revisor1Matricula: string;
-  revisor2Nome: string;
-  revisor2Matricula: string;
-  status: string;
-  ativa: boolean;
-  original: DuplaRevisores;
-}
-
 @Component({
   selector: 'app-gerenciar-atividades',
   standalone: true,
@@ -70,7 +53,6 @@ export interface DuplaLinha {
 export class GerenciarAtividadesComponent implements OnInit, OnChanges {
   @Input() turmaIdContextual: number | null = null;
   private readonly atividadeService = inject(AtividadeAuditoriaService);
-  private readonly duplaService = inject(DuplaRevisoresService);
   private readonly turmaService = inject(TurmaService);
   private readonly cenarioService = inject(CenarioClinicoService);
   private readonly revisaoService = inject(RevisaoIndividualService);
@@ -82,7 +64,6 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
   readonly cenarios = signal<CenarioClinico[]>([]);
 
   readonly atividadeSelecionada = signal<AtividadeAuditoria | null>(null);
-  readonly duplasDaAtividade = signal<DuplaRevisores[]>([]);
   readonly alunosDaTurma = signal<Usuario[]>([]);
   readonly auditoriasDosAlunos = signal<AuditoriaAluno[]>([]);
   readonly revisaoSelecionada = signal<number | null>(null);
@@ -96,11 +77,6 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
   readonly mensagemErro = signal<string | null>(null);
 
   formAtividade: AtividadeAuditoriaRequisicao = this.obterFormAtividadeVazio();
-  formDupla: DuplaRevisoresRequisicao = {
-    atividadeId: 0,
-    alunoRevisor1Id: 0,
-    alunoRevisor2Id: 0,
-  };
 
   readonly totalAtividades = computed(() => this.atividades().length);
 
@@ -111,7 +87,7 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicaoAtividade ? 'Salvar Alterações' : 'Criar Atividade';
+    return this.idEdicaoAtividade ? 'Editar Atividade' : 'Cadastrar Atividade';
   });
 
   readonly infoAtividadeSelecionada = computed(() => {
@@ -136,20 +112,6 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
       finalizada: at.finalizada,
       selecionada: at.id === selecionadaId,
       original: at,
-    }));
-  });
-
-  readonly duplasLinhas = computed<DuplaLinha[]>(() => {
-    return this.duplasDaAtividade().map((d, index) => ({
-      id: d.id,
-      indiceStr: `Dupla #${index + 1}`,
-      revisor1Nome: d.alunoRevisor1Nome,
-      revisor1Matricula: d.alunoRevisor1Matricula || '-',
-      revisor2Nome: d.alunoRevisor2Nome,
-      revisor2Matricula: d.alunoRevisor2Matricula || '-',
-      status: d.ativa ? '[ATIVO]' : '[INATIVO]',
-      ativa: d.ativa,
-      original: d,
     }));
   });
 
@@ -265,7 +227,7 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
 
   excluirAtividade(at: AtividadeAuditoria): void {
     const confirmacao = confirm(
-      `Deseja excluir a atividade "${at.titulo}"? Todas as duplas e revisões associadas serão excluídas.`,
+      `Deseja excluir a atividade "${at.titulo}"? As auditorias individuais associadas serão excluídas.`,
     );
     if (!confirmacao) return;
 
@@ -288,21 +250,6 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
       next: () => this.carregarDados(),
       error: (err) =>
         this.mensagemErro.set('Erro ao alterar status: ' + err.message),
-    });
-  }
-
-  selecionarAtividadeParaDuplas(at: AtividadeAuditoria): void {
-    this.atividadeSelecionada.set(at);
-    this.formDupla = {
-      atividadeId: at.id,
-      alunoRevisor1Id: 0,
-      alunoRevisor2Id: 0,
-    };
-    this.carregarDuplasDaAtividade(at.id);
-
-    this.turmaService.listarAlunos(at.turmaId).subscribe({
-      next: (alunos) => this.alunosDaTurma.set(alunos),
-      error: (err) => console.error('Erro ao carregar alunos da turma:', err),
     });
   }
 
@@ -362,74 +309,6 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
   abrirMelhoriaQualidade(): void {
     const revisaoId = this.revisaoSelecionada();
     if (revisaoId) this.router.navigate(['/melhoria', revisaoId]);
-  }
-
-  carregarDuplasDaAtividade(atividadeId: number): void {
-    this.duplaService.listarPorAtividade(atividadeId).subscribe({
-      next: (duplas) => this.duplasDaAtividade.set(duplas),
-      error: (err) =>
-        console.error('Erro ao carregar duplas da atividade:', err),
-    });
-  }
-
-  cadastrarDupla(): void {
-    const at = this.atividadeSelecionada();
-    if (!at) return;
-
-    if (this.formDupla.alunoRevisor1Id === this.formDupla.alunoRevisor2Id) {
-      this.mensagemErro.set(
-        'Selecione discentes diferentes para formar a dupla de revisores.',
-      );
-      return;
-    }
-
-    this.carregando.set(true);
-    this.limparMensagens();
-    this.formDupla.atividadeId = at.id;
-
-    this.duplaService.cadastrar(this.formDupla).subscribe({
-      next: () => {
-        this.mensagemSucesso.set('Dupla de revisores formada com sucesso.');
-        this.carregando.set(false);
-        this.carregarDuplasDaAtividade(at.id);
-        this.carregarDados();
-      },
-      error: (err) => {
-        this.mensagemErro.set(err.error?.mensagem || 'Falha ao formar dupla.');
-        this.carregando.set(false);
-      },
-    });
-  }
-
-  excluirDupla(d: DuplaRevisores): void {
-    const conf = confirm(
-      `Remover a dupla formada por ${d.alunoRevisor1Nome} e ${d.alunoRevisor2Nome}?`,
-    );
-    if (!conf) return;
-
-    this.duplaService.excluir(d.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set('Dupla removida.');
-        const at = this.atividadeSelecionada();
-        if (at) this.carregarDuplasDaAtividade(at.id);
-        this.carregarDados();
-      },
-      error: (err) =>
-        this.mensagemErro.set('Erro ao remover dupla: ' + err.message),
-    });
-  }
-
-  alternarStatusDupla(id: number): void {
-    this.duplaService.alternarStatus(id).subscribe({
-      next: () => {
-        const at = this.atividadeSelecionada();
-        if (at) this.carregarDuplasDaAtividade(at.id);
-      },
-      error: (err) =>
-        this.mensagemErro.set(
-          'Erro ao alternar status da dupla: ' + err.message,
-        ),
-    });
   }
 
   private formatarDataHora(dataHoraStr: string): string {

@@ -78,7 +78,7 @@ export class TurmasComponent implements OnInit {
   });
 
   readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicaoTurma ? 'Salvar Alterações' : 'Cadastrar Turma';
+    return this.idEdicaoTurma ? 'Editar Turma' : 'Cadastrar Turma';
   });
 
   readonly infoTurmaSelecionada = computed(() => {

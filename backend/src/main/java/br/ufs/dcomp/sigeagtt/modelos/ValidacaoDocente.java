@@ -22,12 +22,9 @@ public class ValidacaoDocente {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @NotNull
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "consenso_dupla_id", unique = true)
-    private ConsensoDupla consensoDupla;
-
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "revisao_individual_id", unique = true)
+    @JoinColumn(name = "revisao_individual_id", nullable = false, unique = true)
     private RevisaoIndividual revisaoIndividual;
 
     @NotNull

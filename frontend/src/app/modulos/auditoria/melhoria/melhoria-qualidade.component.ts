@@ -81,7 +81,7 @@ export class MelhoriaQualidadeComponent implements OnInit {
     this.mensagemSucesso.set(null);
 
     const payload: MelhoriaQualidade = {
-      consensoDuplaId: this.revisaoId,
+      revisaoIndividualId: this.revisaoId,
       ishikawa: this.ishikawa,
       planos5w3h: this.planos5w3h,
       pdca: this.pdca,

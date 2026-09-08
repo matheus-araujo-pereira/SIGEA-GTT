@@ -73,7 +73,7 @@ export const routes: Routes = [
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
       },
 
-      // Auditoria, Consenso, Melhoria e Indicadores
+      // Auditoria, Melhoria e Indicadores
       {
         path: 'auditoria',
         component: AuditoriaComponent,

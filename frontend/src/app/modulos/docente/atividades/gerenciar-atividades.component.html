@@ -1,5 +1,4 @@
 <div>
-  <!-- TOPO -->
   <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
     <div>
       <h1 class="h5 fw-bold text-dark m-0">
@@ -18,38 +17,17 @@
     </button>
   </div>
 
-  <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
-    <div
-      class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between"
-    >
-      <span>{{ mensagemSucesso() }}</span>
-      <button
-        type="button"
-        class="btn btn-sm p-0 text-success"
-        (click)="mensagemSucesso.set(null)"
-      >
-        [X]
-      </button>
+    <div class="p-2 mb-3 bg-white b-1 border-success text-success small">
+      {{ mensagemSucesso() }}
     </div>
   }
-
   @if (mensagemErro()) {
-    <div
-      class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between"
-    >
-      <span>{{ mensagemErro() }}</span>
-      <button
-        type="button"
-        class="btn btn-sm p-0 text-danger"
-        (click)="mensagemErro.set(null)"
-      >
-        [X]
-      </button>
+    <div class="p-2 mb-3 bg-white b-1 border-danger text-danger small">
+      {{ mensagemErro() }}
     </div>
   }
 
-  <!-- FORMULARIO RETANGULAR COMPACTO -->
   @if (exibirFormAtividade) {
     <div class="p-3 mb-3 bg-white b-1">
       <div
@@ -66,7 +44,6 @@
           [FECHAR]
         </button>
       </div>
-
       <form (ngSubmit)="salvarAtividade()">
         <div class="row g-2">
           <div class="col-md-6">
@@ -77,24 +54,21 @@
             >
             <input
               id="tituloAtividade"
-              type="text"
               class="form-control form-control-sm"
               [(ngModel)]="formAtividade.titulo"
               name="titulo"
               required
               maxlength="150"
-              placeholder="Ex.: Auditoria Retrospectiva GTT - Caso 01"
             />
           </div>
-          @if (!turmaIdContextual) {
-            <div class="col-md-3">
-              <label
-                for="turmaVinculada"
-                class="form-label small text-secondary m-0"
-                >Turma Vinculada</label
-              >
+          <div class="col-md-3">
+            <label class="form-label small text-secondary m-0">Turma</label>
+            @if (turmaIdContextual) {
+              <div class="form-control form-control-sm bg-light">
+                Turma selecionada
+              </div>
+            } @else {
               <select
-                id="turmaVinculada"
                 class="form-select form-select-sm"
                 [(ngModel)]="formAtividade.turmaId"
                 name="turmaId"
@@ -106,17 +80,8 @@
                   </option>
                 }
               </select>
-            </div>
-          } @else {
-            <div class="col-md-3">
-              <label class="form-label small text-secondary m-0"
-                >Turma Vinculada</label
-              >
-              <div class="form-control form-control-sm bg-light">
-                Turma selecionada
-              </div>
-            </div>
-          }
+            }
+          </div>
           <div class="col-md-3">
             <label
               for="cenarioClinico"
@@ -135,15 +100,13 @@
               }
             </select>
           </div>
-
           <div class="col-md-4">
             <label for="dataInicio" class="form-label small text-secondary m-0"
-              >Data / Hora de Início</label
-            >
-            <input
+              >Início</label
+            ><input
               id="dataInicio"
               type="datetime-local"
-              class="form-control form-control-sm font-monospace"
+              class="form-control form-control-sm"
               [(ngModel)]="formAtividade.dataInicio"
               name="dataInicio"
               required
@@ -151,47 +114,35 @@
           </div>
           <div class="col-md-4">
             <label for="dataFim" class="form-label small text-secondary m-0"
-              >Data / Hora de Término</label
-            >
-            <input
+              >Término</label
+            ><input
               id="dataFim"
               type="datetime-local"
-              class="form-control form-control-sm font-monospace"
+              class="form-control form-control-sm"
               [(ngModel)]="formAtividade.dataFim"
               name="dataFim"
               required
             />
           </div>
           <div class="col-md-4">
-            <label
-              for="tempoLimiteMinutos"
-              class="form-label small text-secondary m-0"
-              >Tempo Limite por Caso (minutos)</label
-            >
-            <input
-              id="tempoLimiteMinutos"
+            <label for="tempoLimite" class="form-label small text-secondary m-0"
+              >Tempo por caso</label
+            ><input
+              id="tempoLimite"
               type="number"
-              class="form-control form-control-sm font-monospace"
+              class="form-control form-control-sm"
               [(ngModel)]="formAtividade.tempoLimiteMinutos"
-              name="limiteMin"
-              required
+              name="tempoLimite"
               min="5"
               max="60"
+              required
             />
           </div>
         </div>
-
-        <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            (click)="fecharFormAtividade()"
-          >
-            Cancelar
-          </button>
+        <div class="mt-3 pt-2 b-t text-end">
           <button
             type="submit"
-            class="btn btn-primary btn-sm px-3"
+            class="btn btn-primary btn-sm"
             [disabled]="carregando()"
           >
             {{ textoBotaoSubmit() }}
@@ -201,7 +152,6 @@
     </div>
   }
 
-  <!-- PAINEL DE AUDITORIAS INDIVIDUAIS DOS ALUNOS -->
   @if (atividadeSelecionada()) {
     <div class="p-3 mb-3 bg-white b-1 border-primary">
       <div
@@ -218,32 +168,29 @@
           [FECHAR]
         </button>
       </div>
-
       <table class="table table-hover table-sm m-0">
-        <thead class="bg-light text-secondary small font-monospace b-b">
+        <thead class="bg-light text-secondary small">
           <tr>
-            <th class="p-2">ALUNO</th>
-            <th class="p-2">MATRÍCULA</th>
-            <th class="p-2">REVISÕES</th>
-            <th class="p-2 text-end">AÇÃO</th>
+            <th>ALUNO</th>
+            <th>MATRÍCULA</th>
+            <th>REVISÃO</th>
+            <th class="text-end">AÇÃO</th>
           </tr>
         </thead>
-        <tbody class="small font-monospace">
+        <tbody class="small">
           @for (aluno of auditoriasDosAlunos(); track aluno.alunoId) {
             @for (revisao of aluno.revisoes; track revisao.id) {
               <tr>
-                <td class="p-2 font-sans-serif fw-semibold text-dark">
-                  {{ aluno.alunoNome }}
-                </td>
-                <td class="p-2">{{ aluno.alunoMatricula || "-" }}</td>
-                <td class="p-2">
+                <td>{{ aluno.alunoNome }}</td>
+                <td>{{ aluno.alunoMatricula || "-" }}</td>
+                <td>
                   {{ revisao.prontuarioAtendimento }} ·
                   {{ revisao.finalizada ? "FINALIZADA" : "PENDENTE" }}
                 </td>
-                <td class="p-2 text-end">
+                <td class="text-end">
                   <button
                     type="button"
-                    class="btn btn-outline-primary btn-sm py-0 px-2"
+                    class="btn btn-outline-primary btn-sm"
                     (click)="selecionarRevisao(revisao)"
                   >
                     VER AUDITORIA
@@ -252,34 +199,28 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="4" class="p-2 text-muted">
+                <td colspan="4" class="text-muted">
                   Aluno ainda não iniciou auditoria.
                 </td>
               </tr>
             }
           } @empty {
             <tr>
-              <td colspan="4" class="text-center py-3 text-muted">
+              <td colspan="4" class="text-center text-muted">
                 Nenhum aluno matriculado nesta turma.
               </td>
             </tr>
           }
         </tbody>
       </table>
-
       @if (revisaoSelecionada()) {
         <div class="mt-3 p-3 bg-light b-1">
-          <label
-            for="parecerDocente"
-            class="form-label small text-secondary m-0"
-            >Parecer docente</label
-          >
-          <textarea
-            id="parecerDocente"
+          <label for="parecer" class="form-label small">Parecer docente</label
+          ><textarea
+            id="parecer"
             class="form-control form-control-sm"
             rows="3"
             [(ngModel)]="parecerDocente"
-            placeholder="Registre a devolutiva formativa para o aluno..."
           ></textarea>
           <div class="form-check mt-2">
             <input
@@ -287,9 +228,8 @@
               class="form-check-input"
               type="checkbox"
               [(ngModel)]="homologada"
-            />
-            <label for="homologada" class="form-check-label small"
-              >Chancelar auditoria para os indicadores</label
+            /><label for="homologada" class="form-check-label small"
+              >Chancelar auditoria para indicadores</label
             >
           </div>
           <div class="text-end mt-2">
@@ -299,9 +239,8 @@
               (click)="salvarCorrecao()"
               [disabled]="!parecerDocente.trim() || carregando()"
             >
-              SALVAR PARECER
-            </button>
-            <button
+              SALVAR PARECER</button
+            ><button
               type="button"
               class="btn btn-outline-secondary btn-sm ms-2"
               (click)="abrirMelhoriaQualidade()"
@@ -314,204 +253,46 @@
     </div>
   }
 
-  <!-- COMPATIBILIDADE LEGADA: REMOVIDA DA INTERFACE -->
-  @if (false && atividadeSelecionada()) {
-    <div class="p-3 mb-3 bg-white b-1 border-primary">
-      <div
-        class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b"
-      >
-        <span class="fw-bold text-dark small font-monospace"
-          >DUPLAS DE REVISORES: {{ infoAtividadeSelecionada() }}</span
-        >
-        <button
-          type="button"
-          class="btn btn-sm p-0 text-muted"
-          (click)="atividadeSelecionada.set(null)"
-        >
-          [FECHAR]
-        </button>
-      </div>
-
-      <div class="row g-2 mb-3 bg-light p-2 b-1 align-items-end">
-        <div class="col-md-5">
-          <label for="alunoRevisor1" class="form-label small text-secondary m-0"
-            >Revisor Primário 1</label
-          >
-          <select
-            id="alunoRevisor1"
-            class="form-select form-select-sm"
-            [(ngModel)]="formDupla.alunoRevisor1Id"
-          >
-            <option [ngValue]="0" disabled>Selecione o 1º Revisor...</option>
-            @for (a of alunosDaTurma(); track a.id) {
-              <option [value]="a.id">
-                {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || "-" }})
-              </option>
-            }
-          </select>
-        </div>
-        <div class="col-md-5">
-          <label for="alunoRevisor2" class="form-label small text-secondary m-0"
-            >Revisor Primário 2</label
-          >
-          <select
-            id="alunoRevisor2"
-            class="form-select form-select-sm"
-            [(ngModel)]="formDupla.alunoRevisor2Id"
-          >
-            <option [ngValue]="0" disabled>Selecione o 2º Revisor...</option>
-            @for (a of alunosDaTurma(); track a.id) {
-              <option [value]="a.id">
-                {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || "-" }})
-              </option>
-            }
-          </select>
-        </div>
-        <div class="col-md-2">
-          <button
-            type="button"
-            class="btn btn-primary btn-sm w-100"
-            (click)="cadastrarDupla()"
-            [disabled]="
-              !formDupla.alunoRevisor1Id ||
-              !formDupla.alunoRevisor2Id ||
-              carregando()
-            "
-          >
-            FORMAR DUPLA
-          </button>
-        </div>
-      </div>
-
-      <table class="table table-hover table-sm m-0">
-        <thead class="bg-light text-secondary small font-monospace b-b">
-          <tr>
-            <th scope="col" class="p-2">DUPLA</th>
-            <th scope="col" class="p-2">REVISOR PRIMÁRIO 1</th>
-            <th scope="col" class="p-2">REVISOR PRIMÁRIO 2</th>
-            <th scope="col" class="p-2">STATUS</th>
-            <th scope="col" class="p-2 text-end">AÇÕES</th>
-          </tr>
-        </thead>
-        <tbody class="small font-monospace">
-          @for (d of duplasLinhas(); track d.id) {
-            <tr>
-              <td class="p-2 fw-bold text-dark">{{ d.indiceStr }}</td>
-              <td class="p-2 font-sans-serif">
-                <span class="fw-semibold text-dark">{{ d.revisor1Nome }}</span>
-                <span class="text-muted small font-monospace d-block"
-                  >Matrícula: {{ d.revisor1Matricula }}</span
-                >
-              </td>
-              <td class="p-2 font-sans-serif">
-                <span class="fw-semibold text-dark">{{ d.revisor2Nome }}</span>
-                <span class="text-muted small font-monospace d-block"
-                  >Matrícula: {{ d.revisor2Matricula }}</span
-                >
-              </td>
-              <td
-                class="p-2"
-                [class.text-success]="d.ativa"
-                [class.text-muted]="!d.ativa"
-              >
-                {{ d.status }}
-              </td>
-              <td class="p-2 text-end text-nowrap">
-                <button
-                  type="button"
-                  class="btn btn-sm py-0 px-2 me-1"
-                  [class.btn-outline-secondary]="d.ativa"
-                  [class.btn-outline-success]="!d.ativa"
-                  (click)="alternarStatusDupla(d.id)"
-                >
-                  {{ d.ativa ? "INATIVAR" : "ATIVAR" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm py-0 px-2"
-                  (click)="excluirDupla(d.original)"
-                >
-                  REMOVER
-                </button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="text-center py-3 text-muted">
-                Nenhuma dupla de revisão formada para esta atividade.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-
-  <!-- TABELA PRINCIPAL DE ATIVIDADES -->
   <div class="bg-white b-1">
     <table class="table table-hover table-sm m-0">
-      <thead class="bg-light text-secondary small font-monospace b-b">
+      <thead class="bg-light text-secondary small">
         <tr>
-          <th scope="col" class="p-2">ID</th>
-          <th scope="col" class="p-2">TÍTULO DA ATIVIDADE</th>
-          <th scope="col" class="p-2">TURMA</th>
-          <th scope="col" class="p-2">CENÁRIO</th>
-          <th scope="col" class="p-2">PERÍODO</th>
-          <th scope="col" class="p-2">TEMPO LIMITE</th>
-          <th scope="col" class="p-2">AUDITORIAS</th>
-          <th scope="col" class="p-2">STATUS</th>
-          <th scope="col" class="p-2 text-end">AÇÕES</th>
+          <th>TÍTULO</th>
+          <th>TURMA</th>
+          <th>CENÁRIO</th>
+          <th>PERÍODO</th>
+          <th>AUDITORIAS</th>
+          <th>STATUS</th>
+          <th class="text-end">AÇÕES</th>
         </tr>
       </thead>
-      <tbody class="small font-monospace">
+      <tbody class="small">
         @for (at of atividadesLinhas(); track at.id) {
-          <tr [class.bg-light]="at.selecionada">
-            <td class="p-2">{{ at.id }}</td>
-            <td class="p-2 font-sans-serif fw-semibold text-dark">
-              {{ at.titulo }}
-            </td>
-            <td class="p-2 text-dark">{{ at.turmaStr }}</td>
-            <td class="p-2 font-sans-serif text-secondary">
-              {{ at.cenarioTitulo }}
-            </td>
-            <td class="p-2 text-muted">{{ at.periodoStr }}</td>
-            <td class="p-2">{{ at.tempoLimiteStr }}</td>
-            <td class="p-2">
+          <tr>
+            <td>{{ at.titulo }}</td>
+            <td>{{ at.turmaStr }}</td>
+            <td>{{ at.cenarioTitulo }}</td>
+            <td>{{ at.periodoStr }}</td>
+            <td>
               <button
                 type="button"
-                class="btn btn-outline-secondary btn-sm py-0 px-2"
+                class="btn btn-outline-primary btn-sm"
                 (click)="selecionarAtividadeParaAuditorias(at.original)"
               >
                 {{ at.totalAuditoriasStr }}
               </button>
             </td>
-            <td
-              class="p-2"
-              [class.text-muted]="at.finalizada"
-              [class.text-success]="!at.finalizada"
-            >
-              {{ at.status }}
-            </td>
-            <td class="p-2 text-end text-nowrap">
+            <td>{{ at.status }}</td>
+            <td class="text-end">
               <button
                 type="button"
-                class="btn btn-outline-secondary btn-sm py-0 px-2 me-1"
+                class="btn btn-outline-secondary btn-sm me-1"
                 (click)="iniciarEdicaoAtividade(at.original)"
               >
-                EDITAR
-              </button>
-              <button
+                EDITAR ATIVIDADE</button
+              ><button
                 type="button"
-                class="btn btn-sm py-0 px-2 me-1"
-                [class.btn-outline-secondary]="!at.finalizada"
-                [class.btn-outline-success]="at.finalizada"
-                (click)="alternarFinalizada(at.id)"
-              >
-                {{ at.finalizada ? "REABRIR" : "ENCERRAR" }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-danger btn-sm py-0 px-2"
+                class="btn btn-outline-danger btn-sm"
                 (click)="excluirAtividade(at.original)"
               >
                 EXCLUIR
@@ -520,8 +301,8 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="9" class="text-center py-4 text-muted">
-              Nenhuma atividade de auditoria cadastrada.
+            <td colspan="7" class="text-center py-4 text-muted">
+              Nenhuma atividade cadastrada.
             </td>
           </tr>
         }

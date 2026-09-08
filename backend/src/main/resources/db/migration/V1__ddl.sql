@@ -10,11 +10,8 @@ DROP TABLE IF EXISTS ciclos_pdca CASCADE;
 DROP TABLE IF EXISTS planos_acao_5w3h CASCADE;
 DROP TABLE IF EXISTS analises_ishikawa CASCADE;
 DROP TABLE IF EXISTS validacoes_docentes CASCADE;
-DROP TABLE IF EXISTS itens_consenso CASCADE;
-DROP TABLE IF EXISTS consensos_duplas CASCADE;
 DROP TABLE IF EXISTS achados_gatilhos CASCADE;
 DROP TABLE IF EXISTS revisoes_individuais CASCADE;
-DROP TABLE IF EXISTS duplas_revisores CASCADE;
 DROP TABLE IF EXISTS atividades_auditoria CASCADE;
 DROP TABLE IF EXISTS prontuarios_simulados CASCADE;
 DROP TABLE IF EXISTS cenarios_clinicos CASCADE;
@@ -153,28 +150,18 @@ CREATE TABLE atividades_auditoria (
     finalizada BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE duplas_revisores (
-    id BIGSERIAL PRIMARY KEY,
-    atividade_id BIGINT NOT NULL REFERENCES atividades_auditoria(id) ON DELETE CASCADE,
-    aluno_revisor_1_id BIGINT NOT NULL REFERENCES usuarios(id),
-    aluno_revisor_2_id BIGINT NOT NULL REFERENCES usuarios(id),
-    ativa BOOLEAN NOT NULL DEFAULT TRUE,
-    CONSTRAINT uq_dupla_revisores_atividade UNIQUE (atividade_id, aluno_revisor_1_id, aluno_revisor_2_id)
-);
-
 -- -----------------------------------------------------------------------------
--- 6. REVISÃO RETROSPECTIVA, CONSENSO E HOMOLOGAÇÃO DOCENTE
+-- 6. REVISÃO RETROSPECTIVA INDIVIDUAL E HOMOLOGAÇÃO DOCENTE
 -- -----------------------------------------------------------------------------
 CREATE TABLE revisoes_individuais (
     id BIGSERIAL PRIMARY KEY,
-    dupla_id BIGINT REFERENCES duplas_revisores(id) ON DELETE CASCADE,
-    atividade_id BIGINT REFERENCES atividades_auditoria(id),
+    atividade_id BIGINT NOT NULL REFERENCES atividades_auditoria(id) ON DELETE CASCADE,
     aluno_id BIGINT NOT NULL REFERENCES usuarios(id),
     prontuario_id BIGINT NOT NULL REFERENCES prontuarios_simulados(id),
     tempo_gasto_segundos INTEGER NOT NULL DEFAULT 0,
     finalizada BOOLEAN NOT NULL DEFAULT FALSE,
     data_submissao TIMESTAMP,
-    CONSTRAINT uq_revisao_individual UNIQUE (dupla_id, aluno_id, prontuario_id)
+    CONSTRAINT uq_revisao_individual UNIQUE (atividade_id, aluno_id, prontuario_id)
 );
 
 CREATE TABLE achados_gatilhos (
@@ -188,31 +175,9 @@ CREATE TABLE achados_gatilhos (
     gravidade gravidade_ncc_merp_enum
 );
 
-CREATE TABLE consensos_duplas (
-    id BIGSERIAL PRIMARY KEY,
-    dupla_id BIGINT NOT NULL REFERENCES duplas_revisores(id) ON DELETE CASCADE,
-    prontuario_id BIGINT NOT NULL REFERENCES prontuarios_simulados(id),
-    data_consenso TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    submetido BOOLEAN NOT NULL DEFAULT FALSE,
-    CONSTRAINT uq_consenso_dupla UNIQUE (dupla_id, prontuario_id)
-);
-
-CREATE TABLE itens_consenso (
-    id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT NOT NULL REFERENCES consensos_duplas(id) ON DELETE CASCADE,
-    gatilho_id BIGINT NOT NULL REFERENCES gatilhos_gtt(id),
-    categoria_ea_id BIGINT REFERENCES categorias_eventos_adversos(id),
-    confirmou_dano BOOLEAN NOT NULL DEFAULT FALSE,
-    justificativa_dano TEXT,
-    dano_presente_admissao BOOLEAN NOT NULL DEFAULT FALSE,
-    gravidade_consenso gravidade_ncc_merp_enum NOT NULL,
-    gravidade_homologada gravidade_ncc_merp_enum
-);
-
 CREATE TABLE validacoes_docentes (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
-    revisao_individual_id BIGINT UNIQUE REFERENCES revisoes_individuais(id),
+    revisao_individual_id BIGINT NOT NULL UNIQUE REFERENCES revisoes_individuais(id) ON DELETE CASCADE,
     professor_validador_id BIGINT NOT NULL REFERENCES usuarios(id),
     parecer_formativo TEXT NOT NULL,
     homologado BOOLEAN NOT NULL DEFAULT FALSE,
@@ -224,8 +189,7 @@ CREATE TABLE validacoes_docentes (
 -- -----------------------------------------------------------------------------
 CREATE TABLE analises_ishikawa (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
-    revisao_individual_id BIGINT UNIQUE REFERENCES revisoes_individuais(id),
+    revisao_individual_id BIGINT NOT NULL UNIQUE REFERENCES revisoes_individuais(id) ON DELETE CASCADE,
     efeito_principal TEXT NOT NULL,
     metodo TEXT,
     mao_de_obra TEXT,
@@ -237,8 +201,7 @@ CREATE TABLE analises_ishikawa (
 
 CREATE TABLE planos_acao_5w3h (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT REFERENCES consensos_duplas(id) ON DELETE CASCADE,
-    revisao_individual_id BIGINT REFERENCES revisoes_individuais(id),
+    revisao_individual_id BIGINT NOT NULL REFERENCES revisoes_individuais(id) ON DELETE CASCADE,
     o_que TEXT NOT NULL,
     por_que TEXT NOT NULL,
     quem VARCHAR(100) NOT NULL,
@@ -251,8 +214,7 @@ CREATE TABLE planos_acao_5w3h (
 
 CREATE TABLE ciclos_pdca (
     id BIGSERIAL PRIMARY KEY,
-    consenso_dupla_id BIGINT UNIQUE REFERENCES consensos_duplas(id) ON DELETE CASCADE,
-    revisao_individual_id BIGINT UNIQUE REFERENCES revisoes_individuais(id),
+    revisao_individual_id BIGINT NOT NULL UNIQUE REFERENCES revisoes_individuais(id) ON DELETE CASCADE,
     planejar TEXT NOT NULL,
     fazer TEXT NOT NULL,
     checar TEXT NOT NULL,
@@ -270,34 +232,12 @@ CREATE INDEX idx_prontuarios_cenario ON prontuarios_simulados(cenario_id);
 CREATE INDEX idx_prontuarios_unidade ON prontuarios_simulados(unidade_hospitalar_id);
 CREATE INDEX idx_atividades_turma ON atividades_auditoria(turma_id);
 CREATE INDEX idx_atividades_cenario ON atividades_auditoria(cenario_id);
-CREATE INDEX idx_duplas_atividade ON duplas_revisores(atividade_id);
-CREATE INDEX idx_duplas_aluno1 ON duplas_revisores(aluno_revisor_1_id);
-CREATE INDEX idx_duplas_aluno2 ON duplas_revisores(aluno_revisor_1_id);
-CREATE INDEX idx_revisoes_dupla ON revisoes_individuais(dupla_id);
 CREATE INDEX idx_revisoes_atividade ON revisoes_individuais(atividade_id);
-CREATE UNIQUE INDEX uq_revisao_individual_direta
-    ON revisoes_individuais(atividade_id, aluno_id, prontuario_id)
-    WHERE atividade_id IS NOT NULL;
 CREATE INDEX idx_revisoes_aluno ON revisoes_individuais(aluno_id);
 CREATE INDEX idx_revisoes_prontuario ON revisoes_individuais(prontuario_id);
 CREATE INDEX idx_achados_revisao ON achados_gatilhos(revisao_individual_id);
 CREATE INDEX idx_achados_gatilho ON achados_gatilhos(gatilho_id);
 CREATE INDEX idx_achados_categoria ON achados_gatilhos(categoria_ea_id);
-CREATE INDEX idx_consensos_dupla ON consensos_duplas(dupla_id);
-CREATE INDEX idx_consensos_prontuario ON consensos_duplas(prontuario_id);
-CREATE INDEX idx_itens_consenso ON itens_consenso(consenso_dupla_id);
-CREATE INDEX idx_itens_gatilho ON itens_consenso(gatilho_id);
-CREATE INDEX idx_itens_categoria ON itens_consenso(categoria_ea_id);
 CREATE INDEX idx_validacoes_professor ON validacoes_docentes(professor_validador_id);
-CREATE UNIQUE INDEX uq_validacao_revisao_individual
-    ON validacoes_docentes(revisao_individual_id)
-    WHERE revisao_individual_id IS NOT NULL;
-CREATE UNIQUE INDEX uq_ishikawa_revisao_individual
-    ON analises_ishikawa(revisao_individual_id)
-    WHERE revisao_individual_id IS NOT NULL;
 CREATE INDEX idx_planos_5w3h_revisao_individual
     ON planos_acao_5w3h(revisao_individual_id);
-CREATE UNIQUE INDEX uq_pdca_revisao_individual
-    ON ciclos_pdca(revisao_individual_id)
-    WHERE revisao_individual_id IS NOT NULL;
-CREATE INDEX idx_planos_5w3h_consenso ON planos_acao_5w3h(consenso_dupla_id);

@@ -317,19 +317,6 @@
       placeholder="Filtrar por atendimento, diagnóstico ou setor..."
     />
 
-    @if (!cenarioContextual()) {
-      <select
-        class="form-select form-select-sm w-auto"
-        [ngModel]="filtroCenarioId()"
-        (ngModelChange)="filtroCenarioId.set($event)"
-      >
-        <option value="TODOS">Todos os Cenários</option>
-        @for (c of cenarios(); track c.id) {
-          <option [value]="c.id">{{ c.titulo }}</option>
-        }
-      </select>
-    }
-
     @if (termoBusca()) {
       <button
         type="button"

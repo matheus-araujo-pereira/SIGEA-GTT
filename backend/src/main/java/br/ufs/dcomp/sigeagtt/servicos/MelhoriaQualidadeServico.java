@@ -1,8 +1,18 @@
 package br.ufs.dcomp.sigeagtt.servicos;
 
-import br.ufs.dcomp.sigeagtt.modelos.*;
-import br.ufs.dcomp.sigeagtt.repositorios.*;
-import br.ufs.dcomp.sigeagtt.transferencia.*;
+import br.ufs.dcomp.sigeagtt.modelos.AnaliseIshikawa;
+import br.ufs.dcomp.sigeagtt.modelos.CicloPdca;
+import br.ufs.dcomp.sigeagtt.modelos.PlanoAcao5w3h;
+import br.ufs.dcomp.sigeagtt.modelos.RevisaoIndividual;
+import br.ufs.dcomp.sigeagtt.repositorios.AnaliseIshikawaRepositorio;
+import br.ufs.dcomp.sigeagtt.repositorios.CicloPdcaRepositorio;
+import br.ufs.dcomp.sigeagtt.repositorios.PlanoAcao5w3hRepositorio;
+import br.ufs.dcomp.sigeagtt.repositorios.RevisaoIndividualRepositorio;
+import br.ufs.dcomp.sigeagtt.transferencia.IshikawaDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.MelhoriaQualidadeRespostaDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.PdcaDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.Plano5w3hDTO;
+import br.ufs.dcomp.sigeagtt.transferencia.SalvarMelhoriaQualidadeDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,19 +21,15 @@ import java.util.NoSuchElementException;
 
 @Service
 public class MelhoriaQualidadeServico {
-
-    private final ConsensoDuplaRepositorio consensoRepositorio;
     private final AnaliseIshikawaRepositorio ishikawaRepositorio;
     private final PlanoAcao5w3hRepositorio planoRepositorio;
     private final CicloPdcaRepositorio pdcaRepositorio;
     private final RevisaoIndividualRepositorio revisaoRepositorio;
 
-    public MelhoriaQualidadeServico(ConsensoDuplaRepositorio consensoRepositorio,
-            AnaliseIshikawaRepositorio ishikawaRepositorio,
+    public MelhoriaQualidadeServico(AnaliseIshikawaRepositorio ishikawaRepositorio,
             PlanoAcao5w3hRepositorio planoRepositorio,
             CicloPdcaRepositorio pdcaRepositorio,
             RevisaoIndividualRepositorio revisaoRepositorio) {
-        this.consensoRepositorio = consensoRepositorio;
         this.ishikawaRepositorio = ishikawaRepositorio;
         this.planoRepositorio = planoRepositorio;
         this.pdcaRepositorio = pdcaRepositorio;
@@ -31,9 +37,8 @@ public class MelhoriaQualidadeServico {
     }
 
     @Transactional(readOnly = true)
-    public MelhoriaQualidadeRespostaDTO buscarPorRevisao(Long revisaoId) {
-        RevisaoIndividual revisao = revisaoRepositorio.findById(revisaoId)
-                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + revisaoId));
+    public MelhoriaQualidadeRespostaDTO buscar(Long revisaoId) {
+        obterRevisao(revisaoId);
         IshikawaDTO ishikawa = ishikawaRepositorio.findByRevisaoIndividualId(revisaoId)
                 .map(i -> new IshikawaDTO(i.getId(), i.getEfeitoPrincipal(), i.getMetodo(), i.getMaoDeObra(),
                         i.getMaterial(), i.getMedida(), i.getMeioAmbiente(), i.getMaquina()))
@@ -45,26 +50,26 @@ public class MelhoriaQualidadeServico {
         PdcaDTO pdca = pdcaRepositorio.findByRevisaoIndividualId(revisaoId)
                 .map(p -> new PdcaDTO(p.getId(), p.getPlanejar(), p.getFazer(), p.getChecar(), p.getAgir()))
                 .orElse(null);
-        return new MelhoriaQualidadeRespostaDTO(revisao.getId(), ishikawa, planos, pdca);
+        return new MelhoriaQualidadeRespostaDTO(revisaoId, ishikawa, planos, pdca);
     }
 
     @Transactional
-    public MelhoriaQualidadeRespostaDTO salvarPorRevisao(Long revisaoId, SalvarMelhoriaQualidadeDTO dto) {
-        RevisaoIndividual revisao = revisaoRepositorio.findById(revisaoId)
-                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + revisaoId));
+    public MelhoriaQualidadeRespostaDTO salvar(Long revisaoId, SalvarMelhoriaQualidadeDTO dto) {
+        RevisaoIndividual revisao = obterRevisao(revisaoId);
         if (dto.ishikawa() != null) {
-            AnaliseIshikawa ish = ishikawaRepositorio.findByRevisaoIndividualId(revisaoId)
+            AnaliseIshikawa ishikawa = ishikawaRepositorio.findByRevisaoIndividualId(revisaoId)
                     .orElseGet(AnaliseIshikawa::new);
-            ish.setRevisaoIndividual(revisao);
-            ish.setEfeitoPrincipal(dto.ishikawa().efeitoPrincipal());
-            ish.setMetodo(dto.ishikawa().metodo());
-            ish.setMaoDeObra(dto.ishikawa().maoDeObra());
-            ish.setMaterial(dto.ishikawa().material());
-            ish.setMedida(dto.ishikawa().medida());
-            ish.setMeioAmbiente(dto.ishikawa().meioAmbiente());
-            ish.setMaquina(dto.ishikawa().maquina());
-            ishikawaRepositorio.save(ish);
+            ishikawa.setRevisaoIndividual(revisao);
+            ishikawa.setEfeitoPrincipal(dto.ishikawa().efeitoPrincipal());
+            ishikawa.setMetodo(dto.ishikawa().metodo());
+            ishikawa.setMaoDeObra(dto.ishikawa().maoDeObra());
+            ishikawa.setMaterial(dto.ishikawa().material());
+            ishikawa.setMedida(dto.ishikawa().medida());
+            ishikawa.setMeioAmbiente(dto.ishikawa().meioAmbiente());
+            ishikawa.setMaquina(dto.ishikawa().maquina());
+            ishikawaRepositorio.save(ishikawa);
         }
+
         planoRepositorio.deleteByRevisaoIndividualId(revisaoId);
         if (dto.planos5w3h() != null) {
             for (Plano5w3hDTO item : dto.planos5w3h()) {
@@ -81,8 +86,10 @@ public class MelhoriaQualidadeServico {
                 planoRepositorio.save(plano);
             }
         }
+
         if (dto.pdca() != null) {
-            CicloPdca pdca = pdcaRepositorio.findByRevisaoIndividualId(revisaoId).orElseGet(CicloPdca::new);
+            CicloPdca pdca = pdcaRepositorio.findByRevisaoIndividualId(revisaoId)
+                    .orElseGet(CicloPdca::new);
             pdca.setRevisaoIndividual(revisao);
             pdca.setPlanejar(dto.pdca().planejar());
             pdca.setFazer(dto.pdca().fazer());
@@ -90,87 +97,11 @@ public class MelhoriaQualidadeServico {
             pdca.setAgir(dto.pdca().agir());
             pdcaRepositorio.save(pdca);
         }
-        return buscarPorRevisao(revisaoId);
+        return buscar(revisaoId);
     }
 
-    @Transactional(readOnly = true)
-    public MelhoriaQualidadeRespostaDTO buscarPorConsenso(Long consensoDuplaId) {
-        ConsensoDupla consenso = consensoRepositorio.findById(consensoDuplaId)
-                .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoDuplaId));
-
-        IshikawaDTO ishikawaDTO = ishikawaRepositorio.findByConsensoDuplaId(consenso.getId())
-                .map(i -> new IshikawaDTO(i.getId(), i.getEfeitoPrincipal(), i.getMetodo(), i.getMaoDeObra(),
-                        i.getMaterial(), i.getMedida(), i.getMeioAmbiente(), i.getMaquina()))
-                .orElse(null);
-
-        List<Plano5w3hDTO> planosDTO = planoRepositorio.findByConsensoDuplaId(consenso.getId()).stream()
-                .map(p -> new Plano5w3hDTO(p.getId(), p.getOQue(), p.getPorQue(), p.getQuem(), p.getOnde(),
-                        p.getQuando(), p.getComo(), p.getQuantoCusta(), p.getComoMedir()))
-                .toList();
-
-        PdcaDTO pdcaDTO = pdcaRepositorio.findByConsensoDuplaId(consenso.getId())
-                .map(pd -> new PdcaDTO(pd.getId(), pd.getPlanejar(), pd.getFazer(), pd.getChecar(), pd.getAgir()))
-                .orElse(null);
-
-        return new MelhoriaQualidadeRespostaDTO(consenso.getId(), ishikawaDTO, planosDTO, pdcaDTO);
-    }
-
-    @Transactional
-    public MelhoriaQualidadeRespostaDTO salvar(Long consensoDuplaId, SalvarMelhoriaQualidadeDTO dto) {
-        ConsensoDupla consenso = consensoRepositorio.findById(consensoDuplaId)
-                .orElseThrow(() -> new NoSuchElementException("Consenso não encontrado: " + consensoDuplaId));
-
-        // Ishikawa
-        if (dto.ishikawa() != null) {
-            AnaliseIshikawa ish = ishikawaRepositorio.findByConsensoDuplaId(consenso.getId())
-                    .orElseGet(() -> {
-                        AnaliseIshikawa i = new AnaliseIshikawa();
-                        i.setConsensoDupla(consenso);
-                        return i;
-                    });
-            ish.setEfeitoPrincipal(dto.ishikawa().efeitoPrincipal());
-            ish.setMetodo(dto.ishikawa().metodo());
-            ish.setMaoDeObra(dto.ishikawa().maoDeObra());
-            ish.setMaterial(dto.ishikawa().material());
-            ish.setMedida(dto.ishikawa().medida());
-            ish.setMeioAmbiente(dto.ishikawa().meioAmbiente());
-            ish.setMaquina(dto.ishikawa().maquina());
-            ishikawaRepositorio.save(ish);
-        }
-
-        // 5W3H
-        planoRepositorio.deleteByConsensoDuplaId(consenso.getId());
-        if (dto.planos5w3h() != null && !dto.planos5w3h().isEmpty()) {
-            for (Plano5w3hDTO p : dto.planos5w3h()) {
-                PlanoAcao5w3h plano = new PlanoAcao5w3h();
-                plano.setConsensoDupla(consenso);
-                plano.setOQue(p.oQue());
-                plano.setPorQue(p.porQue());
-                plano.setQuem(p.quem());
-                plano.setOnde(p.onde());
-                plano.setQuando(p.quando());
-                plano.setComo(p.como());
-                plano.setQuantoCusta(p.quantoCusta());
-                plano.setComoMedir(p.comoMedir());
-                planoRepositorio.save(plano);
-            }
-        }
-
-        // PDCA
-        if (dto.pdca() != null) {
-            CicloPdca pd = pdcaRepositorio.findByConsensoDuplaId(consenso.getId())
-                    .orElseGet(() -> {
-                        CicloPdca c = new CicloPdca();
-                        c.setConsensoDupla(consenso);
-                        return c;
-                    });
-            pd.setPlanejar(dto.pdca().planejar());
-            pd.setFazer(dto.pdca().fazer());
-            pd.setChecar(dto.pdca().checar());
-            pd.setAgir(dto.pdca().agir());
-            pdcaRepositorio.save(pd);
-        }
-
-        return buscarPorConsenso(consenso.getId());
+    private RevisaoIndividual obterRevisao(Long revisaoId) {
+        return revisaoRepositorio.findById(revisaoId)
+                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + revisaoId));
     }
 }
