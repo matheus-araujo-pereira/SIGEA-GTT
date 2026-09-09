@@ -71,7 +71,13 @@ export interface BarraCategoria {
           background: #ffffff !important;
           font-size: 8.5pt !important;
         }
-        .btn, select, input, .no-print, header, nav, aside {
+        .btn,
+        select,
+        input,
+        .no-print,
+        header,
+        nav,
+        aside {
           display: none !important;
         }
         #relatorio-dashboard {
@@ -107,7 +113,9 @@ export class IndicadoresComponent implements OnInit {
 
     if (f.turmaId) {
       const t = this.turmas().find((item) => item.id === f.turmaId);
-      partes.push(`Turma: ${t ? `${t.codigoDisciplina} (${t.periodoLetivo})` : f.turmaId}`);
+      partes.push(
+        `Turma: ${t ? `${t.codigoDisciplina} (${t.periodoLetivo})` : f.turmaId}`,
+      );
     } else {
       partes.push('Turmas: Todas');
     }
@@ -405,11 +413,9 @@ export class IndicadoresComponent implements OnInit {
     this.cenarioService
       .listar()
       .subscribe({ next: (dados) => this.cenarios.set(dados) });
-    this.unidadeService
-      .listar()
-      .subscribe({
-        next: (dados) => this.unidades.set(dados.filter((u) => u.ativa)),
-      });
+    this.unidadeService.listar().subscribe({
+      next: (dados) => this.unidades.set(dados.filter((u) => u.ativa)),
+    });
     this.carregarIndicadores();
   }
 

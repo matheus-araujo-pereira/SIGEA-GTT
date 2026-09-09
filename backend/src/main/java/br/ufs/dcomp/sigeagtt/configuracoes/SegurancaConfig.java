@@ -59,7 +59,8 @@ public class SegurancaConfig {
                 .securityContext(context -> context.securityContextRepository(securityContextRepository))
                 .addFilterBefore(filtroAutenticacaoToken, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/autenticacao/**", "/actuator/health", "/api/administracao/**").permitAll()
+                        .requestMatchers("/api/autenticacao/**", "/actuator/health", "/api/administracao/**")
+                        .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
