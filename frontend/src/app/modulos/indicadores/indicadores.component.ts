@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
   IndicadoresService,
   IndicadoresIHI,
@@ -58,6 +60,32 @@ export interface BarraCategoria {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './indicadores.component.html',
+  styles: [
+    `
+      @media print {
+        @page {
+          size: A4 landscape;
+          margin: 6mm;
+        }
+        body {
+          background: #ffffff !important;
+          font-size: 8.5pt !important;
+        }
+        .btn, select, input, .no-print, header, nav, aside {
+          display: none !important;
+        }
+        #relatorio-dashboard {
+          border: none !important;
+          background: #ffffff !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+      }
+    `,
+  ],
 })
 export class IndicadoresComponent implements OnInit {
   private readonly indicadoresService = inject(IndicadoresService);
@@ -71,6 +99,56 @@ export class IndicadoresComponent implements OnInit {
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly filtros = signal<FiltrosIndicadores>({});
   readonly carregando = signal<boolean>(false);
+  readonly exportandoPdf = signal<boolean>(false);
+
+  readonly textoFiltrosAtivos = computed(() => {
+    const f = this.filtros();
+    const partes: string[] = [];
+
+    if (f.turmaId) {
+      const t = this.turmas().find((item) => item.id === f.turmaId);
+      partes.push(`Turma: ${t ? `${t.codigoDisciplina} (${t.periodoLetivo})` : f.turmaId}`);
+    } else {
+      partes.push('Turmas: Todas');
+    }
+
+    if (f.periodoLetivo) {
+      partes.push(`Período: ${f.periodoLetivo}`);
+    }
+
+    if (f.cenarioId) {
+      const c = this.cenarios().find((item) => item.id === f.cenarioId);
+      partes.push(`Cenário: ${c ? c.titulo : f.cenarioId}`);
+    } else {
+      partes.push('Cenários: Todos');
+    }
+
+    if (f.unidadeId) {
+      const u = this.unidades().find((item) => item.id === f.unidadeId);
+      partes.push(`Unidade: ${u ? u.sigla : f.unidadeId}`);
+    } else {
+      partes.push('Unidades: Todas');
+    }
+
+    if (f.dataInicio || f.dataFim) {
+      const dtIni = f.dataInicio ? f.dataInicio : 'Início';
+      const dtFim = f.dataFim ? f.dataFim : 'Atual';
+      partes.push(`Período: ${dtIni} a ${dtFim}`);
+    }
+
+    return partes.join(' | ');
+  });
+
+  readonly dataHoraEmissao = computed(() => {
+    return new Date().toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  });
 
   readonly taxaAtual = computed(
     () => this.indicadores()?.taxaDanosPorMilDias || 0,
@@ -367,5 +445,58 @@ export class IndicadoresComponent implements OnInit {
           : undefined,
     }));
     this.carregarIndicadores();
+  }
+
+  async exportarPDF(): Promise<void> {
+    const elemento = document.getElementById('relatorio-dashboard');
+    if (!elemento) return;
+
+    this.exportandoPdf.set(true);
+
+    try {
+      // Breve pausa para estabilização de renderização
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const canvas = await html2canvas(elemento, {
+        scale: 2, // Resolução Retina 2x para máxima nitidez de texto e vetores
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#f8f9fa',
+        windowWidth: 1240,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfLargura = pdf.internal.pageSize.getWidth(); // 297 mm
+      const pdfAltura = pdf.internal.pageSize.getHeight(); // 210 mm
+      const margem = 6; // Margem simétrica de 6 mm
+
+      const larguraConteudo = pdfLargura - margem * 2;
+      const alturaConteudo = pdfAltura - margem * 2;
+
+      // Enquadra perfeitamente em EXATAMENTE 1 página única
+      pdf.addImage(
+        imgData,
+        'PNG',
+        margem,
+        margem,
+        larguraConteudo,
+        alturaConteudo,
+        undefined,
+        'FAST',
+      );
+
+      const dataHoje = new Date().toISOString().slice(0, 10);
+      pdf.save(`relatorio-indicadores-ihi-gtt-${dataHoje}.pdf`);
+    } catch (err) {
+      console.error('Erro ao exportar PDF do dashboard:', err);
+    } finally {
+      this.exportandoPdf.set(false);
+    }
   }
 }

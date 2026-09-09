@@ -18,11 +18,12 @@ INSERT INTO usuarios (
     'matheusaraujopereira@academico.ufs.br',
     NULL,
     'ADMINISTRADOR',
-    '$2a$10$wK1F5n8g1d3a5t2E7e8eYeO3V3eKz0c5L7lQ9t2bX1mZ0k.Sigea.',
+    '$2a$10$QrlMhf/Wah7PtuldYOCIOevxYBCx1f0pxoKLSJe5fmyiqzIotQ/M6',
     FALSE,
     TRUE
 ) ON CONFLICT (email) DO UPDATE
 SET nome_completo = EXCLUDED.nome_completo,
+    senha = EXCLUDED.senha,
     perfil = EXCLUDED.perfil,
     ativo = TRUE;
 

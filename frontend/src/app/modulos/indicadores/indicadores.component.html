@@ -68,14 +68,47 @@
       />
       <button
         type="button"
-        class="btn btn-outline-secondary btn-sm"
+        class="btn btn-outline-secondary btn-sm font-monospace"
         (click)="carregarIndicadores()"
         [disabled]="carregando()"
       >
         ATUALIZAR
       </button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm font-monospace d-inline-flex align-items-center gap-1"
+        (click)="exportarPDF()"
+        [disabled]="exportandoPdf() || carregando()"
+      >
+        @if (exportandoPdf()) {
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span>GERANDO PDF...</span>
+        } @else {
+          <i class="bi bi-file-earmark-pdf"></i>
+          <span>EXPORTAR PDF</span>
+        }
+      </button>
     </div>
   </div>
+
+  <!-- CONTAINER DE CAPTURA DO RELATÓRIO (DIMENSIONADO PARA 1 PÁGINA A4) -->
+  <div id="relatorio-dashboard" class="p-3 bg-light b-1 mb-3">
+    <!-- CABEÇALHO INSTITUCIONAL EXECUTIVO (HU-UFS / EBSERH / SIGEA-GTT) -->
+    <div class="p-3 mb-3 bg-white b-1 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <div class="bg-primary text-white px-2 py-1 fw-bold font-monospace small" style="letter-spacing: 1px;">
+          HU-UFS / EBSERH
+        </div>
+        <div>
+          <div class="fw-bold text-dark h6 m-0">SIGEA-GTT — Relatório Executivo de Indicadores Epidemiológicos</div>
+          <div class="text-secondary small font-monospace">Auditoria Retrospectiva Global Trigger Tool (IHI) • Hospital Universitário da UFS</div>
+        </div>
+      </div>
+      <div class="text-end font-monospace fs-xxs text-muted">
+        <div><strong>EMISSÃO:</strong> {{ dataHoraEmissao() }}</div>
+        <div class="text-primary mt-1"><strong>FILTROS:</strong> {{ textoFiltrosAtivos() }}</div>
+      </div>
+    </div>
 
   <!-- MÉTRICAS PRIMÁRIAS -->
   <div class="row g-2 mb-3">
@@ -501,4 +534,12 @@
       </tbody>
     </table>
   </div>
+
+  <!-- RODAPÉ INSTITUCIONAL DO RELATÓRIO (GARANTIA DE 1 PÁGINA) -->
+  <div class="d-flex justify-content-between align-items-center text-muted fs-xxs font-monospace px-3 py-2 mt-2 bg-white b-1">
+    <span>SIGEA-GTT v2.0 • Plataforma de Auditoria Clínica e Gestão de Riscos Assistenciais</span>
+    <span>Metodologia: IHI Global Trigger Tool (White Paper 2ª Edição)</span>
+    <span class="fw-bold text-dark">Documento de Página Única</span>
+  </div>
+</div>
 </div>

@@ -60,7 +60,7 @@ DECLARE
   v_grav2      TEXT;
 
   -- Senha padrao para todos: Sigea@123
-  senha_padrao TEXT := '$2a$10$wK1F5n8g1d3a5t2E7e8eYeO3V3eKz0c5L7lQ9t2bX1mZ0k.Sigea.';
+  senha_padrao TEXT := '$2a$10$QrlMhf/Wah7PtuldYOCIOevxYBCx1f0pxoKLSJe5fmyiqzIotQ/M6';
 
   -- Gatilhos GTT carregados por codigo
   gat_c1  BIGINT; gat_c3  BIGINT; gat_c4  BIGINT; gat_c6  BIGINT; gat_c7  BIGINT; gat_c8  BIGINT;
@@ -210,27 +210,27 @@ BEGIN
   -- =========================================================================
   INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
   VALUES ('Dr. Ricardo Alves Mendes', 'ricardomendes@hu.ufs.br', '202310001', 'PROFESSOR', senha_padrao, FALSE, TRUE)
-  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO prof1;
+  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO prof1;
   IF prof1 IS NULL THEN SELECT id INTO prof1 FROM usuarios WHERE email = 'ricardomendes@hu.ufs.br'; END IF;
 
   INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
   VALUES ('Dra. Ana Paula Ferreira', 'anaferreira@hu.ufs.br', '202310002', 'PROFESSOR', senha_padrao, FALSE, TRUE)
-  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO prof2;
+  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO prof2;
   IF prof2 IS NULL THEN SELECT id INTO prof2 FROM usuarios WHERE email = 'anaferreira@hu.ufs.br'; END IF;
 
   INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
   VALUES ('Dr. Carlos Eduardo Lima', 'carloslima@hu.ufs.br', '202310003', 'PROFESSOR', senha_padrao, FALSE, TRUE)
-  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO prof3;
+  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO prof3;
   IF prof3 IS NULL THEN SELECT id INTO prof3 FROM usuarios WHERE email = 'carloslima@hu.ufs.br'; END IF;
 
   INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
   VALUES ('Dra. Fernanda Cristina Costa', 'fernandacosta@hu.ufs.br', '202310004', 'PROFESSOR', senha_padrao, FALSE, TRUE)
-  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO prof4;
+  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO prof4;
   IF prof4 IS NULL THEN SELECT id INTO prof4 FROM usuarios WHERE email = 'fernandacosta@hu.ufs.br'; END IF;
 
   INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
   VALUES ('Dra. Patricia Vieira Alves', 'patriciaalves@hu.ufs.br', '202310005', 'PROFESSOR', senha_padrao, FALSE, TRUE)
-  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO prof5;
+  ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO prof5;
   IF prof5 IS NULL THEN SELECT id INTO prof5 FROM usuarios WHERE email = 'patriciaalves@hu.ufs.br'; END IF;
 
   -- =========================================================================
@@ -257,7 +257,7 @@ BEGIN
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t1[i], lower(replace(nomes_t1[i],' ','.'))||'.t1@academico.ufs.br', lpad((2024000+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO aluno_id;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
     IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t1[i],' ','.'))||'.t1@academico.ufs.br'; END IF;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma1, aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
@@ -265,7 +265,7 @@ BEGIN
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t2[i], lower(replace(nomes_t2[i],' ','.'))||'.t2@academico.ufs.br', lpad((2024100+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO aluno_id;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
     IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t2[i],' ','.'))||'.t2@academico.ufs.br'; END IF;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma2, aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
@@ -273,7 +273,7 @@ BEGIN
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t3[i], lower(replace(nomes_t3[i],' ','.'))||'.t3@academico.ufs.br', lpad((2024200+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO aluno_id;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
     IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t3[i],' ','.'))||'.t3@academico.ufs.br'; END IF;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma3, aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
@@ -281,7 +281,7 @@ BEGIN
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t4[i], lower(replace(nomes_t4[i],' ','.'))||'.t4@academico.ufs.br', lpad((2024300+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO aluno_id;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
     IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t4[i],' ','.'))||'.t4@academico.ufs.br'; END IF;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma4, aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
@@ -289,7 +289,7 @@ BEGIN
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t5[i], lower(replace(nomes_t5[i],' ','.'))||'.t5@academico.ufs.br', lpad((2024400+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo RETURNING id INTO aluno_id;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
     IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t5[i],' ','.'))||'.t5@academico.ufs.br'; END IF;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma5, aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
