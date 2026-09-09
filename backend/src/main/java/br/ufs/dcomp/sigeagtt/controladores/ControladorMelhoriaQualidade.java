@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/melhoria-qualidade")
+@RequestMapping("/api/melhoria-qualidade/revisao/{revisaoId}")
 public class ControladorMelhoriaQualidade {
 
     private final MelhoriaQualidadeServico servico;
@@ -17,12 +17,12 @@ public class ControladorMelhoriaQualidade {
         this.servico = servico;
     }
 
-    @GetMapping("/revisao/{revisaoId}")
+    @GetMapping
     public ResponseEntity<MelhoriaQualidadeRespostaDTO> buscarPorRevisao(@PathVariable Long revisaoId) {
         return ResponseEntity.ok(servico.buscar(revisaoId));
     }
 
-    @RequestMapping(value = "/revisao/{revisaoId}", method = { RequestMethod.PUT, RequestMethod.POST })
+    @RequestMapping(method = { RequestMethod.PUT, RequestMethod.POST })
     public ResponseEntity<MelhoriaQualidadeRespostaDTO> salvarPorRevisao(
             @PathVariable Long revisaoId,
             @Valid @RequestBody SalvarMelhoriaQualidadeDTO dto) {
