@@ -25,9 +25,9 @@ public class GatilhoGttServico {
     @Transactional(readOnly = true)
     public List<GatilhoGtt> listar(Long moduloId) {
         if (moduloId != null) {
-            return gatilhoRepositorio.findByModuloId(moduloId);
+            return gatilhoRepositorio.findAllByModuloId(moduloId);
         }
-        return gatilhoRepositorio.findByAtivoTrue();
+        return gatilhoRepositorio.findAllOrderByCodigo();
     }
 
     @Transactional(readOnly = true)
