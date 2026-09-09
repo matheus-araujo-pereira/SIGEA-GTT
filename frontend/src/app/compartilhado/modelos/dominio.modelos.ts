@@ -15,6 +15,7 @@ export interface Usuario {
   perfil: PerfilUsuario;
   primeiroAcesso?: boolean;
   ativo: boolean;
+  token?: string;
   criadoEm?: string;
 }
 

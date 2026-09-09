@@ -4,6 +4,11 @@
       "name": "app.frontend-origin",
       "type": "java.lang.String",
       "description": "Origem permitida do frontend para CORS."
+    },
+    {
+      "name": "app.jwt-secret",
+      "type": "java.lang.String",
+      "description": "Chave secreta para assinatura dos tokens JWT da aplicação."
     }
   ]
 }

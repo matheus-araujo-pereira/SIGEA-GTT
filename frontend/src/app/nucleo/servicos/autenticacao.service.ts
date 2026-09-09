@@ -17,7 +17,7 @@ export interface PrimeiroAcessoPayload {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AutenticacaoService {
   private readonly http = inject(HttpClient);
@@ -27,26 +27,31 @@ export class AutenticacaoService {
   readonly usuarioLogado = signal<Usuario | null>(this.recuperarSessao());
 
   entrar(credenciais: CredenciaisLogin): Observable<Usuario> {
-    return this.http.post<Usuario>('/api/autenticacao/entrar', credenciais).pipe(
-      tap((usuario) => this.salvarSessao(usuario))
-    );
+    return this.http
+      .post<Usuario>('/api/autenticacao/entrar', credenciais)
+      .pipe(tap((usuario) => this.salvarSessao(usuario)));
   }
 
   redefinirPrimeiroAcesso(payload: PrimeiroAcessoPayload): Observable<Usuario> {
-    return this.http.post<Usuario>('/api/autenticacao/primeiro-acesso', payload).pipe(
-      tap((usuario) => this.salvarSessao(usuario))
-    );
+    return this.http
+      .post<Usuario>('/api/autenticacao/primeiro-acesso', payload)
+      .pipe(tap((usuario) => this.salvarSessao(usuario)));
   }
 
   sair(): void {
     this.http.post('/api/autenticacao/sair', {}).subscribe({
       complete: () => this.limparSessao(),
-      error: () => this.limparSessao()
+      error: () => this.limparSessao(),
     });
   }
 
   estaAutenticado(): boolean {
-    return this.usuarioLogado() !== null;
+    const usuario = this.usuarioLogado();
+    return usuario !== null && Boolean(usuario.token);
+  }
+
+  obterToken(): string | null {
+    return this.usuarioLogado()?.token || null;
   }
 
   requerPrimeiroAcesso(): boolean {
@@ -80,6 +85,18 @@ export class AutenticacaoService {
 
   private recuperarSessao(): Usuario | null {
     const dados = localStorage.getItem(this.chave);
-    return dados ? JSON.parse(dados) : null;
+    if (!dados) return null;
+    try {
+      const usuario = JSON.parse(dados) as Usuario;
+      // Se a sessão salva for antiga e não contiver o token de autenticação, invalida para forçar novo login
+      if (!usuario.token) {
+        localStorage.removeItem(this.chave);
+        return null;
+      }
+      return usuario;
+    } catch {
+      localStorage.removeItem(this.chave);
+      return null;
+    }
   }
 }

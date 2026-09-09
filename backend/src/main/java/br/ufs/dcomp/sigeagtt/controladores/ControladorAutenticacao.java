@@ -56,9 +56,11 @@ public class ControladorAutenticacao {
     }
 
     private void autenticarSessao(LoginRespostaDTO resposta, HttpServletRequest request, HttpServletResponse response) {
+        String role = "ROLE_" + resposta.perfil().name();
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                resposta.email(), null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + resposta.perfil().name())));
+                resposta.email(),
+                null,
+                List.of(new SimpleGrantedAuthority(role)));
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);

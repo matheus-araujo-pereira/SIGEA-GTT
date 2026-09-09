@@ -18,10 +18,15 @@ public class AutenticacaoServico {
 
     private final UsuarioRepositorio usuarioRepositorio;
     private final PasswordEncoder passwordEncoder;
+    private final TokenServico tokenServico;
 
-    public AutenticacaoServico(UsuarioRepositorio usuarioRepositorio, PasswordEncoder passwordEncoder) {
+    public AutenticacaoServico(
+            UsuarioRepositorio usuarioRepositorio,
+            PasswordEncoder passwordEncoder,
+            TokenServico tokenServico) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.passwordEncoder = passwordEncoder;
+        this.tokenServico = tokenServico;
     }
 
     @Bean
@@ -42,7 +47,8 @@ public class AutenticacaoServico {
         String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
 
         Usuario usuario = usuarioRepositorio.findByEmail(emailLimpo)
-                .orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas: e-mail institucional não localizado."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Credenciais inválidas: e-mail institucional não localizado."));
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
             throw new IllegalStateException("A conta deste usuário está inativa no sistema.");
@@ -52,7 +58,8 @@ public class AutenticacaoServico {
             throw new IllegalArgumentException("Credenciais inválidas: senha incorreta.");
         }
 
-        return LoginRespostaDTO.deEntidade(usuario);
+        String token = tokenServico.gerarToken(usuario);
+        return LoginRespostaDTO.deEntidade(usuario, token);
     }
 
     @Transactional
@@ -74,6 +81,8 @@ public class AutenticacaoServico {
 
         usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));
         usuario.setPrimeiroAcesso(false);
-        return LoginRespostaDTO.deEntidade(usuarioRepositorio.save(usuario));
+        Usuario salvo = usuarioRepositorio.save(usuario);
+        String token = tokenServico.gerarToken(salvo);
+        return LoginRespostaDTO.deEntidade(salvo, token);
     }
 }

@@ -1,6 +1,11 @@
 server:
   port: 8080
   forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
 
 management:
   endpoints:
@@ -10,6 +15,7 @@ management:
 
 app:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:4200}
+  jwt-secret: ${JWT_SECRET:sigea-gtt-super-secret-key-change-in-production-2026!#*}
 
 spring:
   application:
