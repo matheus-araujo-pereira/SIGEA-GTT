@@ -30,14 +30,19 @@ services:
         # Render atribui o domínio "<nome-do-serviço>.onrender.com" por padrão.
         # Se você renomear o serviço "sigea-gtt-frontend", atualize este valor.
         value: https://sigea-gtt-frontend.onrender.com
+      - key: JWT_SECRET
+        generateValue: true
 
   - type: web
     name: sigea-gtt-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: echo 'window.__SIGEA_API_URL__ = "https://sigea-gtt-backend.onrender.com";' > src/assets/runtime-config.js && npm install && npm run build
+    buildCommand: npm install && npm run build
     # O builder "application" do Angular 17 gera o site em dist/frontend/browser, não em dist/frontend.
     staticPublishPath: dist/frontend/browser
+    envVars:
+      - key: NODE_VERSION
+        value: 20
     routes:
       - type: rewrite
         source: /*
