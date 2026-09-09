@@ -9,11 +9,21 @@ declare global {
 export const apiUrlInterceptor: HttpInterceptorFn = (req, next) => {
   if (!req.url.startsWith('/api')) return next(req);
 
-  const baseUrl =
-    window.__SIGEA_API_URL__ ||
-    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      ? ''
-      : 'https://sigea-gtt-backend.onrender.com');
+  let baseUrl = 'https://sigea-gtt-backend.onrender.com';
+
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      baseUrl = '';
+    } else if (window.__SIGEA_API_URL__) {
+      const urlConfigurada = window.__SIGEA_API_URL__.trim();
+      // Se a URL contém apenas o nome interno (ex: https://sigea-gtt-backend), completa com .onrender.com
+      if (urlConfigurada.includes('sigea-gtt-backend') && !urlConfigurada.includes('.onrender.com')) {
+        baseUrl = 'https://sigea-gtt-backend.onrender.com';
+      } else if (urlConfigurada.includes('.')) {
+        baseUrl = urlConfigurada;
+      }
+    }
+  }
 
   // Recupera token da sessão no localStorage
   let token: string | null = null;
