@@ -12,12 +12,18 @@ export const apiUrlInterceptor: HttpInterceptorFn = (req, next) => {
   let baseUrl = 'https://sigea-gtt-backend.onrender.com';
 
   if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    if (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1'
+    ) {
       baseUrl = '';
     } else if (window.__SIGEA_API_URL__) {
       const urlConfigurada = window.__SIGEA_API_URL__.trim();
       // Se a URL contém apenas o nome interno (ex: https://sigea-gtt-backend), completa com .onrender.com
-      if (urlConfigurada.includes('sigea-gtt-backend') && !urlConfigurada.includes('.onrender.com')) {
+      if (
+        urlConfigurada.includes('sigea-gtt-backend') &&
+        !urlConfigurada.includes('.onrender.com')
+      ) {
         baseUrl = 'https://sigea-gtt-backend.onrender.com';
       } else if (urlConfigurada.includes('.')) {
         baseUrl = urlConfigurada;
