@@ -23,5 +23,5 @@
     "backend/target": true,
     "frontend/.angular": true
   },
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "java.configuration.updateBuildConfiguration": "automatic"
 }
