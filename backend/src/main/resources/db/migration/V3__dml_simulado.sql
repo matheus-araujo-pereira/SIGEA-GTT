@@ -33,9 +33,9 @@ DECLARE
   atv5_1 BIGINT; atv5_2 BIGINT; atv5_3 BIGINT;
 
   -- Variaveis de controle e iteracao
-  aluno_id   BIGINT;
-  revisao_id BIGINT;
-  i          INT;
+  v_aluno_id   BIGINT;
+  v_revisao_id BIGINT;
+  i            INT;
   pront_ids  BIGINT[];
   turma_cur  BIGINT;
   prof_cur   BIGINT;
@@ -145,6 +145,12 @@ DECLARE
   ];
 
 BEGIN
+
+  -- Se ja existem turmas do periodo 2025.2, nao duplica a carga
+  IF EXISTS (SELECT 1 FROM turmas WHERE ano_semestre = '2025/2') THEN
+    RAISE NOTICE 'Dados simulados ja estao carregados na base de dados.';
+    RETURN;
+  END IF;
 
   -- =========================================================================
   -- 0. GARANTIR CATEGORIAS DE EVENTOS ADVERSOS
@@ -257,41 +263,41 @@ BEGIN
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t1[i], lower(replace(nomes_t1[i],' ','.'))||'.t1@academico.ufs.br', lpad((2024000+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
-    IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t1[i],' ','.'))||'.t1@academico.ufs.br'; END IF;
-    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma1, aluno_id) ON CONFLICT DO NOTHING;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO v_aluno_id;
+    IF v_aluno_id IS NULL THEN SELECT u.id INTO v_aluno_id FROM usuarios u WHERE u.email = lower(replace(nomes_t1[i],' ','.'))||'.t1@academico.ufs.br'; END IF;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma1, v_aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
 
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t2[i], lower(replace(nomes_t2[i],' ','.'))||'.t2@academico.ufs.br', lpad((2024100+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
-    IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t2[i],' ','.'))||'.t2@academico.ufs.br'; END IF;
-    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma2, aluno_id) ON CONFLICT DO NOTHING;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO v_aluno_id;
+    IF v_aluno_id IS NULL THEN SELECT u.id INTO v_aluno_id FROM usuarios u WHERE u.email = lower(replace(nomes_t2[i],' ','.'))||'.t2@academico.ufs.br'; END IF;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma2, v_aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
 
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t3[i], lower(replace(nomes_t3[i],' ','.'))||'.t3@academico.ufs.br', lpad((2024200+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
-    IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t3[i],' ','.'))||'.t3@academico.ufs.br'; END IF;
-    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma3, aluno_id) ON CONFLICT DO NOTHING;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO v_aluno_id;
+    IF v_aluno_id IS NULL THEN SELECT u.id INTO v_aluno_id FROM usuarios u WHERE u.email = lower(replace(nomes_t3[i],' ','.'))||'.t3@academico.ufs.br'; END IF;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma3, v_aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
 
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t4[i], lower(replace(nomes_t4[i],' ','.'))||'.t4@academico.ufs.br', lpad((2024300+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
-    IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t4[i],' ','.'))||'.t4@academico.ufs.br'; END IF;
-    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma4, aluno_id) ON CONFLICT DO NOTHING;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO v_aluno_id;
+    IF v_aluno_id IS NULL THEN SELECT u.id INTO v_aluno_id FROM usuarios u WHERE u.email = lower(replace(nomes_t4[i],' ','.'))||'.t4@academico.ufs.br'; END IF;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma4, v_aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
 
   FOR i IN 1..50 LOOP
     INSERT INTO usuarios (nome_completo, email, matricula_sigaa, perfil, senha, primeiro_acesso, ativo)
     VALUES (nomes_t5[i], lower(replace(nomes_t5[i],' ','.'))||'.t5@academico.ufs.br', lpad((2024400+i)::text, 9, '0'), 'ALUNO', senha_padrao, FALSE, TRUE)
-    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO aluno_id;
-    IF aluno_id IS NULL THEN SELECT id INTO aluno_id FROM usuarios WHERE email = lower(replace(nomes_t5[i],' ','.'))||'.t5@academico.ufs.br'; END IF;
-    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma5, aluno_id) ON CONFLICT DO NOTHING;
+    ON CONFLICT (email) DO UPDATE SET nome_completo = EXCLUDED.nome_completo, senha = EXCLUDED.senha RETURNING id INTO v_aluno_id;
+    IF v_aluno_id IS NULL THEN SELECT u.id INTO v_aluno_id FROM usuarios u WHERE u.email = lower(replace(nomes_t5[i],' ','.'))||'.t5@academico.ufs.br'; END IF;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (turma5, v_aluno_id) ON CONFLICT DO NOTHING;
   END LOOP;
 
   -- =========================================================================
@@ -774,10 +780,10 @@ BEGIN
       WHEN 5 THEN turma_cur := turma5; prof_cur := prof5; atv_ids := ARRAY[atv5_1,atv5_2,atv5_3]; cen_ids := ARRAY[cen5_1,cen5_2,cen5_3];
     END CASE;
 
-    SELECT ARRAY_AGG(aluno_id ORDER BY aluno_id) INTO aluno_ids FROM turma_alunos WHERE turma_id = turma_cur;
+    SELECT ARRAY_AGG(ta.aluno_id ORDER BY ta.aluno_id) INTO aluno_ids FROM turma_alunos ta WHERE ta.turma_id = turma_cur;
 
     FOR v_aluno_idx IN 1..50 LOOP
-      aluno_id := aluno_ids[v_aluno_idx];
+      v_aluno_id := aluno_ids[v_aluno_idx];
 
       FOR v_atv_idx IN 1..3 LOOP
 
@@ -794,19 +800,19 @@ BEGIN
           -- Tempo entre 8 e 25 minutos
           v_tempo := 480 + ((v_hash * 17 + v_aluno_idx * 7) % 1020);
 
-          revisao_id := NULL;
+          v_revisao_id := NULL;
           INSERT INTO revisoes_individuais (atividade_id, aluno_id, prontuario_id, tempo_gasto_segundos, finalizada, data_submissao)
-          VALUES (atv_ids[v_atv_idx], aluno_id, pront_ids[v_pront_idx], v_tempo, v_finalizada,
+          VALUES (atv_ids[v_atv_idx], v_aluno_id, pront_ids[v_pront_idx], v_tempo, v_finalizada,
             CASE WHEN v_finalizada THEN NOW() - (((v_aluno_idx + v_pront_idx) * 3)||' days')::interval ELSE NULL END)
           ON CONFLICT (atividade_id, aluno_id, prontuario_id) DO NOTHING
-          RETURNING id INTO revisao_id;
+          RETURNING id INTO v_revisao_id;
 
-          IF revisao_id IS NULL THEN
-            SELECT id INTO revisao_id FROM revisoes_individuais
-            WHERE atividade_id = atv_ids[v_atv_idx] AND aluno_id = aluno_id AND prontuario_id = pront_ids[v_pront_idx];
+          IF v_revisao_id IS NULL THEN
+            SELECT ri.id INTO v_revisao_id FROM revisoes_individuais ri
+            WHERE ri.atividade_id = atv_ids[v_atv_idx] AND ri.aluno_id = v_aluno_id AND ri.prontuario_id = pront_ids[v_pront_idx];
           END IF;
 
-          CONTINUE WHEN revisao_id IS NULL;
+          CONTINUE WHEN v_revisao_id IS NULL;
 
           -- Apenas revisoes finalizadas geram achados e validacoes
           IF v_finalizada THEN
@@ -862,7 +868,7 @@ BEGIN
 
               INSERT INTO achados_gatilhos (revisao_individual_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
               VALUES (
-                revisao_id, gat,
+                v_revisao_id, gat,
                 CASE v_turma_idx WHEN 1 THEN cat_infec WHEN 2 THEN cat_med WHEN 3 THEN cat_cirurg WHEN 4 THEN cat_infec ELSE cat_obstet END,
                 v_confirma,
                 CASE WHEN v_confirma THEN
@@ -889,7 +895,7 @@ BEGIN
                 IF gat2 IS DISTINCT FROM gat THEN
                   INSERT INTO achados_gatilhos (revisao_individual_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
                   VALUES (
-                    revisao_id, gat2,
+                    v_revisao_id, gat2,
                     CASE v_turma_idx WHEN 1 THEN cat_infec WHEN 2 THEN cat_med WHEN 3 THEN cat_cirurg WHEN 4 THEN cat_infec ELSE cat_obstet END,
                     v_confirma2,
                     CASE WHEN v_confirma2 THEN
@@ -912,7 +918,7 @@ BEGIN
 
               INSERT INTO validacoes_docentes (revisao_individual_id, professor_validador_id, parecer_formativo, homologado, data_validacao)
               VALUES (
-                revisao_id, prof_cur,
+                v_revisao_id, prof_cur,
                 CASE WHEN v_homologado THEN
                   CASE (v_hash % 4)
                     WHEN 0 THEN 'Excelente revisao. O academico identificou com precisao os gatilhos GTT presentes no prontuario e estabeleceu adequadamente o nexo causal com o dano assistencial. Justificativa clinica bem embasada e classificacao NCC-MERP correta.'
@@ -940,7 +946,7 @@ BEGIN
               -- ANALISE DE ISHIKAWA
               INSERT INTO analises_ishikawa (revisao_individual_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
               VALUES (
-                revisao_id,
+                v_revisao_id,
                 CASE v_turma_idx
                   WHEN 1 THEN CASE v_atv_idx WHEN 1 THEN 'Infeccao hospitalar por C. difficile em paciente anticoagulado' WHEN 2 THEN 'Queda com fratura e lesao por pressao em idoso hospitalizado' ELSE 'Readmissao precoce e deterioracao clinica com transferencia para UTI' END
                   WHEN 2 THEN CASE v_atv_idx WHEN 1 THEN 'Depressao respiratoria grave por opioide no pos-operatorio' WHEN 2 THEN 'Hipoglicemia grave por administracao de insulina hospitalar' ELSE 'Insuficiencia renal aguda por toxicidade medicamentosa de aminoglicosideo' END
@@ -995,7 +1001,7 @@ BEGIN
               -- PLANO DE ACAO 5W3H
               INSERT INTO planos_acao_5w3h (revisao_individual_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
               VALUES (
-                revisao_id,
+                v_revisao_id,
                 CASE v_turma_idx
                   WHEN 1 THEN CASE v_atv_idx WHEN 1 THEN 'Implementar protocolo de monitorizacao de INR e rastreio de C.difficile em uso de antibioticos' WHEN 2 THEN 'Implantar protocolo de avaliacao de risco de quedas e LPP com escalas Braden e Morse na admissao' ELSE 'Criar checklist multidisciplinar de alta segura com monitoramento telefonico pos-alta em 72h' END
                   WHEN 2 THEN CASE v_atv_idx WHEN 1 THEN 'Implantar protocolo de monitorizacao de oximetria e capnografia continua na administracao de opioides' WHEN 2 THEN 'Estabelecer protocolo de insulinoterapia hospitalar com dupla checagem obrigatoria antes da injecao' ELSE 'Criar rotina de conciliacao medicamentosa na admissao e monitorizacao de niveis sericos de nefrotoxicos' END
@@ -1035,9 +1041,9 @@ BEGIN
               -- CICLO PDCA
               INSERT INTO ciclos_pdca (revisao_individual_id, planejar, fazer, checar, agir)
               VALUES (
-                revisao_id,
+                v_revisao_id,
                 CASE v_turma_idx
-                  WHEN 1 THEN 'PLAN: Reduzir a incidencia de diarreia nosocomial e INR excessivo na Clinica Medica em 45% em 6 meses. Acoes planejadas: monitoramento semanal de INR, restricao de quinolonas e cefalosporinas de 3a geracao sem indicacao e aplicacao rigorosa de precaucoes de contato.'
+                  WHEN 1 THEN 'PLAN: Reduzir a incidence de diarreia nosocomial e INR excessivo na Clinica Medica em 45% em 6 meses. Acoes planejadas: monitoramento semanal de INR, restricao de quinolonas e cefalosporinas de 3a geracao sem indicacao e aplicacao rigorosa de precaucoes de contato.'
                   WHEN 2 THEN 'PLAN: Zerar episodios de depressao respiratoria grave por opioides sem deteccao precoce na URPA e reduzir em 70% hipoglicemias hospitalares. Acoes: oximetria e capnografia continuas pos-opioide, kit de naloxona imediato e revisao do protocolo de escala de insulina.'
                   WHEN 3 THEN 'PLAN: Reduzir a taxa de infeccao de sitio cirurgico profunda de 6,2% para menos de 2,5% e zerar atrasos no retorno ao bloco operatorio por hemorragia. Acoes: banho pre-operatorio padronizado, antibioticoprofilaxia 30-60min antes da incisao e checklist cirurgico completo.'
                   WHEN 4 THEN 'PLAN: Reduzir a densidade de incidencia de PAV para menos de 8 casos por 1.000 dias de ventilacao mecanica. Acoes: implementacao do bundle de 5 elementos (cabeceira 30-45 graus, higiene oral com clorexidina 0,12%, aspiracao subglotica, pausa de sedacao e teste de extubacao).'
@@ -1066,11 +1072,12 @@ BEGIN
                 END
               ) ON CONFLICT (revisao_individual_id) DO NOTHING;
 
+              -- 40% dos que acham gatilho primario encontram um segundo gatilho no prontuario
             END IF; -- fim MQ 60%
 
           END IF; -- fim finalizada
 
-          revisao_id := NULL;
+          v_revisao_id := NULL;
 
         END LOOP; -- pront_idx
       END LOOP; -- atv_idx
