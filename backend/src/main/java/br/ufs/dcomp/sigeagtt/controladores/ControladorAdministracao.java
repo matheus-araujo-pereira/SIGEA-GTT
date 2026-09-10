@@ -33,8 +33,7 @@ public class ControladorAdministracao {
             return ResponseEntity.ok(Map.of(
                     "status", "sucesso",
                     "mensagem", "Carga de dados simulados executada com sucesso!",
-                    "totalTurmas", totalTurmas
-            ));
+                    "totalTurmas", totalTurmas));
         } catch (Exception e) {
             log.error("Falha ao executar carga de dados simulados: {}", e.getMessage(), e);
             Throwable root = e;
@@ -44,8 +43,7 @@ public class ControladorAdministracao {
             return ResponseEntity.status(500).body(Map.of(
                     "status", "erro",
                     "mensagem", e.getMessage() != null ? e.getMessage() : "Erro desconhecido",
-                    "causaRaiz", root.getMessage() != null ? root.getMessage() : "Causa desconhecida"
-            ));
+                    "causaRaiz", root.getMessage() != null ? root.getMessage() : "Causa desconhecida"));
         }
     }
 }
