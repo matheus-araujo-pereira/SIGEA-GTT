@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ModuloGtt } from '../../../compartilhado/modelos/dominio.modelos';
+import { ModuloGtt } from '../modelos/gtt.modelos';
 
 export interface ModuloRequisicao {
   codigo: string;
@@ -10,7 +10,7 @@ export interface ModuloRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ModuloGttService {
   private readonly http = inject(HttpClient);

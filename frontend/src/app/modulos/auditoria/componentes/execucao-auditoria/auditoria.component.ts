@@ -16,11 +16,11 @@ import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao
 import {
   AtividadeDiscente,
   ProntuarioItemAuditoria,
-  ProntuarioSimulado,
   RevisaoIndividual,
   AchadoGatilho,
-  GatilhoGtt,
-} from '../../../../compartilhado/modelos/dominio.modelos';
+} from '../../modelos/auditoria.modelos';
+import { ProntuarioSimulado } from '../../../cenario/modelos/cenario.modelos';
+import { GatilhoGtt } from '../../../gtt/modelos/gtt.modelos';
 
 export interface ProntuarioAuditoriaLinha {
   prontuarioId: number;

@@ -9,7 +9,7 @@ import {
   Ishikawa,
   Plano5w3h,
   Pdca,
-} from '../../../../compartilhado/modelos/dominio.modelos';
+} from '../../modelos/qualidade.modelos';
 
 @Component({
   selector: 'app-melhoria-qualidade',

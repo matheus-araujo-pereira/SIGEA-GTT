@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ProntuarioSimulado } from '../../../compartilhado/modelos/dominio.modelos';
+import { ProntuarioSimulado } from '../modelos/cenario.modelos';
 
 export interface ProntuarioSimuladoRequisicao {
   cenarioId: number;
@@ -19,7 +19,7 @@ export interface ProntuarioSimuladoRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProntuarioSimuladoService {
   private readonly http = inject(HttpClient);
@@ -41,7 +41,10 @@ export class ProntuarioSimuladoService {
     return this.http.post<ProntuarioSimulado>(this.url, dto);
   }
 
-  editar(id: number, dto: ProntuarioSimuladoRequisicao): Observable<ProntuarioSimulado> {
+  editar(
+    id: number,
+    dto: ProntuarioSimuladoRequisicao,
+  ): Observable<ProntuarioSimulado> {
     return this.http.put<ProntuarioSimulado>(`${this.url}/${id}`, dto);
   }
 

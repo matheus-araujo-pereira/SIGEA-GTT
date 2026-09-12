@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { GatilhoGtt } from '../../../compartilhado/modelos/dominio.modelos';
+import { GatilhoGtt } from '../modelos/gtt.modelos';
 
 export interface GatilhoRequisicao {
   codigo: string;
@@ -11,7 +11,7 @@ export interface GatilhoRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GatilhoService {
   private readonly http = inject(HttpClient);

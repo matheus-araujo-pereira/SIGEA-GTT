@@ -1,9 +1,16 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
+import {
+  CanActivateFn,
+  Router,
+  ActivatedRouteSnapshot,
+  UrlTree,
+} from '@angular/router';
 import { AutenticacaoService } from '../../modulos/autenticacao/servicos/autenticacao.service';
-import { PerfilUsuario } from '../../compartilhado/modelos/dominio.modelos';
+import { PerfilUsuario } from '../../modulos/usuario/modelos/usuario.modelos';
 
-export const perfilGuard: CanActivateFn = (route: ActivatedRouteSnapshot): boolean | UrlTree => {
+export const perfilGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+): boolean | UrlTree => {
   const auth = inject(AutenticacaoService);
   const router = inject(Router);
 

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AtividadeAuditoria } from '../../../compartilhado/modelos/dominio.modelos';
+import { AtividadeAuditoria } from '../modelos/auditoria.modelos';
 
 export interface AtividadeAuditoriaRequisicao {
   turmaId: number;
@@ -13,7 +13,7 @@ export interface AtividadeAuditoriaRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AtividadeAuditoriaService {
   private readonly http = inject(HttpClient);
@@ -35,7 +35,10 @@ export class AtividadeAuditoriaService {
     return this.http.post<AtividadeAuditoria>(this.url, dto);
   }
 
-  editar(id: number, dto: AtividadeAuditoriaRequisicao): Observable<AtividadeAuditoria> {
+  editar(
+    id: number,
+    dto: AtividadeAuditoriaRequisicao,
+  ): Observable<AtividadeAuditoria> {
     return this.http.put<AtividadeAuditoria>(`${this.url}/${id}`, dto);
   }
 
@@ -44,6 +47,9 @@ export class AtividadeAuditoriaService {
   }
 
   alternarFinalizada(id: number): Observable<AtividadeAuditoria> {
-    return this.http.patch<AtividadeAuditoria>(`${this.url}/${id}/alternar-finalizada`, {});
+    return this.http.patch<AtividadeAuditoria>(
+      `${this.url}/${id}/alternar-finalizada`,
+      {},
+    );
   }
 }

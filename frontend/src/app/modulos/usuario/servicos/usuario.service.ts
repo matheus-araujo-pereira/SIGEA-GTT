@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Usuario, PerfilUsuario } from '../../../compartilhado/modelos/dominio.modelos';
+import { Usuario, PerfilUsuario } from '../modelos/usuario.modelos';
 
 export interface UsuarioRequisicao {
   nomeCompleto: string;
@@ -11,7 +11,7 @@ export interface UsuarioRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UsuarioService {
   private readonly http = inject(HttpClient);

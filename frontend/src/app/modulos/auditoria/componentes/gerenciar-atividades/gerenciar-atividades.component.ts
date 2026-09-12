@@ -23,12 +23,10 @@ import {
   CorrigirAuditoriaPayload,
 } from '../../servicos/revisao-individual.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
-import {
-  AtividadeAuditoria,
-  Turma,
-  CenarioClinico,
-  Usuario,
-} from '../../../../compartilhado/modelos/dominio.modelos';
+import { AtividadeAuditoria } from '../../modelos/auditoria.modelos';
+import { Turma } from '../../../turma/modelos/turma.modelos';
+import { CenarioClinico } from '../../../cenario/modelos/cenario.modelos';
+import { Usuario } from '../../../usuario/modelos/usuario.modelos';
 
 export interface AtividadeLinha {
   id: number;

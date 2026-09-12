@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Turma, Usuario } from '../../../compartilhado/modelos/dominio.modelos';
+import { Turma } from '../modelos/turma.modelos';
+import { Usuario } from '../../usuario/modelos/usuario.modelos';
 
 export interface TurmaRequisicao {
   codigoDisciplina: string;
@@ -11,7 +12,7 @@ export interface TurmaRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TurmaService {
   private readonly http = inject(HttpClient);

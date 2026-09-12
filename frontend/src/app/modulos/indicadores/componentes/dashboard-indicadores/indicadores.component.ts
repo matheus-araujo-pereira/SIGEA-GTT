@@ -11,11 +11,9 @@ import {
 import { TurmaService } from '../../../turma/servicos/turma.service';
 import { CenarioClinicoService } from '../../../cenario/servicos/cenario-clinico.service';
 import { UnidadeService } from '../../../unidade/servicos/unidade.service';
-import {
-  Turma,
-  CenarioClinico,
-  UnidadeHospitalar,
-} from '../../../../compartilhado/modelos/dominio.modelos';
+import { Turma } from '../../../turma/modelos/turma.modelos';
+import { CenarioClinico } from '../../../cenario/modelos/cenario.modelos';
+import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
 
 export interface MetricaCard {
   rotulo: string;

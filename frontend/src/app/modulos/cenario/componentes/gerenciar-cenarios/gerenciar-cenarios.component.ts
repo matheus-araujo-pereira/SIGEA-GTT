@@ -8,10 +8,8 @@ import {
 } from '../../servicos/cenario-clinico.service';
 import { UsuarioService } from '../../../usuario/servicos/usuario.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
-import {
-  CenarioClinico,
-  Usuario,
-} from '../../../../compartilhado/modelos/dominio.modelos';
+import { CenarioClinico } from '../../modelos/cenario.modelos';
+import { Usuario } from '../../../usuario/modelos/usuario.modelos';
 
 export interface CenarioLinha {
   id: number;

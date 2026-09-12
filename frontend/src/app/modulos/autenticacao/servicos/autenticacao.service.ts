@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { Usuario } from '../../../compartilhado/modelos/dominio.modelos';
+import { Usuario } from '../../usuario/modelos/usuario.modelos';
 
 export interface CredenciaisLogin {
   identificador: string;

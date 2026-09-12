@@ -5,7 +5,7 @@ import {
   AtividadeDiscente,
   RevisaoIndividual,
   AchadoGatilho,
-} from '../../../compartilhado/modelos/dominio.modelos';
+} from '../modelos/auditoria.modelos';
 
 export interface IniciarRevisaoPayload {
   atividadeId: number;

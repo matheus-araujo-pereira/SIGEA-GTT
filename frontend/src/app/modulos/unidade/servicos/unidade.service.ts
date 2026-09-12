@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { UnidadeHospitalar } from '../../../compartilhado/modelos/dominio.modelos';
+import { UnidadeHospitalar } from '../modelos/unidade.modelos';
 
 export interface UnidadeRequisicao {
   nome: string;
@@ -9,7 +9,7 @@ export interface UnidadeRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UnidadeService {
   private readonly http = inject(HttpClient);
@@ -36,6 +36,9 @@ export class UnidadeService {
   }
 
   alternarStatus(id: number): Observable<UnidadeHospitalar> {
-    return this.http.patch<UnidadeHospitalar>(`${this.url}/${id}/alternar-status`, {});
+    return this.http.patch<UnidadeHospitalar>(
+      `${this.url}/${id}/alternar-status`,
+      {},
+    );
   }
 }

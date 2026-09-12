@@ -1,14 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  TurmaService,
-  TurmaRequisicao,
-} from '../../servicos/turma.service';
+import { TurmaService, TurmaRequisicao } from '../../servicos/turma.service';
 import { UsuarioService } from '../../../usuario/servicos/usuario.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 import { GerenciarAtividadesComponent } from '../../../auditoria/componentes/gerenciar-atividades/gerenciar-atividades.component';
-import { Turma, Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
+import { Turma } from '../../modelos/turma.modelos';
+import { Usuario } from '../../../usuario/modelos/usuario.modelos';
 
 export interface TurmaLinha {
   id: number;

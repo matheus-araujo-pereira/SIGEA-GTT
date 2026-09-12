@@ -1,7 +1,5 @@
 package br.ufs.dcomp.sigeagtt.nucleo.configuracoes;
 
-import br.ufs.dcomp.sigeagtt.modulos.autenticacao.controlador.AutenticacaoControlador;
-import br.ufs.dcomp.sigeagtt.modulos.autenticacao.servico.AutenticacaoServico;
 import br.ufs.dcomp.sigeagtt.nucleo.seguranca.FiltroAutenticacaoToken;
 
 import org.springframework.context.annotation.Bean;

@@ -1,9 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UsuarioService, UsuarioRequisicao } from '../../servicos/usuario.service';
+import {
+  UsuarioService,
+  UsuarioRequisicao,
+} from '../../servicos/usuario.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
-import { Usuario } from '../../../../compartilhado/modelos/dominio.modelos';
+import { Usuario } from '../../modelos/usuario.modelos';
 import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface UsuarioLinha {
@@ -23,7 +26,7 @@ export interface UsuarioLinha {
   selector: 'app-gerenciar-usuarios',
   standalone: true,
   imports: [CommonModule, FormsModule, PaginacaoComponent],
-  templateUrl: './gerenciar-usuarios.component.html'
+  templateUrl: './gerenciar-usuarios.component.html',
 })
 export class GerenciarUsuariosComponent implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
@@ -68,14 +71,21 @@ export class GerenciarUsuariosComponent implements OnInit {
       .filter((u) => {
         let matchTermo = true;
         if (termo.length > 0) {
-          const matchNome = u.nomeCompleto ? u.nomeCompleto.toLowerCase().includes(termo) : false;
-          const matchEmail = u.email ? u.email.toLowerCase().includes(termo) : false;
-          const matchMatricula = u.matriculaSigaa ? u.matriculaSigaa.toLowerCase().includes(termo) : false;
+          const matchNome = u.nomeCompleto
+            ? u.nomeCompleto.toLowerCase().includes(termo)
+            : false;
+          const matchEmail = u.email
+            ? u.email.toLowerCase().includes(termo)
+            : false;
+          const matchMatricula = u.matriculaSigaa
+            ? u.matriculaSigaa.toLowerCase().includes(termo)
+            : false;
           matchTermo = matchNome || matchEmail || matchMatricula;
         }
 
         const matchPerfil = perfil === 'TODOS' || u.perfil === perfil;
-        const matchStatus = status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
+        const matchStatus =
+          status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
 
         return matchTermo && matchPerfil && matchStatus;
       })
@@ -89,15 +99,20 @@ export class GerenciarUsuariosComponent implements OnInit {
         primeiroAcesso: u.primeiroAcesso ? '[1º ACESSO PENDENTE]' : '[OK]',
         status: u.ativo ? '[ATIVO]' : '[INATIVO]',
         ativo: u.ativo,
-        original: u
+        original: u,
       }));
   });
 
-  readonly totalFiltrados = computed(() => this.usuariosLinhasFiltradas().length);
+  readonly totalFiltrados = computed(
+    () => this.usuariosLinhasFiltradas().length,
+  );
 
   readonly usuariosLinhasPaginadas = computed<UsuarioLinha[]>(() => {
     const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.usuariosLinhasFiltradas().slice(inicio, inicio + this.itensPorPagina);
+    return this.usuariosLinhasFiltradas().slice(
+      inicio,
+      inicio + this.itensPorPagina,
+    );
   });
 
   ngOnInit(): void {
@@ -107,7 +122,10 @@ export class GerenciarUsuariosComponent implements OnInit {
   carregarUsuarios(): void {
     this.usuarioService.listar().subscribe({
       next: (dados) => this.usuarios.set(dados),
-      error: (err) => this.mensagemErro.set('Erro ao carregar dados: ' + (err.error?.mensagem || err.message))
+      error: (err) =>
+        this.mensagemErro.set(
+          'Erro ao carregar dados: ' + (err.error?.mensagem || err.message),
+        ),
     });
   }
 
@@ -133,7 +151,7 @@ export class GerenciarUsuariosComponent implements OnInit {
   iniciarNovoCadastro(): void {
     this.idEdicao.set(null);
     this.formulario = this.obterFormularioVazio();
-    this.exibirFormulario.update(v => !v);
+    this.exibirFormulario.update((v) => !v);
     this.limparMensagens();
   }
 
@@ -143,7 +161,7 @@ export class GerenciarUsuariosComponent implements OnInit {
       nomeCompleto: usuario.nomeCompleto,
       email: usuario.email,
       matriculaSigaa: usuario.matriculaSigaa || null,
-      perfil: usuario.perfil
+      perfil: usuario.perfil,
     };
     this.exibirFormulario.set(true);
     this.limparMensagens();
@@ -171,9 +189,13 @@ export class GerenciarUsuariosComponent implements OnInit {
   }
 
   salvar(): void {
-    const emailLimpo = this.formulario.email ? this.formulario.email.trim().toLowerCase() : '';
+    const emailLimpo = this.formulario.email
+      ? this.formulario.email.trim().toLowerCase()
+      : '';
     if (!emailLimpo.endsWith('@academico.ufs.br')) {
-      this.mensagemErro.set('O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br');
+      this.mensagemErro.set(
+        'O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br',
+      );
       return;
     }
 
@@ -183,16 +205,20 @@ export class GerenciarUsuariosComponent implements OnInit {
     const payload: UsuarioRequisicao = {
       ...this.formulario,
       email: emailLimpo,
-      matriculaSigaa: this.formulario.perfil === 'ALUNO' && this.formulario.matriculaSigaa?.trim()
-        ? this.formulario.matriculaSigaa.replace(/\D/g, '')
-        : null
+      matriculaSigaa:
+        this.formulario.perfil === 'ALUNO' &&
+        this.formulario.matriculaSigaa?.trim()
+          ? this.formulario.matriculaSigaa.replace(/\D/g, '')
+          : null,
     };
 
     const idAtual = this.idEdicao();
     if (idAtual) {
       this.usuarioService.editar(idAtual, payload).subscribe({
         next: (atualizado) => {
-          this.mensagemSucesso.set(`Usuário ${atualizado.nomeCompleto} atualizado com sucesso.`);
+          this.mensagemSucesso.set(
+            `Usuário ${atualizado.nomeCompleto} atualizado com sucesso.`,
+          );
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarUsuarios();
@@ -202,28 +228,36 @@ export class GerenciarUsuariosComponent implements OnInit {
           }
         },
         error: (err) => {
-          this.mensagemErro.set(err.error?.mensagem || 'Falha ao atualizar usuário.');
+          this.mensagemErro.set(
+            err.error?.mensagem || 'Falha ao atualizar usuário.',
+          );
           this.carregando.set(false);
-        }
+        },
       });
     } else {
       this.usuarioService.cadastrar(payload).subscribe({
         next: (criado) => {
-          this.mensagemSucesso.set(`Usuário ${criado.nomeCompleto} cadastrado. Senha temporária: Sigea@123`);
+          this.mensagemSucesso.set(
+            `Usuário ${criado.nomeCompleto} cadastrado. Senha temporária: Sigea@123`,
+          );
           this.fecharFormulario();
           this.carregando.set(false);
           this.carregarUsuarios();
         },
         error: (err) => {
-          this.mensagemErro.set(err.error?.mensagem || 'Falha ao cadastrar usuário.');
+          this.mensagemErro.set(
+            err.error?.mensagem || 'Falha ao cadastrar usuário.',
+          );
           this.carregando.set(false);
-        }
+        },
       });
     }
   }
 
   solicitarResetSenha(usuario: Usuario): void {
-    const confirmar = confirm(`Resetar a senha de ${usuario.nomeCompleto} para "Sigea@123"?`);
+    const confirmar = confirm(
+      `Resetar a senha de ${usuario.nomeCompleto} para "Sigea@123"?`,
+    );
     if (!confirmar) return;
 
     this.usuarioService.resetarSenha(usuario.id).subscribe({
@@ -231,7 +265,7 @@ export class GerenciarUsuariosComponent implements OnInit {
         this.mensagemSucesso.set(`Senha de ${usuario.nomeCompleto} resetada.`);
         this.carregarUsuarios();
       },
-      error: (err) => this.mensagemErro.set('Erro ao resetar: ' + err.message)
+      error: (err) => this.mensagemErro.set('Erro ao resetar: ' + err.message),
     });
   }
 
@@ -242,7 +276,7 @@ export class GerenciarUsuariosComponent implements OnInit {
 
     obs.subscribe({
       next: () => this.carregarUsuarios(),
-      error: (err) => this.mensagemErro.set(err.error?.mensagem || err.message)
+      error: (err) => this.mensagemErro.set(err.error?.mensagem || err.message),
     });
   }
 
@@ -256,7 +290,7 @@ export class GerenciarUsuariosComponent implements OnInit {
       nomeCompleto: '',
       email: '',
       matriculaSigaa: null,
-      perfil: 'ALUNO'
+      perfil: 'ALUNO',
     };
   }
 }

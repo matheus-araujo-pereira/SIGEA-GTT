@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CenarioClinico } from '../../../compartilhado/modelos/dominio.modelos';
+import { CenarioClinico } from '../modelos/cenario.modelos';
 
 export interface CenarioClinicoRequisicao {
   titulo: string;
@@ -11,7 +11,7 @@ export interface CenarioClinicoRequisicao {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CenarioClinicoService {
   private readonly http = inject(HttpClient);
@@ -33,7 +33,10 @@ export class CenarioClinicoService {
     return this.http.post<CenarioClinico>(this.url, dto);
   }
 
-  editar(id: number, dto: CenarioClinicoRequisicao): Observable<CenarioClinico> {
+  editar(
+    id: number,
+    dto: CenarioClinicoRequisicao,
+  ): Observable<CenarioClinico> {
     return this.http.put<CenarioClinico>(`${this.url}/${id}`, dto);
   }
 

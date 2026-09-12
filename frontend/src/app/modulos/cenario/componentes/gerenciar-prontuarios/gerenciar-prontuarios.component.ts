@@ -11,8 +11,8 @@ import { UnidadeService } from '../../../unidade/servicos/unidade.service';
 import {
   ProntuarioSimulado,
   CenarioClinico,
-  UnidadeHospitalar,
-} from '../../../../compartilhado/modelos/dominio.modelos';
+} from '../../modelos/cenario.modelos';
+import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
 
 export interface ProntuarioLinha {
   id: number;
