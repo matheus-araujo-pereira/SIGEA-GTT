@@ -1,0 +1,303 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
+      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltarParaListagem()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA CASOS</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemErro()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">Carregando dados do caso clínico...</p>
+    </div>
+  } @else {
+    <form (ngSubmit)="salvar()">
+      <!-- CARD 1: IDENTIFICAÇÃO DO CASO E METADADOS -->
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3">
+        <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+          <span class="fw-bold text-dark small text-uppercase font-monospace">
+            <i class="bi bi-info-circle me-1"></i> 1. Identificação Geral do Caso Clínico
+          </span>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label for="titulo" class="form-label small fw-semibold text-secondary">
+                Título Descritivo do Caso <span class="text-danger">*</span>
+              </label>
+              <input
+                id="titulo"
+                type="text"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.titulo"
+                name="titulo"
+                required
+                placeholder="Ex.: Caso 01 - IAM e Sangramento Digestivo Pós-Trombólise"
+              />
+            </div>
+
+            <div class="col-md-4">
+              <label for="unidadeHospitalarId" class="form-label small fw-semibold text-secondary">
+                Unidade Hospitalar (HU) <span class="text-danger">*</span>
+              </label>
+              <select
+                id="unidadeHospitalarId"
+                class="form-select form-select-sm"
+                [(ngModel)]="formulario.unidadeHospitalarId"
+                name="unidadeHospitalarId"
+                required
+              >
+                <option [ngValue]="0" disabled>Selecione a unidade...</option>
+                @for (u of unidades(); track u.id) {
+                  <option [ngValue]="u.id">{{ u.sigla }} - {{ u.nome }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="objetivosAprendizagem" class="form-label small fw-semibold text-secondary">
+                Objetivos Pedagógicos de Aprendizagem
+              </label>
+              <textarea
+                id="objetivosAprendizagem"
+                class="form-control form-control-sm"
+                rows="3"
+                [(ngModel)]="formulario.objetivosAprendizagem"
+                name="objetivosAprendizagem"
+                placeholder="Ex.: Reconhecer gatilhos de medicação e anticoagulação, analisar causa-raiz com 6M..."
+              ></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label for="descricaoCaso" class="form-label small fw-semibold text-secondary">
+                Contextualização Clínica
+              </label>
+              <textarea
+                id="descricaoCaso"
+                class="form-control form-control-sm"
+                rows="3"
+                [(ngModel)]="formulario.descricaoCaso"
+                name="descricaoCaso"
+                placeholder="Breve resumo clínico para orientação do docente ou equipe..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: DADOS DO PACIENTE E INTERNAÇÃO -->
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3">
+        <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+          <span class="fw-bold text-dark small text-uppercase font-monospace">
+            <i class="bi bi-person-badge me-1"></i> 2. Dados do Paciente e Período de Internação
+          </span>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label for="numeroAtendimento" class="form-label small fw-semibold text-secondary">
+                Nº do Prontuário / Atendimento <span class="text-danger">*</span>
+              </label>
+              <input
+                id="numeroAtendimento"
+                type="text"
+                class="form-control form-control-sm font-monospace"
+                [(ngModel)]="formulario.numeroAtendimento"
+                name="numeroAtendimento"
+                required
+                placeholder="Ex.: PRONT-2026-001"
+              />
+            </div>
+
+            <div class="col-md-3">
+              <label for="idadePaciente" class="form-label small fw-semibold text-secondary">
+                Idade do Paciente (anos) <span class="text-danger">*</span>
+              </label>
+              <input
+                id="idadePaciente"
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.idadePaciente"
+                name="idadePaciente"
+                required
+                min="0"
+                max="130"
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label for="dataAdmissao" class="form-label small fw-semibold text-secondary">
+                Data Admissão <span class="text-danger">*</span>
+              </label>
+              <input
+                id="dataAdmissao"
+                type="date"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.dataAdmissao"
+                (change)="calcularDias()"
+                name="dataAdmissao"
+                required
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label for="dataAlta" class="form-label small fw-semibold text-secondary">
+                Data Alta / Desfecho <span class="text-danger">*</span>
+              </label>
+              <input
+                id="dataAlta"
+                type="date"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.dataAlta"
+                (change)="calcularDias()"
+                name="dataAlta"
+                required
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label for="tempoPermanenciaDias" class="form-label small fw-semibold text-secondary">
+                Permanência (dias)
+              </label>
+              <input
+                id="tempoPermanenciaDias"
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.tempoPermanenciaDias"
+                name="tempoPermanenciaDias"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3: SESSÕES DO PRONTUÁRIO SIMULADO -->
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3">
+        <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+          <span class="fw-bold text-dark small text-uppercase font-monospace">
+            <i class="bi bi-file-earmark-medical me-1"></i> 3. Registros Clínicos Simulados do Prontuário
+          </span>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="sumarioAlta" class="form-label small fw-semibold text-secondary">
+                Sumário de Alta, Anamnese e Diagnósticos <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="sumarioAlta"
+                class="form-control form-control-sm font-monospace"
+                rows="4"
+                [(ngModel)]="formulario.sumarioAlta"
+                name="sumarioAlta"
+                required
+                placeholder="Histórico da admissão, queixa principal, hipóteses diagnósticas e evolução para alta..."
+              ></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label for="prescricoesMedicas" class="form-label small fw-semibold text-secondary">
+                Prescrições Médicas e Farmacoterapia
+              </label>
+              <textarea
+                id="prescricoesMedicas"
+                class="form-control form-control-sm font-monospace"
+                rows="5"
+                [(ngModel)]="formulario.prescricoesMedicas"
+                name="prescricoesMedicas"
+                placeholder="Medicamentos prescritos, dosagens, horários, diluições, suspensões..."
+              ></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label for="examesLaboratoriais" class="form-label small fw-semibold text-secondary">
+                Resultados de Exames Laboratoriais e Imagem
+              </label>
+              <textarea
+                id="examesLaboratoriais"
+                class="form-control form-control-sm font-monospace"
+                rows="5"
+                [(ngModel)]="formulario.examesLaboratoriais"
+                name="examesLaboratoriais"
+                placeholder="Hemograma, coagulograma, gasometria, creatinina, glicemia, raio-X..."
+              ></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label for="evolucoesMultiprofissionais" class="form-label small fw-semibold text-secondary">
+                Evoluções Multiprofissionais (Enfermagem, Farmácia, Médica, etc.)
+              </label>
+              <textarea
+                id="evolucoesMultiprofissionais"
+                class="form-control form-control-sm font-monospace"
+                rows="5"
+                [(ngModel)]="formulario.evolucoesMultiprofissionais"
+                name="evolucoesMultiprofissionais"
+                placeholder="Notas de enfermagem, sinais vitais, intercorrências, checagem de beira de leito..."
+              ></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label for="relatorioCirurgico" class="form-label small fw-semibold text-secondary">
+                Relatório Cirúrgico e Anestésico (Opcional)
+              </label>
+              <textarea
+                id="relatorioCirurgico"
+                class="form-control form-control-sm font-monospace"
+                rows="5"
+                [(ngModel)]="formulario.relatorioCirurgico"
+                name="relatorioCirurgico"
+                placeholder="Descrição do procedimento cirúrgico, técnica anestésica, contagem de compressas, sangramento..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÕES DE SUBMISSÃO -->
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3 mb-4 d-flex flex-row justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary px-3" (click)="voltarParaListagem()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
+          [disabled]="salvando()"
+        >
+          @if (salvando()) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span>Salvando...</span>
+          } @else {
+            <i class="bi bi-check-lg"></i>
+            <span>{{ modoEdicao() ? "Salvar Alterações" : "Cadastrar Caso Clínico" }}</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

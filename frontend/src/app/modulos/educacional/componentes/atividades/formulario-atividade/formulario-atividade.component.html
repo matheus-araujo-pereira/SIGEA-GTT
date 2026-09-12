@@ -1,0 +1,211 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
+      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltarParaListagem()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA ATIVIDADES</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemErro()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">Carregando dados da atividade...</p>
+    </div>
+  } @else {
+    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+      <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+        <span class="fw-bold text-dark small text-uppercase font-monospace">
+          <i class="bi bi-journal-plus me-1"></i> Configurações da Atividade Prática
+        </span>
+      </div>
+
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <!-- TÍTULO DA ATIVIDADE -->
+            <div class="col-12">
+              <label for="titulo" class="form-label small fw-semibold text-secondary">
+                Título da Atividade <span class="text-danger">*</span>
+              </label>
+              <input
+                id="titulo"
+                type="text"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.titulo"
+                name="titulo"
+                required
+                placeholder="Ex.: Auditoria de Prontuário 01 - Rastreamento de Gatilhos e Análise 6M"
+              />
+            </div>
+
+            <!-- TURMA -->
+            <div class="col-md-6">
+              <label for="turmaId" class="form-label small fw-semibold text-secondary">
+                Turma Acadêmica <span class="text-danger">*</span>
+              </label>
+              <select
+                id="turmaId"
+                class="form-select form-select-sm"
+                [(ngModel)]="formulario.turmaId"
+                name="turmaId"
+                required
+              >
+                <option [ngValue]="0" disabled>Selecione a turma...</option>
+                @for (t of turmas(); track t.id) {
+                  <option [ngValue]="t.id">
+                    {{ t.codigoDisciplina }} - {{ t.periodoLetivo }} ({{ t.nomeDisciplina || 'Disciplina' }})
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- CASO CLÍNICO -->
+            <div class="col-md-6">
+              <label for="casoClinicoId" class="form-label small fw-semibold text-secondary">
+                Caso Clínico Simulado <span class="text-danger">*</span>
+              </label>
+              <select
+                id="casoClinicoId"
+                class="form-select form-select-sm"
+                [(ngModel)]="formulario.casoClinicoId"
+                name="casoClinicoId"
+                required
+              >
+                <option [ngValue]="0" disabled>Selecione o caso clínico...</option>
+                @for (c of casos(); track c.id) {
+                  <option [ngValue]="c.id">
+                    {{ c.numeroAtendimento }} — {{ c.titulo }} ({{ c.unidadeHospitalarSigla }})
+                  </option>
+                }
+              </select>
+            </div>
+
+            <!-- PRAZOS -->
+            <div class="col-md-4">
+              <label for="dataInicio" class="form-label small fw-semibold text-secondary">
+                Data de Abertura <span class="text-danger">*</span>
+              </label>
+              <input
+                id="dataInicio"
+                type="date"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.dataInicio"
+                name="dataInicio"
+                required
+              />
+            </div>
+
+            <div class="col-md-4">
+              <label for="dataFim" class="form-label small fw-semibold text-secondary">
+                Prazo Limite para Envio <span class="text-danger">*</span>
+              </label>
+              <input
+                id="dataFim"
+                type="date"
+                class="form-control form-control-sm"
+                [(ngModel)]="formulario.dataFim"
+                name="dataFim"
+                required
+              />
+            </div>
+
+            <!-- TEMPO LIMITE (PADRÃO IHI GTT: 20 MIN) -->
+            <div class="col-md-4">
+              <label for="tempoLimiteMinutos" class="form-label small fw-semibold text-secondary">
+                Tempo Limite Cronometrado (minutos) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group input-group-sm">
+                <input
+                  id="tempoLimiteMinutos"
+                  type="number"
+                  class="form-control"
+                  [(ngModel)]="formulario.tempoLimiteMinutos"
+                  name="tempoLimiteMinutos"
+                  required
+                  min="1"
+                  max="180"
+                />
+                <span class="input-group-text bg-light text-secondary">min (IHI GTT: 20)</span>
+              </div>
+            </div>
+
+            <!-- ORIENTAÇÕES PEDAGÓGICAS -->
+            <div class="col-12">
+              <label for="orientacoesPedagogicas" class="form-label small fw-semibold text-secondary">
+                Orientações Pedagógicas para os Alunos
+              </label>
+              <textarea
+                id="orientacoesPedagogicas"
+                class="form-control form-control-sm"
+                rows="4"
+                [(ngModel)]="formulario.orientacoesPedagogicas"
+                name="orientacoesPedagogicas"
+                placeholder="Instruções aos discentes sobre a realização da auditoria clínica, busca ativa de gatilhos nos registros e preenchimento dos pilares 6M, 5W3H e PDCA..."
+              ></textarea>
+            </div>
+
+            <!-- ATIVA -->
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="ativa"
+                  [(ngModel)]="formulario.ativa"
+                  name="ativa"
+                />
+                <label class="form-check-label small fw-semibold text-dark" for="ativa">
+                  Atividade Ativa (visível para os alunos realizarem)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÕES -->
+          <div class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary px-3" (click)="voltarParaListagem()">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
+              [disabled]="salvando()"
+            >
+              @if (salvando()) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Salvando...</span>
+              } @else {
+                <i class="bi bi-check-lg"></i>
+                <span>{{ modoEdicao() ? "Salvar Alterações" : "Criar Atividade" }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

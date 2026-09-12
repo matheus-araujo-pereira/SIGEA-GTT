@@ -1,0 +1,328 @@
+<div>
+  @if (carregando()) {
+    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando painel...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">Carregando métricas e submissões da turma...</p>
+    </div>
+  } @else {
+    @if (painel(); as p) {
+    <!-- CABEÇALHO DO PAINEL -->
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary text-white font-monospace">{{ p.atividade.turmaCodigo }}</span>
+          <h1 class="h4 fw-bold text-dark m-0">{{ p.atividade.titulo }}</h1>
+        </div>
+        <span class="text-secondary small">
+          {{ p.atividade.turmaDisciplina }} | Prazo: {{ p.atividade.dataInicio }} a {{ p.atividade.dataFim }} | Tempo IHI GTT: {{ p.atividade.tempoLimiteMinutos }} min
+        </span>
+      </div>
+      <div class="d-flex gap-2">
+        <button
+          type="button"
+          class="btn btn-outline-info btn-sm d-inline-flex align-items-center gap-1 px-3"
+          (click)="abrirProntuario()"
+        >
+          <i class="bi bi-file-earmark-medical"></i>
+          <span>VER PRONTUÁRIO DO CASO</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+          (click)="voltar()"
+        >
+          <i class="bi bi-arrow-left"></i>
+          <span>VOLTAR PARA ATIVIDADES</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CARDS DE MÉTRICAS DA TURMA -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+          <div class="text-secondary small text-uppercase font-monospace">Total de Discentes</div>
+          <div class="d-flex align-items-baseline justify-content-between mt-1">
+            <span class="fs-4 fw-bold text-dark">{{ p.totalAlunos }}</span>
+            <i class="bi bi-people text-secondary fs-4"></i>
+          </div>
+          <div class="text-muted small">Matriculados na turma</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+          <div class="text-secondary small text-uppercase font-monospace">Submissões Entregues</div>
+          <div class="d-flex align-items-baseline justify-content-between mt-1">
+            <span class="fs-4 fw-bold text-primary">{{ p.totalSubmissoes }}</span>
+            <i class="bi bi-clipboard-check text-primary fs-4"></i>
+          </div>
+          <div class="text-muted small">
+            {{ p.totalAlunos > 0 ? ((p.totalSubmissoes / p.totalAlunos) * 100 | number:'1.0-0') : 0 }}% de adesão
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+          <div class="text-secondary small text-uppercase font-monospace">Aguardando Correção</div>
+          <div class="d-flex align-items-baseline justify-content-between mt-1">
+            <span class="fs-4 fw-bold text-warning">{{ p.totalPendentesCorrecao }}</span>
+            <i class="bi bi-clock-history text-warning fs-4"></i>
+          </div>
+          <div class="text-muted small">Prontas para avaliação docente</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+          <div class="text-secondary small text-uppercase font-monospace">Média Geral da Turma</div>
+          <div class="d-flex align-items-baseline justify-content-between mt-1">
+            <span class="fs-4 fw-bold text-success">
+              {{ p.mediaNotas !== null && p.mediaNotas !== undefined ? (p.mediaNotas | number:'1.1-1') : '-' }}
+            </span>
+            <i class="bi bi-award text-success fs-4"></i>
+          </div>
+          <div class="text-muted small">{{ p.totalAvaliadas }} avaliações concluídas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD DO CASO CLÍNICO VINCULADO -->
+    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="badge bg-light text-dark border me-2">{{ p.casoClinico.unidadeHospitalarSigla }}</span>
+          <span class="fw-bold text-dark font-monospace">{{ p.casoClinico.numeroAtendimento }}</span> —
+          <span class="text-secondary">{{ p.casoClinico.titulo }}</span>
+        </div>
+        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" (click)="abrirProntuario()">
+          Consultar Prontuário Completo <i class="bi bi-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- BARRA DE FILTROS E BUSCA -->
+    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-8">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-secondary border-end-0">
+              <i class="bi bi-search"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control border-start-0"
+              [ngModel]="termoBusca()"
+              (ngModelChange)="atualizarBusca($event)"
+              placeholder="Buscar por nome do aluno, e-mail ou matrícula..."
+            />
+            @if (termoBusca()) {
+              <button class="btn btn-outline-secondary" type="button" (click)="atualizarBusca('')">
+                <i class="bi bi-x"></i>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <select
+            class="form-select form-select-sm"
+            [ngModel]="filtroStatus()"
+            (ngModelChange)="atualizarFiltroStatus($event)"
+          >
+            <option value="TODOS">Todos os Status</option>
+            <option value="PENDENTE_CORRECAO">Aguardando Correção</option>
+            <option value="AVALIADA">Avaliadas / Com Nota</option>
+            <option value="EM_ANDAMENTO">Em Andamento</option>
+            <option value="NAO_INICIADA">Não Iniciadas</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABELA DE ALUNOS -->
+    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+      <div class="table-responsive bg-white">
+        <table class="table table-hover table-sm m-0 align-middle bg-white">
+          <thead class="bg-white text-secondary small font-monospace border-bottom border-light-subtle">
+            <tr>
+              <th scope="col" class="py-2 px-3 bg-white text-secondary">ALUNO</th>
+              <th scope="col" class="py-2 px-2 bg-white text-secondary">STATUS</th>
+              <th scope="col" class="py-2 px-2 bg-white text-secondary">TEMPO GASTO</th>
+              <th scope="col" class="py-2 px-2 bg-white text-secondary">DATA SUBMISSÃO</th>
+              <th scope="col" class="py-2 px-2 bg-white text-secondary">NOTA</th>
+              <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">AÇÕES</th>
+            </tr>
+          </thead>
+          <tbody class="small font-monospace bg-white">
+            @for (a of alunosPaginados(); track a.alunoId) {
+              <tr class="bg-white">
+                <td class="py-2 px-3 bg-white">
+                  <div class="fw-bold text-dark font-sans-serif">{{ a.alunoNome }}</div>
+                  <div class="text-secondary small font-monospace">
+                    {{ a.alunoEmail }} @if (a.alunoMatricula) { • Matrícula: {{ a.alunoMatricula }} }
+                  </div>
+                </td>
+                <td class="py-2 px-2 bg-white">
+                  @if (a.status === 'AVALIADA') {
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">AVALIADA</span>
+                  } @else if (a.status === 'SUBMETIDA') {
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">AGUARDANDO CORREÇÃO</span>
+                  } @else if (a.status === 'EM_ANDAMENTO') {
+                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">EM ANDAMENTO</span>
+                  } @else {
+                    <span class="badge bg-light text-secondary border">NÃO INICIADA</span>
+                  }
+                </td>
+                <td class="py-2 px-2 text-secondary bg-white">
+                  {{ formatarTempo(a.tempoGastoSegundos) }}
+                </td>
+                <td class="py-2 px-2 text-secondary bg-white">
+                  {{ a.dataSubmissao ? (a.dataSubmissao | date:'dd/MM/yyyy HH:mm') : '-' }}
+                </td>
+                <td class="py-2 px-2 bg-white">
+                  @if (a.nota !== null && a.nota !== undefined) {
+                    <span class="fw-bold text-dark fs-6">{{ a.nota | number:'1.1-1' }}</span> / 10
+                  } @else {
+                    <span class="text-muted">-</span>
+                  }
+                </td>
+                <td class="py-2 px-3 text-end text-nowrap bg-white">
+                  @if (a.submissaoId && a.status === 'SUBMETIDA') {
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm py-0 px-2 rounded-1"
+                      (click)="navegarParaCorrigir(a.submissaoId)"
+                      title="Avaliar e Atribuir Nota"
+                    >
+                      <i class="bi bi-pencil-square me-1"></i>CORRIGIR
+                    </button>
+                  } @else if (a.submissaoId && a.status === 'AVALIADA') {
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-1"
+                      (click)="navegarParaCorrigir(a.submissaoId)"
+                      title="Revisar Avaliação e Nota"
+                    >
+                      REVER AVALIAÇÃO
+                    </button>
+                  } @else {
+                    <span class="text-muted small">Sem entrega</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center py-5 text-muted bg-white">
+                  <i class="bi bi-person-x fs-2 d-block text-secondary mb-2"></i>
+                  Nenhum discente encontrado com os filtros selecionados.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINAÇÃO -->
+      <app-paginacao
+        [totalItens]="totalFiltrados()"
+        [itensPorPagina]="itensPorPagina"
+        [paginaAtual]="paginaAtual()"
+        (paginaAlterada)="mudarPagina($event)"
+      >
+      </app-paginacao>
+    </div>
+
+    <!-- MODAL DO PRONTUÁRIO -->
+    @if (casoModal(); as caso) {
+      <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content rounded-2 shadow">
+            <div class="modal-header py-2 px-3 bg-light border-bottom">
+              <div>
+                <h5 class="modal-title h6 fw-bold text-dark m-0">
+                  <i class="bi bi-file-earmark-medical text-primary me-2"></i>
+                  Prontuário Simulado: {{ caso.numeroAtendimento }} — {{ caso.titulo }}
+                </h5>
+                <span class="text-secondary small">
+                  {{ caso.unidadeHospitalarSigla }} | Paciente: {{ caso.idadePaciente }} anos | Internação: {{ caso.dataAdmissao }} a {{ caso.dataAlta }} ({{ caso.tempoPermanenciaDias }} dias)
+                </span>
+              </div>
+              <button type="button" class="btn-close btn-sm" (click)="fecharProntuario()" aria-label="Fechar"></button>
+            </div>
+
+            <div class="border-bottom px-3 pt-2 bg-white">
+              <ul class="nav nav-tabs border-0 small font-monospace">
+                <li class="nav-item">
+                  <button class="nav-link py-2" [class.active]="abaModal() === 'sumario'" (click)="abaModal.set('sumario')">
+                    Sumário de Alta
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link py-2" [class.active]="abaModal() === 'prescricoes'" (click)="abaModal.set('prescricoes')">
+                    Prescrições Médicas
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link py-2" [class.active]="abaModal() === 'exames'" (click)="abaModal.set('exames')">
+                    Exames Laboratoriais
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link py-2" [class.active]="abaModal() === 'evolucoes'" (click)="abaModal.set('evolucoes')">
+                    Evoluções Multiprofissionais
+                  </button>
+                </li>
+                @if (caso.relatorioCirurgico) {
+                  <li class="nav-item">
+                    <button class="nav-link py-2" [class.active]="abaModal() === 'cirurgico'" (click)="abaModal.set('cirurgico')">
+                      Relatório Cirúrgico
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <div class="modal-body p-4 bg-light">
+              <div class="card border border-light-subtle bg-white p-3 rounded-2">
+                @if (abaModal() === 'sumario') {
+                  <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+                    {{ caso.sumarioAlta }}
+                  </div>
+                }
+                @if (abaModal() === 'prescricoes') {
+                  <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+                    {{ caso.prescricoesMedicas }}
+                  </div>
+                }
+                @if (abaModal() === 'exames') {
+                  <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+                    {{ caso.examesLaboratoriais }}
+                  </div>
+                }
+                @if (abaModal() === 'evolucoes') {
+                  <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+                    {{ caso.evolucoesMultiprofissionais }}
+                  </div>
+                }
+                @if (abaModal() === 'cirurgico') {
+                  <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+                    {{ caso.relatorioCirurgico }}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="modal-footer py-2 px-3 bg-light border-top">
+              <button type="button" class="btn btn-secondary btn-sm px-3" (click)="fecharProntuario()">Fechar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+}
+</div>

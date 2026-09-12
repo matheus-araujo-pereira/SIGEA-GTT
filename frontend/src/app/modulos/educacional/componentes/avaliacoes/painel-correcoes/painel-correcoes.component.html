@@ -1,0 +1,115 @@
+<div>
+  <!-- CABEÇALHO -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">Painel de Correções & Avaliações</h1>
+      <span class="text-secondary small">
+        {{ totalPendentes() }} submissão(ões) aguardando avaliação docente e atribuição de nota
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="carregarPendentes()"
+    >
+      <i class="bi bi-arrow-clockwise"></i>
+      <span>ATUALIZAR LISTA</span>
+    </button>
+  </div>
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  <!-- BARRA DE BUSCA -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3">
+    <div class="input-group input-group-sm">
+      <span class="input-group-text bg-light text-secondary border-end-0">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control border-start-0"
+        [ngModel]="termoBusca()"
+        (ngModelChange)="atualizarBusca($event)"
+        placeholder="Filtrar por nome do discente, matrícula, título da atividade ou disciplina..."
+      />
+      @if (termoBusca()) {
+        <button class="btn btn-outline-secondary" type="button" (click)="atualizarBusca('')">
+          <i class="bi bi-x"></i>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- TABELA DE SUBMISSÕES PENDENTES -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+    <div class="table-responsive bg-white">
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead class="bg-white text-secondary small font-monospace border-bottom border-light-subtle">
+          <tr>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">ALUNO / DISCENTE</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">ATIVIDADE / DISCIPLINA</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">TEMPO GASTO</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">DATA SUBMISSÃO</th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">AÇÃO</th>
+          </tr>
+        </thead>
+        <tbody class="small font-monospace bg-white">
+          @for (s of pendentesPaginados(); track s.id) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 bg-white">
+                <div class="fw-bold text-dark font-sans-serif">{{ s.alunoNome }}</div>
+                <div class="text-secondary small font-monospace">
+                  {{ s.alunoEmail }} @if (s.alunoMatricula) { • {{ s.alunoMatricula }} }
+                </div>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <div class="fw-bold text-dark font-sans-serif">{{ s.atividadeTitulo }}</div>
+                <div class="small text-muted">{{ s.disciplinaNome }}</div>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <span class="badge bg-light text-dark border">{{ formatarTempo(s.tempoGastoSegundos) }}</span>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ s.dataSubmissao ? (s.dataSubmissao | date:'dd/MM/yyyy HH:mm') : '-' }}
+              </td>
+              <td class="py-2 px-3 text-end text-nowrap bg-white">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm py-0 px-3 rounded-1"
+                  (click)="navegarParaCorrigir(s.id)"
+                  title="Avaliar e Atribuir Nota"
+                >
+                  <i class="bi bi-pencil-square me-1"></i>CORRIGIR
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-check-circle fs-2 d-block text-success mb-2"></i>
+                Nenhuma submissão pendente de avaliação no momento!
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)"
+    >
+    </app-paginacao>
+  </div>
+</div>

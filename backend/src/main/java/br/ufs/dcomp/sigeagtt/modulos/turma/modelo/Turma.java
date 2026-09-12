@@ -34,6 +34,10 @@ public class Turma {
     @Column(name = "codigo_disciplina", nullable = false, length = 30)
     private String codigoDisciplina;
 
+    @Size(max = 150)
+    @Column(name = "nome_disciplina", length = 150)
+    private String nomeDisciplina;
+
     @NotBlank
     @Size(max = 20)
     @Column(name = "periodo_letivo", nullable = false, length = 20)

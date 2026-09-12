@@ -66,7 +66,7 @@ export class AutenticacaoService {
       case 'PROFESSOR':
         return '/minhas-turmas';
       case 'ALUNO':
-        return '/auditoria';
+        return '/minhas-atividades';
       default:
         return '/login';
     }

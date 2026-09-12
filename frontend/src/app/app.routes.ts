@@ -12,26 +12,23 @@ import { GerenciarModulosComponent } from './modulos/gtt/componentes/gerenciar-m
 import { FormularioModuloComponent } from './modulos/gtt/componentes/formulario-modulo/formulario-modulo.component';
 import { GerenciarUnidadesComponent } from './modulos/unidade/componentes/gerenciar-unidades/gerenciar-unidades.component';
 import { FormularioUnidadeComponent } from './modulos/unidade/componentes/formulario-unidade/formulario-unidade.component';
-import { AuditoriaComponent } from './modulos/auditoria/componentes/execucao-auditoria/auditoria.component';
-import { VisualizarSubmissaoComponent } from './modulos/auditoria/componentes/visualizar-submissao/visualizar-submissao.component';
-import { MinhasNotasComponent } from './modulos/auditoria/componentes/minhas-notas/minhas-notas.component';
-import { GerenciarAtividadesComponent } from './modulos/auditoria/componentes/gerenciar-atividades/gerenciar-atividades.component';
-import { FormularioAtividadeComponent } from './modulos/auditoria/componentes/formulario-atividade/formulario-atividade.component';
-import { PainelAvaliacoesComponent } from './modulos/auditoria/componentes/painel-avaliacoes/painel-avaliacoes.component';
-import { CorrigirAuditoriaComponent } from './modulos/auditoria/componentes/corrigir-auditoria/corrigir-auditoria.component';
-import { MelhoriaQualidadeComponent } from './modulos/qualidade/componentes/melhoria-qualidade/melhoria-qualidade.component';
-import { IndicadoresComponent } from './modulos/indicadores/componentes/dashboard-indicadores/indicadores.component';
-import { QuadroResumoComponent } from './modulos/indicadores/componentes/quadro-resumo/quadro-resumo.component';
-import { RastreabilidadeGatilhosComponent } from './modulos/indicadores/componentes/rastreabilidade-gatilhos/rastreabilidade-gatilhos.component';
 import { TurmasComponent } from './modulos/turma/componentes/gerenciar-turmas/turmas.component';
 import { FormularioTurmaComponent } from './modulos/turma/componentes/formulario-turma/formulario-turma.component';
 import { AlunosTurmaComponent } from './modulos/turma/componentes/alunos-turma/alunos-turma.component';
 import { MinhasTurmasComponent } from './modulos/turma/componentes/minhas-turmas/minhas-turmas.component';
-import { GerenciarCenariosComponent } from './modulos/cenario/componentes/gerenciar-cenarios/gerenciar-cenarios.component';
-import { FormularioCenarioComponent } from './modulos/cenario/componentes/formulario-cenario/formulario-cenario.component';
-import { GerenciarProntuariosComponent } from './modulos/cenario/componentes/gerenciar-prontuarios/gerenciar-prontuarios.component';
-import { FormularioProntuarioComponent } from './modulos/cenario/componentes/formulario-prontuario/formulario-prontuario.component';
-import { VisualizarProntuarioComponent } from './modulos/cenario/componentes/visualizar-prontuario/visualizar-prontuario.component';
+import { GerenciarCasosClinicosComponent } from './modulos/educacional/componentes/casos-clinicos/gerenciar-casos-clinicos/gerenciar-casos-clinicos.component';
+import { FormularioCasoClinicoComponent } from './modulos/educacional/componentes/casos-clinicos/formulario-caso-clinico/formulario-caso-clinico.component';
+import { GerenciarAtividadesComponent } from './modulos/educacional/componentes/atividades/gerenciar-atividades/gerenciar-atividades.component';
+import { FormularioAtividadeComponent } from './modulos/educacional/componentes/atividades/formulario-atividade/formulario-atividade.component';
+import { PainelAtividadeComponent } from './modulos/educacional/componentes/atividades/painel-atividade/painel-atividade.component';
+import { PainelCorrecoesComponent } from './modulos/educacional/componentes/avaliacoes/painel-correcoes/painel-correcoes.component';
+import { CorrigirSubmissaoComponent } from './modulos/educacional/componentes/avaliacoes/corrigir-submissao/corrigir-submissao.component';
+import { MinhasAtividadesComponent } from './modulos/educacional/componentes/aluno/minhas-atividades/minhas-atividades.component';
+import { ExecucaoAtividadeComponent } from './modulos/educacional/componentes/aluno/execucao-atividade/execucao-atividade.component';
+import { ResultadoAtividadeComponent } from './modulos/educacional/componentes/aluno/resultado-atividade/resultado-atividade.component';
+import { IndicadoresComponent } from './modulos/indicadores/componentes/dashboard-indicadores/indicadores.component';
+import { QuadroResumoComponent } from './modulos/indicadores/componentes/quadro-resumo/quadro-resumo.component';
+import { RastreabilidadeGatilhosComponent } from './modulos/indicadores/componentes/rastreabilidade-gatilhos/rastreabilidade-gatilhos.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
 import { AutenticacaoService } from './modulos/autenticacao/servicos/autenticacao.service';
@@ -173,59 +170,27 @@ export const routes: Routes = [
         data: { perfis: ['PROFESSOR'] },
       },
 
-      // Cenários Clínicos Reutilizáveis
+      // Casos Clínicos & Prontuários Simulados
       {
-        path: 'cenarios',
-        component: GerenciarCenariosComponent,
+        path: 'casos-clinicos',
+        component: GerenciarCasosClinicosComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
       {
-        path: 'cenarios/novo',
-        component: FormularioCenarioComponent,
+        path: 'casos-clinicos/novo',
+        component: FormularioCasoClinicoComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
       {
-        path: 'cenarios/:id/editar',
-        component: FormularioCenarioComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
-      },
-
-      // Prontuários Simulados
-      {
-        path: 'prontuarios',
-        component: GerenciarProntuariosComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
-      },
-      {
-        path: 'cenarios/:cenarioId/prontuarios',
-        component: GerenciarProntuariosComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
-      },
-      {
-        path: 'prontuarios/novo',
-        component: FormularioProntuarioComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
-      },
-      {
-        path: 'prontuarios/:id/editar',
-        component: FormularioProntuarioComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
-      },
-      {
-        path: 'prontuarios/:id/visualizar',
-        component: VisualizarProntuarioComponent,
+        path: 'casos-clinicos/:id/editar',
+        component: FormularioCasoClinicoComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
 
-      // Atividades de Auditoria Docente
+      // Atividades Educacionais
       {
         path: 'atividades',
         component: GerenciarAtividadesComponent,
@@ -244,48 +209,48 @@ export const routes: Routes = [
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
-
-      // Avaliações & Correções Docentes
       {
-        path: 'avaliacoes',
-        component: PainelAvaliacoesComponent,
+        path: 'atividades/:id/painel',
+        component: PainelAtividadeComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
       {
-        path: 'avaliacoes/:id/corrigir',
-        component: CorrigirAuditoriaComponent,
+        path: 'atividades/correcoes',
+        component: PainelCorrecoesComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
 
-      // Auditoria Clínica do Aluno
+      // Correção e Avaliação Docente
       {
-        path: 'auditoria',
-        component: AuditoriaComponent,
+        path: 'submissoes/:id/corrigir',
+        component: CorrigirSubmissaoComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
-      },
-      {
-        path: 'auditoria/:revisaoId/visualizar',
-        component: VisualizarSubmissaoComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
-      },
-      {
-        path: 'minhas-notas',
-        component: MinhasNotasComponent,
-        canActivate: [perfilGuard],
-        data: { perfis: ['ALUNO'] },
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
 
-      // Melhoria e Indicadores
+      // Ambiente do Aluno
       {
-        path: 'melhoria/:revisaoId',
-        component: MelhoriaQualidadeComponent,
+        path: 'minhas-atividades',
+        component: MinhasAtividadesComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
       },
+      {
+        path: 'atividades/:id/executar',
+        component: ExecucaoAtividadeComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
+      },
+      {
+        path: 'submissoes/:id/resultado',
+        component: ResultadoAtividadeComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
+      },
+
+      // Indicadores Epidemiológicos (somente administradores)
       {
         path: 'indicadores',
         component: IndicadoresComponent,

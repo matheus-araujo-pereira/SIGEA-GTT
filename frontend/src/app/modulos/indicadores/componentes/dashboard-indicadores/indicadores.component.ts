@@ -11,10 +11,10 @@ import {
   SerieTemporalPonto,
 } from '../../servicos/indicadores.service';
 import { TurmaService } from '../../../turma/servicos/turma.service';
-import { CenarioClinicoService } from '../../../cenario/servicos/cenario-clinico.service';
+import { EducacionalService } from '../../../educacional/servicos/educacional.service';
 import { UnidadeService } from '../../../unidade/servicos/unidade.service';
 import { Turma } from '../../../turma/modelos/turma.modelos';
-import { CenarioClinico } from '../../../cenario/modelos/cenario.modelos';
+import { CasoClinico } from '../../../educacional/modelos/educacional.modelos';
 import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
 
 export interface MetricaCard {
@@ -88,12 +88,12 @@ export interface BarraSeveridade {
 export class IndicadoresComponent implements OnInit {
   private readonly indicadoresService = inject(IndicadoresService);
   private readonly turmaService = inject(TurmaService);
-  private readonly cenarioService = inject(CenarioClinicoService);
+  private readonly educacionalService = inject(EducacionalService);
   private readonly unidadeService = inject(UnidadeService);
 
   readonly indicadores = signal<IndicadoresIHI | null>(null);
   readonly turmas = signal<Turma[]>([]);
-  readonly cenarios = signal<CenarioClinico[]>([]);
+  readonly cenarios = signal<CasoClinico[]>([]);
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly carregando = signal<boolean>(false);
   readonly exportandoPdf = signal<boolean>(false);
@@ -476,7 +476,7 @@ export class IndicadoresComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarTurmas();
-    this.cenarioService.listar().subscribe({
+    this.educacionalService.listarCasos().subscribe({
       next: (c) => this.cenarios.set(c),
       error: (e) => console.error('Erro ao carregar cenários:', e),
     });

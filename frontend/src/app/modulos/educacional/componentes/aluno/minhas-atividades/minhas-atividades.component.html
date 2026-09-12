@@ -1,0 +1,228 @@
+<div>
+  <!-- CABEÇALHO DO AMBIENTE DO ALUNO -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">Minhas Atividades de Auditoria Clínica</h1>
+      <span class="text-secondary small">
+        Ambiente do Discente para auditoria de prontuários com a metodologia IHI Global Trigger Tool
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="carregarAtividades()"
+    >
+      <i class="bi bi-arrow-clockwise"></i>
+      <span>ATUALIZAR</span>
+    </button>
+  </div>
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  <!-- CARDS RESUMO DO DISCENTE -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+        <div class="text-secondary small text-uppercase font-monospace">Atividades Vinculadas</div>
+        <div class="d-flex align-items-baseline justify-content-between mt-1">
+          <span class="fs-4 fw-bold text-dark">{{ totalAtividades() }}</span>
+          <i class="bi bi-journal-text text-secondary fs-4"></i>
+        </div>
+        <div class="text-muted small">Nas suas turmas matriculadas</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+        <div class="text-secondary small text-uppercase font-monospace">Avaliadas com Nota</div>
+        <div class="d-flex align-items-baseline justify-content-between mt-1">
+          <span class="fs-4 fw-bold text-success">{{ totalAvaliadas() }}</span>
+          <i class="bi bi-check-circle-fill text-success fs-4"></i>
+        </div>
+        <div class="text-muted small">Com parecer pedagógico do docente</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+        <div class="text-secondary small text-uppercase font-monospace">Pendentes ou Em Curso</div>
+        <div class="d-flex align-items-baseline justify-content-between mt-1">
+          <span class="fs-4 fw-bold text-warning">{{ totalPendentes() }}</span>
+          <i class="bi bi-hourglass-split text-warning fs-4"></i>
+        </div>
+        <div class="text-muted small">Para realização ou aguardando nota</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+        <div class="text-secondary small text-uppercase font-monospace">Média Geral do Discente</div>
+        <div class="d-flex align-items-baseline justify-content-between mt-1">
+          <span class="fs-4 fw-bold text-primary">
+            {{ mediaNotas() !== null ? (mediaNotas() | number:'1.1-1') : '-' }}
+          </span>
+          <i class="bi bi-award text-primary fs-4"></i>
+        </div>
+        <div class="text-muted small">Aproveitamento curricular</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE BUSCA E FILTRO -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-secondary border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            [ngModel]="termoBusca()"
+            (ngModelChange)="atualizarBusca($event)"
+            placeholder="Buscar por atividade, disciplina, docente ou caso clínico..."
+          />
+          @if (termoBusca()) {
+            <button class="btn btn-outline-secondary" type="button" (click)="atualizarBusca('')">
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroStatus()"
+          (ngModelChange)="atualizarFiltroStatus($event)"
+        >
+          <option value="TODOS">Todos os Status</option>
+          <option value="NAO_INICIADA">Não Iniciadas</option>
+          <option value="EM_ANDAMENTO">Em Andamento (Rascunho)</option>
+          <option value="SUBMETIDA">Submetidas (Aguardando Nota)</option>
+          <option value="AVALIADA">Avaliadas com Nota</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABELA DE ATIVIDADES DO ALUNO -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+    <div class="table-responsive bg-white">
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead class="bg-white text-secondary small font-monospace border-bottom border-light-subtle">
+          <tr>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">ATIVIDADE & CASO CLÍNICO</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">DISCIPLINA & DOCENTE</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">PRAZO LIMITE</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">STATUS</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">NOTA</th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">AÇÃO</th>
+          </tr>
+        </thead>
+        <tbody class="small font-monospace bg-white">
+          @for (a of atividadesPaginadas(); track a.atividadeId) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 bg-white">
+                <div class="fw-bold text-dark font-sans-serif">{{ a.titulo }}</div>
+                <div class="text-secondary small font-monospace">
+                  <span class="badge bg-light text-dark border me-1">{{ a.unidadeHospitalarSigla }}</span>
+                  {{ a.casoClinicoTitulo }} • Limite: {{ a.tempoLimiteMinutos }} min
+                </div>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <div class="fw-bold text-dark">{{ a.codigoDisciplina }} - {{ a.nomeDisciplina }}</div>
+                <div class="small text-muted">{{ a.professorNome }}</div>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ a.dataFim }}
+              </td>
+              <td class="py-2 px-2 bg-white">
+                @if (a.status === 'AVALIADA') {
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">AVALIADA</span>
+                } @else if (a.status === 'SUBMETIDA') {
+                  <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">SUBMETIDA</span>
+                } @else if (a.status === 'EM_ANDAMENTO') {
+                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">EM ANDAMENTO</span>
+                } @else {
+                  <span class="badge bg-light text-secondary border">NÃO INICIADA</span>
+                }
+              </td>
+              <td class="py-2 px-2 bg-white">
+                @if (a.nota !== null && a.nota !== undefined) {
+                  <span class="fw-bold text-dark fs-6">{{ a.nota | number:'1.1-1' }}</span> / 10
+                } @else {
+                  <span class="text-muted">-</span>
+                }
+              </td>
+              <td class="py-2 px-3 text-end text-nowrap bg-white">
+                @if (a.status === 'AVALIADA' && a.submissaoId) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm py-0 px-2 rounded-1"
+                    (click)="verResultado(a.submissaoId)"
+                    title="Ver Nota e Parecer do Docente"
+                  >
+                    <i class="bi bi-award me-1"></i>VER PARECER
+                  </button>
+                } @else if (a.status === 'SUBMETIDA' && a.submissaoId) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-1"
+                    (click)="verResultado(a.submissaoId)"
+                    title="Ver Minha Submissão"
+                  >
+                    VER RESPOSTA
+                  </button>
+                } @else if (a.status === 'EM_ANDAMENTO') {
+                  <button
+                    type="button"
+                    class="btn btn-warning btn-sm py-0 px-2 rounded-1"
+                    (click)="iniciarOuContinuar(a.atividadeId)"
+                    title="Continuar Auditoria em Andamento"
+                  >
+                    <i class="bi bi-play-fill me-1"></i>CONTINUAR
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm py-0 px-3 rounded-1"
+                    (click)="iniciarOuContinuar(a.atividadeId)"
+                    title="Iniciar Auditoria Clínica"
+                  >
+                    <i class="bi bi-play-circle me-1"></i>INICIAR
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-journal-check fs-2 d-block text-secondary mb-2"></i>
+                Nenhuma atividade educacional encontrada com os filtros selecionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)"
+    >
+    </app-paginacao>
+  </div>
+</div>

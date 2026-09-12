@@ -7,6 +7,7 @@ export interface Turma {
   criadaEm: string;
   professorResponsavelId: number;
   professorResponsavelNome: string;
+  nomeDisciplina?: string;
   totalAlunos: number;
 }
 

@@ -1,0 +1,768 @@
+<div>
+  @if (carregando()) {
+    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Iniciando auditoria clínica...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">Carregando prontuário e ambiente de auditoria GTT...</p>
+    </div>
+  } @else {
+    @if (submissao(); as sub) {
+    <!-- BARRA SUPERIOR DE EXECUÇÃO E CRONÔMETRO -->
+    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3 mb-3 sticky-top" style="top: 10px; z-index: 1020;">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary font-monospace">{{ sub.casoClinico.unidadeHospitalarSigla }}</span>
+            <h1 class="h5 fw-bold text-dark m-0">{{ sub.atividadeTitulo }}</h1>
+          </div>
+          <span class="text-secondary small">
+            {{ sub.disciplinaNome }} • Docente: {{ sub.professorNome }} • Prontuário: <strong>{{ sub.casoClinico.numeroAtendimento }}</strong>
+          </span>
+        </div>
+
+        <!-- TEMPORIZADOR IHI GTT -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="text-end">
+            <div class="small text-muted font-monospace">TEMPO RESTANTE (IHI GTT)</div>
+            <div
+              class="fs-5 fw-bold font-monospace d-flex align-items-center justify-content-end gap-1"
+              [class.text-danger]="tempoEsgotado()"
+              [class.text-dark]="!tempoEsgotado()"
+            >
+              <i class="bi bi-stopwatch"></i>
+              <span>{{ tempoRestanteFormatado() }}</span>
+            </div>
+          </div>
+
+          <!-- AÇÕES DE SALVAMENTO -->
+          <div class="d-flex gap-2">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm px-3"
+              (click)="salvarRascunho()"
+              [disabled]="salvando()"
+              title="Salvar respostas como rascunho para continuar depois"
+            >
+              <i class="bi bi-floppy me-1"></i>Salvar Rascunho
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-success btn-sm px-3 d-inline-flex align-items-center gap-1"
+              (click)="finalizarESubmeter()"
+              [disabled]="salvando()"
+              title="Validar os 4 pilares e enviar definitivamente ao docente"
+            >
+              @if (salvando()) {
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+                <span>Enviando...</span>
+              } @else {
+                <i class="bi bi-send-check-fill"></i>
+                <span>Finalizar e Submeter ({{ totalPilaresCompletos() }}/4)</span>
+              }
+            </button>
+
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="voltar()" title="Sair da auditoria">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE PROGRESSO DOS 4 PILARES -->
+      <div class="mt-2 pt-2 border-top">
+        <div class="d-flex justify-content-between align-items-center small font-monospace text-secondary mb-1">
+          <span>Progresso da Resolução: <strong>{{ totalPilaresCompletos() }}/4 pilares concluídos</strong> ({{ porcentagemProgresso() | number:'1.0-0' }}%)</span>
+          <span class="d-none d-md-inline">Exigência: 100% dos pilares preenchidos para entrega definitiva</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div
+            class="progress-bar"
+            [class.bg-success]="totalPilaresCompletos() === 4"
+            [class.bg-primary]="totalPilaresCompletos() < 4"
+            role="progressbar"
+            [style.width.%]="porcentagemProgresso()"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEEDBACKS -->
+    @if (mensagemSucesso()) {
+      <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>{{ mensagemSucesso() }}</span>
+        </div>
+        <button type="button" class="btn-close btn-sm" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+      </div>
+    }
+
+    @if (mensagemErro()) {
+      <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{ mensagemErro() }}</span>
+        </div>
+        <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+      </div>
+    }
+
+    <!-- ÁREA DIVIDIDA: PRONTUÁRIO À ESQUERDA, RESOLUÇÃO À DIREITA -->
+    <div class="row g-3">
+      <!-- COLUNA ESQUERDA: PRONTUÁRIO SIMULADO -->
+      <div class="col-lg-5">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden h-100">
+          <div class="card-header bg-white border-bottom border-light-subtle py-2 px-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-dark small font-monospace">
+                <i class="bi bi-file-earmark-medical text-primary me-1"></i>
+                Prontuário: {{ sub.casoClinico.numeroAtendimento }}
+              </span>
+              <span class="badge bg-light text-dark border">{{ sub.casoClinico.unidadeHospitalarSigla }}</span>
+            </div>
+            <div class="text-secondary small mt-1 font-monospace">
+              Idade: {{ sub.casoClinico.idadePaciente }} anos | Internação: {{ sub.casoClinico.dataAdmissao }} a {{ sub.casoClinico.dataAlta }} ({{ sub.casoClinico.tempoPermanenciaDias }}d)
+            </div>
+          </div>
+
+          <!-- ABAS DO PRONTUÁRIO -->
+          <div class="border-bottom px-2 pt-2 bg-white">
+            <ul class="nav nav-tabs border-0 small font-monospace">
+              <li class="nav-item">
+                <button
+                  class="nav-link py-1 px-2 small"
+                  [class.active]="abaProntuario() === 'sumario'"
+                  (click)="abaProntuario.set('sumario')"
+                >
+                  Sumário
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link py-1 px-2 small"
+                  [class.active]="abaProntuario() === 'prescricoes'"
+                  (click)="abaProntuario.set('prescricoes')"
+                >
+                  Prescrições
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link py-1 px-2 small"
+                  [class.active]="abaProntuario() === 'exames'"
+                  (click)="abaProntuario.set('exames')"
+                >
+                  Exames
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link py-1 px-2 small"
+                  [class.active]="abaProntuario() === 'evolucoes'"
+                  (click)="abaProntuario.set('evolucoes')"
+                >
+                  Evoluções
+                </button>
+              </li>
+              @if (sub.casoClinico.relatorioCirurgico) {
+                <li class="nav-item">
+                  <button
+                    class="nav-link py-1 px-2 small"
+                    [class.active]="abaProntuario() === 'cirurgico'"
+                    (click)="abaProntuario.set('cirurgico')"
+                  >
+                    Cirúrgico
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- CORPO COM ROLAGEM -->
+          <div class="card-body p-3 overflow-auto" style="max-height: 680px; font-size: 0.85rem;">
+            @if (abaProntuario() === 'sumario') {
+              <div class="text-secondary font-monospace" style="white-space: pre-wrap; line-height: 1.5;">
+                {{ sub.casoClinico.sumarioAlta }}
+              </div>
+            }
+            @if (abaProntuario() === 'prescricoes') {
+              <div class="text-secondary font-monospace" style="white-space: pre-wrap; line-height: 1.5;">
+                {{ sub.casoClinico.prescricoesMedicas }}
+              </div>
+            }
+            @if (abaProntuario() === 'exames') {
+              <div class="text-secondary font-monospace" style="white-space: pre-wrap; line-height: 1.5;">
+                {{ sub.casoClinico.examesLaboratoriais }}
+              </div>
+            }
+            @if (abaProntuario() === 'evolucoes') {
+              <div class="text-secondary font-monospace" style="white-space: pre-wrap; line-height: 1.5;">
+                {{ sub.casoClinico.evolucoesMultiprofissionais }}
+              </div>
+            }
+            @if (abaProntuario() === 'cirurgico') {
+              <div class="text-secondary font-monospace" style="white-space: pre-wrap; line-height: 1.5;">
+                {{ sub.casoClinico.relatorioCirurgico }}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA: OS 4 PILARES DA AUDITORIA -->
+      <div class="col-lg-7">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+          <!-- ABAS DOS 4 PILARES COM STATUS -->
+          <div class="card-header bg-white border-bottom border-light-subtle p-0">
+            <ul class="nav nav-tabs border-0 small font-monospace">
+              <li class="nav-item">
+                <button
+                  class="nav-link py-3 px-3 d-flex align-items-center gap-1"
+                  [class.active]="abaResolucao() === 'gatilhos'"
+                  (click)="abaResolucao.set('gatilhos')"
+                >
+                  <i class="bi bi-flag me-1"></i>
+                  <span>1. Gatilhos GTT</span>
+                  @if (progressoGatilhos()) {
+                    <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                  }
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link py-3 px-3 d-flex align-items-center gap-1"
+                  [class.active]="abaResolucao() === 'ishikawa'"
+                  (click)="abaResolucao.set('ishikawa')"
+                >
+                  <i class="bi bi-diagram-3 me-1"></i>
+                  <span>2. Ishikawa 6M</span>
+                  @if (progressoIshikawa()) {
+                    <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                  }
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link py-3 px-3 d-flex align-items-center gap-1"
+                  [class.active]="abaResolucao() === 'plano5w3h'"
+                  (click)="abaResolucao.set('plano5w3h')"
+                >
+                  <i class="bi bi-list-check me-1"></i>
+                  <span>3. Plano 5W3H</span>
+                  @if (progresso5w3h()) {
+                    <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                  }
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link py-3 px-3 d-flex align-items-center gap-1"
+                  [class.active]="abaResolucao() === 'pdca'"
+                  (click)="abaResolucao.set('pdca')"
+                >
+                  <i class="bi bi-arrow-repeat me-1"></i>
+                  <span>4. Ciclo PDCA</span>
+                  @if (progressoPdca()) {
+                    <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                  }
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card-body p-3 overflow-auto" style="max-height: 620px;">
+            <!-- PILAR 1: GATILHOS IDENTIFICADOS -->
+            @if (abaResolucao() === 'gatilhos') {
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h6 class="fw-bold text-dark m-0">Rastreamento de Gatilhos GTT (45 Gatilhos IHI)</h6>
+                  <span class="text-secondary small">
+                    Localize pistas clínicas no prontuário e confirme se houve Dano / Evento Adverso.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+                  (click)="abrirModalGatilho()"
+                >
+                  <i class="bi bi-plus-circle-fill"></i>
+                  <span>ADICIONAR GATILHO</span>
+                </button>
+              </div>
+
+              @if (achadosGatilhos.length === 0) {
+                <div class="text-center py-5 border border-dashed rounded-2 bg-light">
+                  <i class="bi bi-flag fs-1 d-block text-secondary mb-2"></i>
+                  <h6 class="fw-bold text-dark">Nenhum gatilho adicionado ainda</h6>
+                  <p class="text-muted small mb-3">
+                    Examine o prontuário à esquerda (prescrições, exames, evoluções) e clique em "Adicionar Gatilho".
+                  </p>
+                  <button type="button" class="btn btn-outline-primary btn-sm px-3" (click)="abrirModalGatilho()">
+                    <i class="bi bi-plus-circle me-1"></i>Buscar nos 45 Gatilhos IHI GTT
+                  </button>
+                </div>
+              } @else {
+                <div class="d-flex flex-column gap-3">
+                  @for (g of achadosGatilhos; track g.gatilhoId; let idx = $index) {
+                    <div class="card border border-light-subtle rounded-2 p-3 bg-light">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                          <span class="badge bg-primary me-2 font-monospace">{{ g.gatilhoCodigo }}</span>
+                          <strong class="text-dark">{{ g.gatilhoDescricao }}</strong>
+                          <span class="text-muted small ms-2 font-monospace">({{ g.moduloNome }})</span>
+                        </div>
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
+                          (click)="removerGatilho(idx)"
+                          title="Remover gatilho"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+
+                      <div class="row g-2 mt-1">
+                        <!-- CONFIRMAR DANO -->
+                        <div class="col-md-6">
+                          <label class="form-label small fw-semibold text-secondary mb-1">
+                            Houve Dano / Evento Adverso ao Paciente?
+                          </label>
+                          <select class="form-select form-select-sm" [(ngModel)]="g.confirmouDano">
+                            <option [ngValue]="false">NÃO (Gatilho isolado, sem dano ao paciente)</option>
+                            <option [ngValue]="true">SIM (Evento Adverso confirmado)</option>
+                          </select>
+                        </div>
+
+                        <!-- PRESENTE NA ADMISSÃO -->
+                        <div class="col-md-6">
+                          <label class="form-label small fw-semibold text-secondary mb-1">
+                            Presente na Admissão (POA)?
+                          </label>
+                          <select class="form-select form-select-sm" [(ngModel)]="g.danoPresenteAdmissao">
+                            <option [ngValue]="false">NÃO (Ocorreu durante a internação)</option>
+                            <option [ngValue]="true">SIM (Já presente no momento da internação)</option>
+                          </select>
+                        </div>
+
+                        <!-- CAMPOS CONDICIONAIS DE DANO -->
+                        @if (g.confirmouDano) {
+                          <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                              Gravidade NCC MERP (E a I) <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-sm" [(ngModel)]="g.gravidade" required>
+                              <option [ngValue]="null" disabled>Selecione a categoria...</option>
+                              <option value="CATEGORIA_E">Categoria E - Dano temporário c/ necessidade intervenção</option>
+                              <option value="CATEGORIA_F">Categoria F - Dano temporário c/ prolongamento hospitalar</option>
+                              <option value="CATEGORIA_G">Categoria G - Dano permanente ao paciente</option>
+                              <option value="CATEGORIA_H">Categoria H - Intervenção suporte de vida (&lt; 1h)</option>
+                              <option value="CATEGORIA_I">Categoria I - Óbito com cuidado contribuinte</option>
+                            </select>
+                          </div>
+
+                          <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                              Categoria do Evento Adverso
+                            </label>
+                            <select class="form-select form-select-sm" [(ngModel)]="g.categoriaEaId">
+                              <option [ngValue]="null">Selecione a categoria do EA...</option>
+                              @for (cat of categoriasEA(); track cat.id) {
+                                <option [ngValue]="cat.id">{{ cat.nome }}</option>
+                              }
+                            </select>
+                          </div>
+
+                          <div class="col-12">
+                            <label class="form-label small fw-semibold text-secondary mb-1">
+                              Justificativa Clínica do Dano Identificado <span class="text-danger">*</span>
+                            </label>
+                            <textarea
+                              class="form-control form-control-sm font-monospace"
+                              rows="2"
+                              [(ngModel)]="g.justificativaDano"
+                              placeholder="Descreva a evidência no prontuário que comprova o dano resultante..."
+                            ></textarea>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            <!-- PILAR 2: DIAGRAMA DE ISHIKAWA (6M) -->
+            @if (abaResolucao() === 'ishikawa') {
+              <div class="mb-3">
+                <h6 class="fw-bold text-dark m-0">Diagrama de Causa e Efeito (Espinha de Peixe / 6M)</h6>
+                <span class="text-secondary small">
+                  Identifique a causa-raiz do Evento Adverso explorando os 6 eixos metodológicos do IHI.
+                </span>
+              </div>
+
+              <!-- EFEITO PRINCIPAL -->
+              <div class="card border-primary p-3 bg-light mb-3">
+                <label for="efeitoPrincipal" class="form-label small fw-bold text-primary mb-1">
+                  <i class="bi bi-bullseye me-1"></i> Efeito Principal (O Evento Adverso a Ser Analisado) <span class="text-danger">*</span>
+                </label>
+                <input
+                  id="efeitoPrincipal"
+                  type="text"
+                  class="form-control form-control-sm fw-bold"
+                  [(ngModel)]="ishikawa.efeitoPrincipal"
+                  placeholder="Ex.: Hemorragia Digestiva Alta secundária a anticoagulação sem monitoramento de RNI"
+                  required
+                />
+              </div>
+
+              <!-- OS 6M -->
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary mb-1">1. Método (Processos, Protocolos, Fluxos)</label>
+                  <textarea
+                    class="form-control form-control-sm font-monospace"
+                    rows="3"
+                    [(ngModel)]="ishikawa.metodo"
+                    placeholder="Falha na adesão ao protocolo de anticoagulação institucional, ausência de duplo-cheque..."
+                  ></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary mb-1">2. Mão de Obra (Pessoas, Treinamento, Comunicação)</label>
+                  <textarea
+                    class="form-control form-control-sm font-monospace"
+                    rows="3"
+                    [(ngModel)]="ishikawa.maoDeObra"
+                    placeholder="Equipe assistencial sobrecarregada, falha de passagem de plantão, comunicação deficiente..."
+                  ></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary mb-1">3. Material (Insumos, Medicamentos, Embalagens)</label>
+                  <textarea
+                    class="form-control form-control-sm font-monospace"
+                    rows="3"
+                    [(ngModel)]="ishikawa.material"
+                    placeholder="Apresentação de ampolas semelhantes (LASA), reagente laboratorial com atraso..."
+                  ></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary mb-1">4. Medida (Indicadores, Monitoramento, Dosagens)</label>
+                  <textarea
+                    class="form-control form-control-sm font-monospace"
+                    rows="3"
+                    [(ngModel)]="ishikawa.medida"
+                    placeholder="Intervalo inadequado entre dosagens de coagulograma, falta de alarme de exames críticos..."
+                  ></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary mb-1">5. Meio Ambiente (Estrutura Física, Ruído, Iluminação)</label>
+                  <textarea
+                    class="form-control form-control-sm font-monospace"
+                    rows="3"
+                    [(ngModel)]="ishikawa.meioAmbiente"
+                    placeholder="Área de preparo de medicação com excesso de interrupções e barulho..."
+                  ></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-secondary mb-1">6. Máquina (Equipamentos, Bombas de Infusão, Sistemas)</label>
+                  <textarea
+                    class="form-control form-control-sm font-monospace"
+                    rows="3"
+                    [(ngModel)]="ishikawa.maquina"
+                    placeholder="Bomba de infusão sem dose-guard configurado, sistema eletrônico sem aviso de interação..."
+                  ></textarea>
+                </div>
+              </div>
+            }
+
+            <!-- PILAR 3: PLANO DE AÇÃO (5W3H) -->
+            @if (abaResolucao() === 'plano5w3h') {
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h6 class="fw-bold text-dark m-0">Plano de Ação Corretiva (Metodologia 5W3H)</h6>
+                  <span class="text-secondary small">
+                    Defina ações práticas e executáveis para prevenir a recorrência do evento adverso.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+                  (click)="adicionarAcao5w3h()"
+                >
+                  <i class="bi bi-plus-circle-fill"></i>
+                  <span>ADICIONAR AÇÃO</span>
+                </button>
+              </div>
+
+              <div class="d-flex flex-column gap-3">
+                @for (p of planos5w3h; track p; let idx = $index) {
+                  <div class="card border border-light-subtle rounded-2 p-3 bg-light">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                      <span class="fw-bold text-dark small font-monospace">Ação #{{ idx + 1 }}</span>
+                      @if (planos5w3h.length > 1) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
+                          (click)="removerAcao5w3h(idx)"
+                          title="Remover esta ação"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      }
+                    </div>
+
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary mb-1">
+                          O Quê (What) - Ação a ser realizada <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          [(ngModel)]="p.oQue"
+                          placeholder="Ex.: Implantar protocolo de dupla checagem para anticoagulantes"
+                          required
+                        />
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary mb-1">
+                          Por Quê (Why) - Justificativa / Objetivo <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          [(ngModel)]="p.porQue"
+                          placeholder="Ex.: Reduzir em 90% os erros de dosagem em pacientes internados"
+                          required
+                        />
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1">
+                          Quem (Who) - Responsável <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          [(ngModel)]="p.quem"
+                          placeholder="Ex.: Farmácia Clínica e Chefia de Enfermagem"
+                          required
+                        />
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Onde (Where) - Local / Setor</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          [(ngModel)]="p.onde"
+                          placeholder="Ex.: Todas as enfermarias de internação clínica e UTI"
+                        />
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Quando (When) - Prazo</label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          [(ngModel)]="p.quando"
+                          placeholder="Ex.: Até 30 dias úteis"
+                        />
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Como (How) - Método de Execução</label>
+                        <textarea
+                          class="form-control form-control-sm font-monospace"
+                          rows="2"
+                          [(ngModel)]="p.como"
+                          placeholder="Treinamento com simulação realística e auditoria diária..."
+                        ></textarea>
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary mb-1">Como Medir (How Measure) - Indicador</label>
+                        <textarea
+                          class="form-control form-control-sm font-monospace"
+                          rows="2"
+                          [(ngModel)]="p.comoMedir"
+                          placeholder="Taxa de adesão ao duplo-cheque via checklist no prontuário..."
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- PILAR 4: CICLO PDCA -->
+            @if (abaResolucao() === 'pdca') {
+              <div class="mb-3">
+                <h6 class="fw-bold text-dark m-0">Ciclo de Melhoria Contínua (PDCA)</h6>
+                <span class="text-secondary small">
+                  Estruture a melhoria contínua baseada no modelo IHI (Plan, Do, Check, Act).
+                </span>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card border-primary p-3 bg-light h-100">
+                    <label for="planejar" class="form-label small fw-bold text-primary mb-1">
+                      <i class="bi bi-calendar-check me-1"></i> 1. Plan (Planejar a Intervenção) <span class="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="planejar"
+                      class="form-control form-control-sm font-monospace"
+                      rows="4"
+                      [(ngModel)]="pdca.planejar"
+                      required
+                      placeholder="Identificar o problema, estabelecer metas mensuráveis e desenhar o novo fluxo assistencial..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="card border-info p-3 bg-light h-100">
+                    <label for="fazer" class="form-label small fw-bold text-info-emphasis mb-1">
+                      <i class="bi bi-play-circle me-1"></i> 2. Do (Executar / Testar em Pequena Escala) <span class="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="fazer"
+                      class="form-control form-control-sm font-monospace"
+                      rows="4"
+                      [(ngModel)]="pdca.fazer"
+                      required
+                      placeholder="Aplicar o teste piloto na unidade HU selecionada, capacitando a equipe assistencial..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="card border-warning p-3 bg-light h-100">
+                    <label for="checar" class="form-label small fw-bold text-warning-emphasis mb-1">
+                      <i class="bi bi-search me-1"></i> 3. Check (Checar / Analisar Resultados) <span class="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="checar"
+                      class="form-control form-control-sm font-monospace"
+                      rows="4"
+                      [(ngModel)]="pdca.checar"
+                      required
+                      placeholder="Comparar os dados antes e depois da intervenção com os gatilhos GTT rastreados..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="card border-success p-3 bg-light h-100">
+                    <label for="agir" class="form-label small fw-bold text-success mb-1">
+                      <i class="bi bi-arrow-repeat me-1"></i> 4. Act (Padronizar e Agir Corretivamente) <span class="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="agir"
+                      class="form-control form-control-sm font-monospace"
+                      rows="4"
+                      [(ngModel)]="pdca.agir"
+                      required
+                      placeholder="Adotar a mudança como padrão institucional ou ajustar o plano em novo ciclo PDCA..."
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE SELEÇÃO DOS 45 GATILHOS IHI GTT -->
+    @if (modalGatilhoAberto()) {
+      <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content rounded-2 shadow">
+            <div class="modal-header py-2 px-3 bg-light border-bottom">
+              <h5 class="modal-title h6 fw-bold text-dark m-0">
+                <i class="bi bi-sliders text-primary me-2"></i>Catálogo Oficial dos 45 Gatilhos IHI GTT
+              </h5>
+              <button type="button" class="btn-close btn-sm" (click)="fecharModalGatilho()" aria-label="Fechar"></button>
+            </div>
+
+            <!-- FILTRO NO MODAL -->
+            <div class="p-3 bg-white border-bottom">
+              <div class="row g-2">
+                <div class="col-md-8">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-secondary border-end-0">
+                      <i class="bi bi-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control border-start-0"
+                      [ngModel]="termoBuscaGatilho()"
+                      (ngModelChange)="termoBuscaGatilho.set($event)"
+                      placeholder="Buscar por código (ex: M1, C5, I2, S4) ou descrição do gatilho..."
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <select
+                    class="form-select form-select-sm"
+                    [ngModel]="filtroModuloGatilho()"
+                    (ngModelChange)="atualizarFiltroModulo($event)"
+                  >
+                    <option [ngValue]="null">Todos os 5 Módulos</option>
+                    <option [ngValue]="1">Módulo Cuidado Geral (C)</option>
+                    <option [ngValue]="2">Módulo Medicação (M)</option>
+                    <option [ngValue]="3">Módulo Terapia Intensiva (I)</option>
+                    <option [ngValue]="4">Módulo Cirúrgico (S)</option>
+                    <option [ngValue]="5">Módulo Emergência (E)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- LISTAGEM DOS GATILHOS -->
+            <div class="modal-body p-0">
+              <div class="list-group list-group-flush small">
+                @for (g of gatilhosFiltrados(); track g.id) {
+                  <button
+                    type="button"
+                    class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center"
+                    (click)="selecionarGatilho(g)"
+                  >
+                    <div>
+                      <span class="badge bg-primary font-monospace me-2">{{ g.codigo }}</span>
+                      <strong class="text-dark">{{ g.descricao }}</strong>
+                      <div class="text-secondary small font-monospace">{{ g.modulo.nome }}</div>
+                    </div>
+                    <span class="btn btn-outline-primary btn-sm py-0 px-2 rounded-1">
+                      Selecionar
+                    </span>
+                  </button>
+                } @empty {
+                  <div class="p-4 text-center text-muted">
+                    Nenhum gatilho encontrado com os termos pesquisados.
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="modal-footer py-2 px-3 bg-light border-top">
+              <button type="button" class="btn btn-secondary btn-sm px-3" (click)="fecharModalGatilho()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+}
+</div>

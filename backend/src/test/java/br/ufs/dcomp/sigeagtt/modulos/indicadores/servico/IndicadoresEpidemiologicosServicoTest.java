@@ -1,15 +1,8 @@
 package br.ufs.dcomp.sigeagtt.modulos.indicadores.servico;
 
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.AchadoGatilho;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.AtividadeAuditoria;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.GravidadeNccMerp;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.RevisaoIndividual;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.ValidacaoDocente;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.repositorio.AchadoGatilhoRepositorio;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.repositorio.RevisaoIndividualRepositorio;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.repositorio.ValidacaoDocenteRepositorio;
-import br.ufs.dcomp.sigeagtt.modulos.cenario.modelo.CenarioClinico;
-import br.ufs.dcomp.sigeagtt.modulos.cenario.modelo.ProntuarioSimulado;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.*;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoAtividadeRepositorio;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoGatilhoRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.GatilhoGtt;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.ModuloGtt;
 import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.Turma;
@@ -24,10 +17,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -37,27 +31,25 @@ import static org.mockito.Mockito.when;
 class IndicadoresEpidemiologicosServicoTest {
 
     @Mock
-    private RevisaoIndividualRepositorio revisaoRepositorio;
+    private SubmissaoAtividadeRepositorio submissaoRepositorio;
 
     @Mock
-    private AchadoGatilhoRepositorio achadoRepositorio;
-
-    @Mock
-    private ValidacaoDocenteRepositorio validacaoRepositorio;
+    private SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio;
 
     @InjectMocks
     private IndicadoresEpidemiologicosServico servico;
 
     private Turma turma;
-    private CenarioClinico cenario;
+    private CasoClinico casoClinico;
     private UnidadeHospitalar unidade;
-    private AtividadeAuditoria atividade;
+    private AtividadeEducacional atividade;
     private ModuloGtt moduloCuidados;
     private GatilhoGtt gatilhoC1;
+    private Usuario professor;
 
     @BeforeEach
     void setUp() {
-        Usuario professor = new Usuario();
+        professor = new Usuario();
         professor.setId(1L);
         professor.setNomeCompleto("Prof. Doutor");
         professor.setPerfil(PerfilUsuario.PROFESSOR);
@@ -68,19 +60,23 @@ class IndicadoresEpidemiologicosServicoTest {
         turma.setCodigoDisciplina("MED001");
         turma.setProfessorResponsavel(professor);
 
-        cenario = new CenarioClinico();
-        cenario.setId(20L);
-        cenario.setTitulo("Cenário de Teste");
-
         unidade = new UnidadeHospitalar();
         unidade.setId(30L);
         unidade.setNome("UTI Adulto");
         unidade.setSigla("UTI-A");
 
-        atividade = new AtividadeAuditoria();
+        casoClinico = new CasoClinico();
+        casoClinico.setId(20L);
+        casoClinico.setTitulo("Caso de Teste");
+        casoClinico.setUnidadeHospitalar(unidade);
+        casoClinico.setTempoPermanenciaDias(5);
+        casoClinico.setNumeroAtendimento("PRT-001");
+        casoClinico.setIdadePaciente(45);
+
+        atividade = new AtividadeEducacional();
         atividade.setId(40L);
         atividade.setTurma(turma);
-        atividade.setCenario(cenario);
+        atividade.setCasoClinico(casoClinico);
         atividade.setDataInicio(LocalDateTime.now().minusDays(2));
         atividade.setDataFim(LocalDateTime.now().plusDays(2));
 
@@ -96,154 +92,130 @@ class IndicadoresEpidemiologicosServicoTest {
         gatilhoC1.setModulo(moduloCuidados);
     }
 
-    private RevisaoIndividual criarRevisao(Long id, int diasInternacao) {
+    private SubmissaoAtividade criarSubmissao(Long id, int diasInternacao) {
         Usuario aluno = new Usuario();
         aluno.setId(id + 10);
         aluno.setNomeCompleto("Aluno Teste " + id);
         aluno.setMatriculaSigaa("20260000000" + id);
 
-        ProntuarioSimulado prontuario = new ProntuarioSimulado();
-        prontuario.setId(id * 100);
-        prontuario.setNumeroAtendimento("PRT-00" + id);
-        prontuario.setIdadePaciente(45);
-        prontuario.setTempoPermanenciaDias(diasInternacao);
-        prontuario.setUnidadeHospitalar(unidade);
+        CasoClinico caso = new CasoClinico();
+        caso.setId(id * 100);
+        caso.setNumeroAtendimento("PRT-00" + id);
+        caso.setIdadePaciente(45);
+        caso.setTempoPermanenciaDias(diasInternacao);
+        caso.setUnidadeHospitalar(unidade);
 
-        RevisaoIndividual revisao = new RevisaoIndividual();
-        revisao.setId(id);
-        revisao.setAtividade(atividade);
-        revisao.setAluno(aluno);
-        revisao.setProntuario(prontuario);
-        revisao.setFinalizada(true);
-        revisao.setDataSubmissao(LocalDateTime.now());
-        return revisao;
+        AtividadeEducacional atv = new AtividadeEducacional();
+        atv.setId(atividade.getId());
+        atv.setTurma(turma);
+        atv.setCasoClinico(caso);
+        atv.setDataInicio(atividade.getDataInicio());
+        atv.setDataFim(atividade.getDataFim());
+
+        SubmissaoAtividade sub = new SubmissaoAtividade();
+        sub.setId(id);
+        sub.setAtividade(atv);
+        sub.setAluno(aluno);
+        sub.setStatus(StatusSubmissao.AVALIADA);
+        sub.setDataSubmissao(LocalDateTime.now());
+        sub.setProfessorCorretor(professor);
+        sub.setNota(BigDecimal.valueOf(9.0));
+        return sub;
+    }
+
+    private SubmissaoGatilho criarAchado(Long id, SubmissaoAtividade sub, GatilhoGtt gat, boolean confirmouDano, GravidadeNccMerp gravidade) {
+        SubmissaoGatilho a = new SubmissaoGatilho();
+        a.setId(id);
+        a.setSubmissao(sub);
+        a.setGatilho(gat);
+        a.setConfirmouDano(confirmouDano);
+        a.setGravidade(gravidade);
+        a.setDanoPresenteAdmissao(false);
+        a.setJustificativaDano("Dano teste " + id);
+        return a;
     }
 
     @Test
-    @DisplayName("Deve retornar métricas zeradas quando não houver revisões homologadas")
-    void deveRetornarZerosQuandoSemRevisoes() {
-        when(revisaoRepositorio.findAll()).thenReturn(List.of());
+    @DisplayName("Deve calcular taxas IHI (1.000 dias, 100 admissões e prevalência) corretamente")
+    void deveCalcularTaxasIhiCorretamente() {
+        SubmissaoAtividade rev1 = criarSubmissao(1L, 10);
+        SubmissaoAtividade rev2 = criarSubmissao(2L, 15);
+        when(submissaoRepositorio.findAll()).thenReturn(List.of(rev1, rev2));
 
-        Map<String, Object> indicadores = servico.calcularIndicadoresIndividuais(
-                null, null, null, null, null, null);
+        SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
+        SubmissaoGatilho achado2 = criarAchado(2L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_F);
+        when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1, achado2));
 
-        assertEquals(0, indicadores.get("totalProntuariosRevistos"));
-        assertEquals(0, indicadores.get("totalDiasInternacao"));
-        assertEquals(0, indicadores.get("totalEventosAdversos"));
-        assertEquals(0, indicadores.get("prontuariosComDano"));
+        SubmissaoGatilho achado3 = criarAchado(3L, rev2, gatilhoC1, false, null);
+        when(gatilhoAchadoRepositorio.findBySubmissaoId(2L)).thenReturn(List.of(achado3));
+
+        Map<String, Object> resultado = servico.calcularIndicadoresIndividuais(null, null, null, null, null, null);
+
+        assertNotNull(resultado);
+        assertEquals(2, resultado.get("totalProntuariosAuditados"));
+        assertEquals(25, resultado.get("totalDiasInternacao"));
+        assertEquals(2, resultado.get("totalEventosAdversos"));
+        assertEquals(1, resultado.get("prontuariosComEventosAdversos"));
+
+        assertEquals(80.0, resultado.get("taxaDanosPorMilDias"));
+        assertEquals(100.0, resultado.get("frequenciaPorCemAdmissoes"));
+        assertEquals(50.0, resultado.get("prevalenciaPercentual"));
     }
 
     @Test
-    @DisplayName("Deve calcular corretamente os indicadores IHI-GTT para revisões homologadas incluindo presentes na admissao")
-    void deveCalcularIndicadoresComSucesso() {
-        RevisaoIndividual rev1 = criarRevisao(1L, 10);
-        RevisaoIndividual rev2 = criarRevisao(2L, 15);
+    @DisplayName("Deve retornar quadro resumo paginado e com totais corretos")
+    void deveRetornarQuadroResumoComTotais() {
+        SubmissaoAtividade rev1 = criarSubmissao(1L, 10);
+        when(submissaoRepositorio.findAll()).thenReturn(List.of(rev1));
 
-        when(revisaoRepositorio.findAll()).thenReturn(List.of(rev1, rev2));
+        SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
+        when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1));
 
-        // Ambas homologadas
-        ValidacaoDocente val1 = new ValidacaoDocente();
-        val1.setHomologado(true);
-        ValidacaoDocente val2 = new ValidacaoDocente();
-        val2.setHomologado(true);
+        Map<String, Object> resumo = servico.obterQuadroResumo(null, null, null, null, null, null, null, null, null, null, null, 0, 10);
 
-        when(validacaoRepositorio.findByRevisaoIndividualId(1L)).thenReturn(Optional.of(val1));
-        when(validacaoRepositorio.findByRevisaoIndividualId(2L)).thenReturn(Optional.of(val2));
-
-        // Rev 1 tem 1 evento adverso intrahospitalar categoria E
-        AchadoGatilho achado1 = new AchadoGatilho();
-        achado1.setGatilho(gatilhoC1);
-        achado1.setConfirmouDano(true);
-        achado1.setDanoPresenteAdmissao(false);
-        achado1.setGravidade(GravidadeNccMerp.CATEGORIA_E);
-        when(achadoRepositorio.findByRevisaoIndividualId(1L)).thenReturn(List.of(achado1));
-
-        // Rev 2 tem 1 evento adverso presente na admissao categoria F
-        AchadoGatilho achado2 = new AchadoGatilho();
-        achado2.setGatilho(gatilhoC1);
-        achado2.setConfirmouDano(true);
-        achado2.setDanoPresenteAdmissao(true);
-        achado2.setGravidade(GravidadeNccMerp.CATEGORIA_F);
-        when(achadoRepositorio.findByRevisaoIndividualId(2L)).thenReturn(List.of(achado2));
-
-        Map<String, Object> indicadores = servico.calcularIndicadoresIndividuais(
-                null, null, null, null, null, null);
-
-        assertEquals(2, indicadores.get("totalProntuariosRevistos"));
-        assertEquals(25, indicadores.get("totalDiasInternacao"));
-        // Ambos os eventos (intra e na admissão) contam no total canônico do IHI!
-        assertEquals(2, indicadores.get("totalEventosAdversos"));
-        assertEquals(1, indicadores.get("eventosIntrahospitalares"));
-        assertEquals(1, indicadores.get("eventosPresentesAdmissao"));
-        assertEquals(2, indicadores.get("prontuariosComDano"));
-
-        // Taxa de Danos por 1000 dias: (2 / 25) * 1000 = 80.0
-        assertEquals(80.0, indicadores.get("taxaDanosPorMilDias"));
-        // Frequência por 100 admissões: (2 / 2) * 100 = 100.0%
-        assertEquals(100.0, indicadores.get("frequenciaPorCemAdmissoes"));
-        // Prevalência percentual: (2 / 2) * 100 = 100.0%
-        assertEquals(100.0, indicadores.get("prevalenciaPercentual"));
-
-        assertNotNull(indicadores.get("serieTemporal"));
-        assertNotNull(indicadores.get("distribuicaoModulos"));
-    }
-
-    @Test
-    @DisplayName("Deve gerar Quadro Resumo do Apêndice C com totais corretos")
-    void deveGerarQuadroResumoComSucesso() {
-        RevisaoIndividual rev1 = criarRevisao(1L, 5);
-        when(revisaoRepositorio.findAll()).thenReturn(List.of(rev1));
-
-        ValidacaoDocente val1 = new ValidacaoDocente();
-        val1.setHomologado(true);
-        Usuario prof = new Usuario();
-        prof.setNomeCompleto("Professor Validador");
-        val1.setProfessorValidador(prof);
-        when(validacaoRepositorio.findByRevisaoIndividualId(1L)).thenReturn(Optional.of(val1));
-
-        AchadoGatilho achado1 = new AchadoGatilho();
-        achado1.setGatilho(gatilhoC1);
-        achado1.setConfirmouDano(true);
-        achado1.setJustificativaDano("Hemorragia pós-operatória");
-        achado1.setDanoPresenteAdmissao(false);
-        achado1.setGravidade(GravidadeNccMerp.CATEGORIA_F);
-        when(achadoRepositorio.findByRevisaoIndividualId(1L)).thenReturn(List.of(achado1));
-
-        Map<String, Object> resumo = servico.obterQuadroResumo(null, null, null, null, null, null, null, null, null,
-                false, null, 0, 10);
-
-        assertNotNull(resumo.get("conteudo"));
+        assertNotNull(resumo);
         List<?> conteudo = (List<?>) resumo.get("conteudo");
         assertEquals(1, conteudo.size());
 
         Map<?, ?> totais = (Map<?, ?>) resumo.get("totais");
         assertEquals(1, totais.get("totalProntuarios"));
-        assertEquals(5, totais.get("totalDiasInternacao"));
+        assertEquals(10, totais.get("totalDiasInternacao"));
         assertEquals(1, totais.get("totalEventosAdversos"));
     }
 
     @Test
-    @DisplayName("Deve calcular desempenho de gatilhos e taxa de conversão")
+    @DisplayName("Deve calcular rastreabilidade e rendimento diagnóstico de gatilhos")
     void deveCalcularDesempenhoGatilhos() {
-        RevisaoIndividual rev1 = criarRevisao(1L, 4);
-        when(revisaoRepositorio.findAll()).thenReturn(List.of(rev1));
+        SubmissaoAtividade rev1 = criarSubmissao(1L, 10);
+        when(submissaoRepositorio.findAll()).thenReturn(List.of(rev1));
 
-        ValidacaoDocente val1 = new ValidacaoDocente();
-        val1.setHomologado(true);
-        when(validacaoRepositorio.findByRevisaoIndividualId(1L)).thenReturn(Optional.of(val1));
-
-        AchadoGatilho achado1 = new AchadoGatilho();
-        achado1.setGatilho(gatilhoC1);
-        achado1.setConfirmouDano(true);
-        achado1.setGravidade(GravidadeNccMerp.CATEGORIA_G);
-        when(achadoRepositorio.findByRevisaoIndividualId(1L)).thenReturn(List.of(achado1));
+        SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
+        when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1));
 
         Map<String, Object> desempenho = servico.obterDesempenhoGatilhos(null, null, null, null, null, null);
+
+        assertNotNull(desempenho);
         assertEquals(1, desempenho.get("totalGatilhosRastreados"));
         assertEquals(1, desempenho.get("totalDanosConfirmados"));
         assertEquals(100.0, desempenho.get("taxaConversaoGeral"));
 
         List<?> gatilhos = (List<?>) desempenho.get("gatilhos");
-        assertTrue(!gatilhos.isEmpty());
+        assertEquals(1, gatilhos.size());
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio quando nenhuma submissão avaliada for encontrada")
+    void deveRetornarVazioQuandoNaoHouverRevisoes() {
+        when(submissaoRepositorio.findAll()).thenReturn(List.of());
+
+        Map<String, Object> resultado = servico.calcularIndicadoresIndividuais(null, null, null, null, null, null);
+
+        assertNotNull(resultado);
+        assertEquals(0, resultado.get("totalProntuariosAuditados"));
+        assertEquals(0, resultado.get("totalDiasInternacao"));
+        assertEquals(0, resultado.get("totalEventosAdversos"));
+        assertEquals(0.0, resultado.get("taxaDanosPorMilDias"));
+        assertEquals(0.0, resultado.get("frequenciaPorCemAdmissoes"));
+        assertEquals(0.0, resultado.get("prevalenciaPercentual"));
     }
 }

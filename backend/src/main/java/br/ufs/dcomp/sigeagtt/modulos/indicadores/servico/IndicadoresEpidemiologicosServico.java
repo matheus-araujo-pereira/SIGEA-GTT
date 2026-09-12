@@ -1,12 +1,11 @@
 package br.ufs.dcomp.sigeagtt.modulos.indicadores.servico;
 
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.AchadoGatilho;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.GravidadeNccMerp;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.RevisaoIndividual;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.ValidacaoDocente;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.repositorio.AchadoGatilhoRepositorio;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.repositorio.RevisaoIndividualRepositorio;
-import br.ufs.dcomp.sigeagtt.modulos.auditoria.repositorio.ValidacaoDocenteRepositorio;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.GravidadeNccMerp;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.StatusSubmissao;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.SubmissaoAtividade;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.SubmissaoGatilho;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoAtividadeRepositorio;
+import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoGatilhoRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.GatilhoGtt;
 
 import org.springframework.stereotype.Service;
@@ -20,16 +19,15 @@ import java.util.stream.Collectors;
 @Service
 public class IndicadoresEpidemiologicosServico {
 
-    private final RevisaoIndividualRepositorio revisaoRepositorio;
-    private final ValidacaoDocenteRepositorio validacaoRepositorio;
-    private final AchadoGatilhoRepositorio achadoRepositorio;
+    private final SubmissaoAtividadeRepositorio submissaoRepositorio;
+    private final SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio;
 
-    public IndicadoresEpidemiologicosServico(RevisaoIndividualRepositorio revisaoRepositorio,
-            AchadoGatilhoRepositorio achadoRepositorio,
-            ValidacaoDocenteRepositorio validacaoRepositorio) {
-        this.revisaoRepositorio = revisaoRepositorio;
-        this.achadoRepositorio = achadoRepositorio;
-        this.validacaoRepositorio = validacaoRepositorio;
+    public IndicadoresEpidemiologicosServico(
+        SubmissaoAtividadeRepositorio submissaoRepositorio,
+        SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio
+    ) {
+        this.submissaoRepositorio = submissaoRepositorio;
+        this.gatilhoAchadoRepositorio = gatilhoAchadoRepositorio;
     }
 
     public Map<String, Object> calcularIndicadoresIndividuais(Long turmaId, String periodoLetivo,
@@ -45,7 +43,7 @@ public class IndicadoresEpidemiologicosServico {
             LocalDate dataInicio, LocalDate dataFim,
             String moduloCodigo, String gravidade, Boolean danoPresenteAdmissao) {
 
-        List<RevisaoIndividual> revisoes = filtrarRevisoesHomologadas(turmaId, periodoLetivo, cenarioId, unidadeId,
+        List<SubmissaoAtividade> submissoes = filtrarSubmissoesAvaliadas(turmaId, periodoLetivo, cenarioId, unidadeId,
                 dataInicio, dataFim);
 
         int totalDias = 0;
@@ -74,24 +72,24 @@ public class IndicadoresEpidemiologicosServico {
         // Agrupamento temporal para o Run Chart do IHI
         Map<YearMonth, AgregadoTemporal> agregadoTemporal = new TreeMap<>();
 
-        for (RevisaoIndividual revisao : revisoes) {
-            Integer dias = revisao.getProntuario().getTempoPermanenciaDias();
+        for (SubmissaoAtividade sub : submissoes) {
+            Integer dias = sub.getAtividade().getCasoClinico().getTempoPermanenciaDias();
             int diasValidos = dias != null && dias > 0 ? dias : 1;
             totalDias += diasValidos;
 
-            LocalDate dataRef = revisao.getDataSubmissao() != null ? revisao.getDataSubmissao().toLocalDate()
-                    : (revisao.getAtividade().getDataInicio() != null
-                            ? revisao.getAtividade().getDataInicio().toLocalDate()
+            LocalDate dataRef = sub.getDataSubmissao() != null ? sub.getDataSubmissao().toLocalDate()
+                    : (sub.getAtividade().getDataInicio() != null
+                            ? sub.getAtividade().getDataInicio().toLocalDate()
                             : LocalDate.now());
             YearMonth ym = YearMonth.from(dataRef);
             AgregadoTemporal agg = agregadoTemporal.computeIfAbsent(ym, k -> new AgregadoTemporal());
             agg.prontuarios++;
             agg.dias += diasValidos;
 
-            List<AchadoGatilho> achados = achadoRepositorio.findByRevisaoIndividualId(revisao.getId());
+            List<SubmissaoGatilho> achados = gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
             boolean danoNoCaso = false;
 
-            for (AchadoGatilho achado : achados) {
+            for (SubmissaoGatilho achado : achados) {
                 totalGatilhosRastreados++;
 
                 if (Boolean.TRUE.equals(achado.getConfirmouDano())) {
@@ -128,8 +126,10 @@ public class IndicadoresEpidemiologicosServico {
                         eventosIntrahospitalares++;
                     }
 
-                    String sev = achado.getGravidade() == null ? "CATEGORIA_E" : achado.getGravidade().name();
-                    severidades.put(sev, severidades.getOrDefault(sev, 0) + 1);
+                    if (achado.getGravidade() != null) {
+                        String chaveSev = achado.getGravidade().name();
+                        severidades.put(chaveSev, severidades.getOrDefault(chaveSev, 0) + 1);
+                    }
 
                     if (achado.getGatilho() != null && achado.getGatilho().getModulo() != null) {
                         String mod = achado.getGatilho().getModulo().getCodigo().toUpperCase();
@@ -143,66 +143,58 @@ public class IndicadoresEpidemiologicosServico {
             }
         }
 
-        // Construção da série temporal ordenada para o Run Chart do IHI
-        DateTimeFormatter rotuloFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
+        // Construir série temporal contínua com taxas oficiais IHI
         List<Map<String, Object>> serieTemporal = new ArrayList<>();
         List<Double> taxasPorMilHistorico = new ArrayList<>();
         List<Double> taxasPorCemHistorico = new ArrayList<>();
 
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM/yy", Locale.forLanguageTag("pt-BR"));
         for (Map.Entry<YearMonth, AgregadoTemporal> entry : agregadoTemporal.entrySet()) {
-            YearMonth ym = entry.getKey();
             AgregadoTemporal agg = entry.getValue();
-            double taxaMil = agg.dias == 0 ? 0.0 : Math.round((double) agg.eventos / agg.dias * 100000.0) / 100.0;
-            double taxaCem = agg.prontuarios == 0 ? 0.0
-                    : Math.round((double) agg.eventos / agg.prontuarios * 10000.0) / 100.0;
+            double taxaMil = agg.dias == 0 ? 0.0 : ((double) agg.eventos / agg.dias) * 1000.0;
+            double taxaCem = agg.prontuarios == 0 ? 0.0 : ((double) agg.eventos / agg.prontuarios) * 100.0;
+            double taxaMilArr = Math.round(taxaMil * 10.0) / 10.0;
+            double taxaCemArr = Math.round(taxaCem * 10.0) / 10.0;
 
-            taxasPorMilHistorico.add(taxaMil);
-            taxasPorCemHistorico.add(taxaCem);
+            taxasPorMilHistorico.add(taxaMilArr);
+            taxasPorCemHistorico.add(taxaCemArr);
 
             Map<String, Object> ponto = new HashMap<>();
-            ponto.put("periodo", ym.toString());
-            ponto.put("rotulo", ym.format(rotuloFormatter));
-            ponto.put("prontuarios", agg.prontuarios);
-            ponto.put("dias", agg.dias);
-            ponto.put("eventos", agg.eventos);
-            ponto.put("taxaPorMilDias", taxaMil);
-            ponto.put("taxaPorCemAdmissoes", taxaCem);
+            ponto.put("periodo", entry.getKey().format(fmt));
+            ponto.put("anoMes", entry.getKey().toString());
+            ponto.put("eventosAdversos", agg.eventos);
+            ponto.put("totalDias", agg.dias);
+            ponto.put("prontuariosAuditados", agg.prontuarios);
+            ponto.put("taxaPorMilDias", taxaMilArr);
+            ponto.put("taxaPorCemAdmissoes", taxaCemArr);
             serieTemporal.add(ponto);
         }
 
         double medianaTaxaMil = calcularMediana(taxasPorMilHistorico);
         double medianaTaxaCem = calcularMediana(taxasPorCemHistorico);
 
-        // Eficácia de rastreamento dos gatilhos
+        for (Map<String, Object> ponto : serieTemporal) {
+            ponto.put("medianaPorMilDias", medianaTaxaMil);
+            ponto.put("medianaPorCemAdmissoes", medianaTaxaCem);
+        }
+
         double taxaRendimentoGatilhos = totalGatilhosRastreados == 0 ? 0.0
                 : Math.round((double) totalDanosConfirmadosGeral / totalGatilhosRastreados * 10000.0) / 100.0;
 
-        double mediaPermanencia = revisoes.isEmpty() ? 0.0
-                : Math.round((double) totalDias / revisoes.size() * 10.0) / 10.0;
-
-        double percentualAdmissao = totalEventos == 0 ? 0.0
-                : Math.round((double) eventosPresentesAdmissao / totalEventos * 10000.0) / 100.0;
-        double percentualIntrahospitalar = totalEventos == 0 ? 0.0
-                : Math.round((double) eventosIntrahospitalares / totalEventos * 10000.0) / 100.0;
-
-        Map<String, Object> resultado = new LinkedHashMap<>();
-        resultado.put("totalProntuariosRevistos", revisoes.size());
+        Map<String, Object> resultado = new HashMap<>();
+        resultado.put("totalProntuariosAuditados", submissoes.size());
         resultado.put("totalDiasInternacao", totalDias);
-        resultado.put("mediaPermanenciaDias", mediaPermanencia);
         resultado.put("totalEventosAdversos", totalEventos);
         resultado.put("eventosIntrahospitalares", eventosIntrahospitalares);
         resultado.put("eventosPresentesAdmissao", eventosPresentesAdmissao);
-        resultado.put("percentualPresenteAdmissao", percentualAdmissao);
-        resultado.put("percentualIntrahospitalar", percentualIntrahospitalar);
-        resultado.put("prontuariosComDano", casosComDano);
+        resultado.put("prontuariosComEventosAdversos", casosComDano);
 
-        // As 3 Medidas Canônicas do White Paper do IHI
         resultado.put("taxaDanosPorMilDias",
                 totalDias == 0 ? 0.0 : Math.round((double) totalEventos / totalDias * 100000.0) / 100.0);
         resultado.put("frequenciaPorCemAdmissoes",
-                revisoes.isEmpty() ? 0.0 : Math.round((double) totalEventos / revisoes.size() * 10000.0) / 100.0);
+                submissoes.isEmpty() ? 0.0 : Math.round((double) totalEventos / submissoes.size() * 10000.0) / 100.0);
         resultado.put("prevalenciaPercentual",
-                revisoes.isEmpty() ? 0.0 : Math.round((double) casosComDano / revisoes.size() * 10000.0) / 100.0);
+                submissoes.isEmpty() ? 0.0 : Math.round((double) casosComDano / submissoes.size() * 10000.0) / 100.0);
 
         resultado.put("distribuicaoSeveridade", severidades);
         resultado.put("distribuicaoModulos", distribuicaoModulos);
@@ -227,7 +219,7 @@ public class IndicadoresEpidemiologicosServico {
             Boolean danoPresenteAdmissao, Boolean apenasComDano,
             String busca, Integer pagina, Integer tamanho) {
 
-        List<RevisaoIndividual> revisoes = filtrarRevisoesHomologadas(turmaId, periodoLetivo, cenarioId, unidadeId,
+        List<SubmissaoAtividade> submissoes = filtrarSubmissoesAvaliadas(turmaId, periodoLetivo, cenarioId, unidadeId,
                 dataInicio, dataFim);
 
         List<Map<String, Object>> itens = new ArrayList<>();
@@ -235,20 +227,20 @@ public class IndicadoresEpidemiologicosServico {
         int totalEventosGeral = 0;
         int prontuariosComDanoGeral = 0;
 
-        for (RevisaoIndividual rev : revisoes) {
-            Integer ttp = rev.getProntuario().getTempoPermanenciaDias();
+        for (SubmissaoAtividade sub : submissoes) {
+            Integer ttp = sub.getAtividade().getCasoClinico().getTempoPermanenciaDias();
             int ttpValido = ttp != null && ttp > 0 ? ttp : 1;
             totalDiasGeral += ttpValido;
 
-            List<AchadoGatilho> achadosBrutos = achadoRepositorio.findByRevisaoIndividualId(rev.getId());
-            List<AchadoGatilho> achadosValidos = new ArrayList<>();
+            List<SubmissaoGatilho> achadosBrutos = gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
+            List<SubmissaoGatilho> achadosValidos = new ArrayList<>();
             List<String> codigosGatilhos = new ArrayList<>();
             List<String> descricoesDanos = new ArrayList<>();
             boolean possuiDano = false;
             boolean presenteAdmissao = false;
             GravidadeNccMerp gravidadeMaxima = null;
 
-            for (AchadoGatilho achado : achadosBrutos) {
+            for (SubmissaoGatilho achado : achadosBrutos) {
                 if (achado.getGatilho() != null) {
                     codigosGatilhos.add(achado.getGatilho().getCodigo());
                 }
@@ -305,9 +297,9 @@ public class IndicadoresEpidemiologicosServico {
 
             if (busca != null && !busca.isBlank()) {
                 String termo = busca.trim().toLowerCase();
-                String num = rev.getProntuario().getNumeroAtendimento().toLowerCase();
-                String unidade = rev.getProntuario().getUnidadeHospitalar().getNome().toLowerCase();
-                String aluno = rev.getAluno().getNomeCompleto().toLowerCase();
+                String num = sub.getAtividade().getCasoClinico().getNumeroAtendimento().toLowerCase();
+                String unidade = sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getNome().toLowerCase();
+                String aluno = sub.getAluno().getNomeCompleto().toLowerCase();
                 boolean achou = num.contains(termo) || unidade.contains(termo) || aluno.contains(termo)
                         || codigosGatilhos.stream().anyMatch(c -> c.toLowerCase().contains(termo))
                         || descricoesDanos.stream().anyMatch(d -> d.toLowerCase().contains(termo));
@@ -315,23 +307,21 @@ public class IndicadoresEpidemiologicosServico {
                     continue;
             }
 
-            Optional<ValidacaoDocente> valOpt = validacaoRepositorio.findByRevisaoIndividualId(rev.getId());
-
             Map<String, Object> item = new HashMap<>();
-            item.put("revisaoId", rev.getId());
-            item.put("numeroAtendimento", rev.getProntuario().getNumeroAtendimento());
-            item.put("idadePaciente", rev.getProntuario().getIdadePaciente());
+            item.put("revisaoId", sub.getId());
+            item.put("numeroAtendimento", sub.getAtividade().getCasoClinico().getNumeroAtendimento());
+            item.put("idadePaciente", sub.getAtividade().getCasoClinico().getIdadePaciente());
             item.put("tempoPermanenciaDias", ttpValido);
-            item.put("unidadeHospitalarNome", rev.getProntuario().getUnidadeHospitalar().getNome());
-            item.put("unidadeHospitalarSigla", rev.getProntuario().getUnidadeHospitalar().getSigla());
-            item.put("codigoDisciplina", rev.getAtividade().getTurma().getCodigoDisciplina());
-            item.put("periodoLetivo", rev.getAtividade().getTurma().getPeriodoLetivo());
-            item.put("alunoAuditorNome", rev.getAluno().getNomeCompleto());
-            item.put("alunoMatricula", rev.getAluno().getMatriculaSigaa());
-            item.put("dataAuditoria", rev.getDataSubmissao());
+            item.put("unidadeHospitalarNome", sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getNome());
+            item.put("unidadeHospitalarSigla", sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getSigla());
+            item.put("codigoDisciplina", sub.getAtividade().getTurma().getCodigoDisciplina());
+            item.put("periodoLetivo", sub.getAtividade().getTurma().getPeriodoLetivo());
+            item.put("alunoAuditorNome", sub.getAluno().getNomeCompleto());
+            item.put("alunoMatricula", sub.getAluno().getMatriculaSigaa());
+            item.put("dataAuditoria", sub.getDataSubmissao());
             item.put("professorValidadorNome",
-                    valOpt.map(v -> v.getProfessorValidador().getNomeCompleto()).orElse("Docente"));
-            item.put("nota", valOpt.map(ValidacaoDocente::getNota).orElse(null));
+                    sub.getProfessorCorretor() != null ? sub.getProfessorCorretor().getNomeCompleto() : "Docente");
+            item.put("nota", sub.getNota());
             item.put("totalGatilhos", codigosGatilhos.size());
             item.put("gatilhosDetectados", codigosGatilhos);
             item.put("totalDanos", achadosValidos.size());
@@ -350,17 +340,17 @@ public class IndicadoresEpidemiologicosServico {
         List<Map<String, Object>> paginaItens = itens.subList(inicio, fim);
 
         Map<String, Object> resumoGeral = new HashMap<>();
-        resumoGeral.put("totalProntuarios", revisoes.size());
+        resumoGeral.put("totalProntuarios", submissoes.size());
         resumoGeral.put("totalDiasInternacao", totalDiasGeral);
         resumoGeral.put("totalEventosAdversos", totalEventosGeral);
         resumoGeral.put("prontuariosComDano", prontuariosComDanoGeral);
         resumoGeral.put("taxaDanosPorMilDias",
                 totalDiasGeral == 0 ? 0.0 : Math.round((double) totalEventosGeral / totalDiasGeral * 100000.0) / 100.0);
         resumoGeral.put("frequenciaPorCemAdmissoes",
-                revisoes.isEmpty() ? 0.0 : Math.round((double) totalEventosGeral / revisoes.size() * 10000.0) / 100.0);
+                submissoes.isEmpty() ? 0.0 : Math.round((double) totalEventosGeral / submissoes.size() * 10000.0) / 100.0);
         resumoGeral.put("prevalenciaPercentual",
-                revisoes.isEmpty() ? 0.0
-                        : Math.round((double) prontuariosComDanoGeral / revisoes.size() * 10000.0) / 100.0);
+                submissoes.isEmpty() ? 0.0
+                        : Math.round((double) prontuariosComDanoGeral / submissoes.size() * 10000.0) / 100.0);
 
         Map<String, Object> resposta = new HashMap<>();
         resposta.put("conteudo", paginaItens);
@@ -378,7 +368,7 @@ public class IndicadoresEpidemiologicosServico {
             Long cenarioId, Long unidadeId,
             LocalDate dataInicio, LocalDate dataFim) {
 
-        List<RevisaoIndividual> revisoes = filtrarRevisoesHomologadas(turmaId, periodoLetivo, cenarioId, unidadeId,
+        List<SubmissaoAtividade> submissoes = filtrarSubmissoesAvaliadas(turmaId, periodoLetivo, cenarioId, unidadeId,
                 dataInicio, dataFim);
 
         Map<Long, DesempenhoGatilhoAgregador> porGatilho = new HashMap<>();
@@ -387,9 +377,9 @@ public class IndicadoresEpidemiologicosServico {
         int totalPositivosGeral = 0;
         int totalDanosGeral = 0;
 
-        for (RevisaoIndividual rev : revisoes) {
-            List<AchadoGatilho> achados = achadoRepositorio.findByRevisaoIndividualId(rev.getId());
-            for (AchadoGatilho achado : achados) {
+        for (SubmissaoAtividade sub : submissoes) {
+            List<SubmissaoGatilho> achados = gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
+            for (SubmissaoGatilho achado : achados) {
                 GatilhoGtt gatilho = achado.getGatilho();
                 if (gatilho == null)
                     continue;
@@ -461,20 +451,18 @@ public class IndicadoresEpidemiologicosServico {
         return resultado;
     }
 
-    private List<RevisaoIndividual> filtrarRevisoesHomologadas(Long turmaId, String periodoLetivo,
+    private List<SubmissaoAtividade> filtrarSubmissoesAvaliadas(Long turmaId, String periodoLetivo,
             Long cenarioId, Long unidadeId,
             LocalDate dataInicio, LocalDate dataFim) {
-        return revisaoRepositorio.findAll().stream()
-                .filter(r -> r.getAtividade() != null && Boolean.TRUE.equals(r.getFinalizada()))
-                .filter(r -> turmaId == null || r.getAtividade().getTurma().getId().equals(turmaId))
-                .filter(r -> periodoLetivo == null || periodoLetivo.isBlank() || periodoLetivo.equalsIgnoreCase("TODOS")
-                        || r.getAtividade().getTurma().getPeriodoLetivo().equalsIgnoreCase(periodoLetivo))
-                .filter(r -> cenarioId == null || r.getAtividade().getCenario().getId().equals(cenarioId))
-                .filter(r -> unidadeId == null || r.getProntuario().getUnidadeHospitalar().getId().equals(unidadeId))
-                .filter(r -> dataInicio == null || !r.getAtividade().getDataInicio().toLocalDate().isBefore(dataInicio))
-                .filter(r -> dataFim == null || !r.getAtividade().getDataInicio().toLocalDate().isAfter(dataFim))
-                .filter(r -> validacaoRepositorio.findByRevisaoIndividualId(r.getId())
-                        .map(v -> Boolean.TRUE.equals(v.getHomologado())).orElse(false))
+        return submissaoRepositorio.findAll().stream()
+                .filter(s -> s.getStatus() == StatusSubmissao.AVALIADA)
+                .filter(s -> turmaId == null || (s.getAtividade() != null && s.getAtividade().getTurma().getId().equals(turmaId)))
+                .filter(s -> periodoLetivo == null || periodoLetivo.isBlank() || periodoLetivo.equalsIgnoreCase("TODOS")
+                        || (s.getAtividade() != null && s.getAtividade().getTurma().getPeriodoLetivo().equalsIgnoreCase(periodoLetivo)))
+                .filter(s -> cenarioId == null || (s.getAtividade() != null && s.getAtividade().getCasoClinico().getId().equals(cenarioId)))
+                .filter(s -> unidadeId == null || (s.getAtividade() != null && s.getAtividade().getCasoClinico().getUnidadeHospitalar().getId().equals(unidadeId)))
+                .filter(s -> dataInicio == null || (s.getAtividade() != null && !s.getAtividade().getDataInicio().toLocalDate().isBefore(dataInicio)))
+                .filter(s -> dataFim == null || (s.getAtividade() != null && !s.getAtividade().getDataInicio().toLocalDate().isAfter(dataFim)))
                 .toList();
     }
 

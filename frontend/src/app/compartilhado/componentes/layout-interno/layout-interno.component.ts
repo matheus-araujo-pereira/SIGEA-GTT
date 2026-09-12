@@ -77,23 +77,18 @@ export class LayoutInternoComponent {
         itens: [
           {
             rota: '/atividades',
-            rotulo: 'Atividades de Auditoria',
+            rotulo: 'Atividades da Turma',
             icone: 'bi-journal-check',
           },
           {
-            rota: '/avaliacoes',
-            rotulo: 'Avaliações & Notas',
-            icone: 'bi-clipboard-data',
-          },
-          {
-            rota: '/cenarios',
-            rotulo: 'Cenários Clínicos',
+            rota: '/casos-clinicos',
+            rotulo: 'Casos Clínicos & Prontuários',
             icone: 'bi-file-earmark-medical',
           },
           {
-            rota: '/prontuarios',
-            rotulo: 'Prontuários Simulados',
-            icone: 'bi-clipboard2-pulse',
+            rota: '/atividades/correcoes',
+            rotulo: 'Painel de Correções',
+            icone: 'bi-clipboard-check',
           },
         ],
       });
@@ -116,17 +111,12 @@ export class LayoutInternoComponent {
         itens: [
           {
             rota: '/atividades',
-            rotulo: 'Atividades de Auditoria',
+            rotulo: 'Atividades da Turma',
             icone: 'bi-journal-check',
           },
           {
-            rota: '/avaliacoes',
-            rotulo: 'Avaliações & Notas',
-            icone: 'bi-clipboard-data',
-          },
-          {
-            rota: '/cenarios',
-            rotulo: 'Cenários Clínicos',
+            rota: '/casos-clinicos',
+            rotulo: 'Casos Clínicos & Prontuários',
             icone: 'bi-file-earmark-medical',
           },
           {
@@ -135,9 +125,9 @@ export class LayoutInternoComponent {
             icone: 'bi-mortarboard',
           },
           {
-            rota: '/prontuarios',
-            rotulo: 'Prontuários Simulados',
-            icone: 'bi-clipboard2-pulse',
+            rota: '/atividades/correcoes',
+            rotulo: 'Painel de Correções',
+            icone: 'bi-clipboard-check',
           },
         ],
       });
@@ -145,17 +135,12 @@ export class LayoutInternoComponent {
 
     if (perfil === 'ALUNO') {
       grupos.push({
-        titulo: 'Auditoria Clínica',
+        titulo: 'Ambiente do Aluno',
         itens: [
           {
-            rota: '/auditoria',
-            rotulo: 'Minhas Auditorias',
-            icone: 'bi-clipboard-pulse',
-          },
-          {
-            rota: '/minhas-notas',
-            rotulo: 'Minhas Notas',
-            icone: 'bi-award',
+            rota: '/minhas-atividades',
+            rotulo: 'Minhas Atividades',
+            icone: 'bi-journal-text',
           },
         ],
       });

@@ -1,0 +1,176 @@
+<div>
+  <!-- CABEÇALHO DA LISTAGEM -->
+  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">Atividades de Auditoria Docente</h1>
+      <span class="text-secondary small">
+        Total cadastrado: {{ totalAtividades() }} atividades curriculares vinculadas a casos clínicos e turmas
+      </span>
+    </div>
+    @if (ehDocenteOuAdmin()) {
+      <button
+        type="button"
+        class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        (click)="navegarParaNovo()"
+      >
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>NOVA ATIVIDADE</span>
+      </button>
+    }
+  </div>
+
+  <!-- FEEDBACK -->
+  @if (mensagemSucesso()) {
+    <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
+      <button type="button" class="btn-close btn-sm" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+    </div>
+  }
+
+  <!-- BARRA DE FILTROS E BUSCA -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-secondary border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            [ngModel]="termoBusca()"
+            (ngModelChange)="atualizarBusca($event)"
+            placeholder="Filtrar por título, turma, disciplina ou caso clínico..."
+          />
+          @if (termoBusca()) {
+            <button class="btn btn-outline-secondary" type="button" (click)="atualizarBusca('')">
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroTurmaId()"
+          (ngModelChange)="atualizarFiltroTurma($event)"
+        >
+          <option [ngValue]="null">Todas as Turmas Acadêmicas</option>
+          @for (t of turmas(); track t.id) {
+            <option [ngValue]="t.id">{{ t.codigoDisciplina }} - {{ t.periodoLetivo }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABELA DE ATIVIDADES -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+    <div class="table-responsive bg-white">
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead class="bg-white text-secondary small font-monospace border-bottom border-light-subtle">
+          <tr>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">TÍTULO DA ATIVIDADE</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">TURMA / DISCIPLINA</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">CASO CLÍNICO</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">PRAZO DE ENTREGA</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">ENTREGAS</th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">AÇÕES</th>
+          </tr>
+        </thead>
+        <tbody class="small font-monospace bg-white">
+          @for (a of atividadesPaginadas(); track a.id) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 bg-white">
+                <div class="fw-bold text-dark font-sans-serif">{{ a.titulo }}</div>
+                <div class="text-secondary small font-monospace">Limite: {{ a.tempoLimiteMinutos }} min (IHI GTT)</div>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <div class="fw-bold text-dark">{{ a.turmaCodigo }}</div>
+                <div class="small text-muted">{{ a.turmaDisciplina }}</div>
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white font-sans-serif">
+                {{ a.casoTitulo }}
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <div>{{ a.prazoInicio }} a</div>
+                <div>{{ a.prazoFim }}</div>
+              </td>
+              <td class="py-2 px-2 bg-white">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-bold text-dark">{{ a.totalSubmissoes }}/{{ a.totalAlunos }}</span>
+                  <span class="badge bg-light text-dark border">{{ a.porcentagemEntrega }}%</span>
+                </div>
+                <div class="progress mt-1" style="height: 4px;">
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    [style.width.%]="a.porcentagemEntrega"
+                  ></div>
+                </div>
+              </td>
+              <td class="py-2 px-3 text-end text-nowrap bg-white">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
+                  (click)="navegarParaPainel(a.original)"
+                  title="Abrir Painel da Turma & Correções"
+                >
+                  <i class="bi bi-speedometer2 me-1"></i>PAINEL DA TURMA
+                </button>
+                @if (ehDocenteOuAdmin()) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
+                    (click)="navegarParaEditar(a.original)"
+                    title="Editar Atividade"
+                  >
+                    EDITAR
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
+                    (click)="excluir(a.original)"
+                    title="Excluir Atividade"
+                  >
+                    EXCLUIR
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-journal-x fs-2 d-block text-secondary mb-2"></i>
+                Nenhuma atividade educacional encontrada com os filtros selecionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)"
+    >
+    </app-paginacao>
+  </div>
+</div>
