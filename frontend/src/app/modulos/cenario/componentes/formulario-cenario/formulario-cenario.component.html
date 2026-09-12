@@ -5,10 +5,18 @@
   >
     <div>
       <h1 class="h4 fw-bold text-dark m-0">
-        {{ ehEdicao() ? 'Editar Cenário Clínico #' + id() : 'Cadastrar Novo Cenário Clínico' }}
+        {{
+          ehEdicao()
+            ? "Editar Cenário Clínico #" + id()
+            : "Cadastrar Novo Cenário Clínico"
+        }}
       </h1>
       <span class="text-secondary small">
-        {{ ehEdicao() ? 'Atualize as informações pedagógicas do caso clínico reutilizável.' : 'Cadastre um caso clínico com registros simulados para auditoria retrospectiva.' }}
+        {{
+          ehEdicao()
+            ? "Atualize as informações pedagógicas do caso clínico reutilizável."
+            : "Cadastre um caso clínico com registros simulados para auditoria retrospectiva."
+        }}
       </span>
     </div>
     <button
@@ -60,7 +68,8 @@
         class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
       >
         <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-journal-text me-1"></i> Informações do Cenário Clínico Reutilizável
+          <i class="bi bi-journal-text me-1"></i> Informações do Cenário Clínico
+          Reutilizável
         </span>
       </div>
 
@@ -132,7 +141,8 @@
                 required
               ></textarea>
               <div class="form-text text-muted small">
-                Contextualize a situação clínica e as especificidades do ambiente assistencial.
+                Contextualize a situação clínica e as especificidades do
+                ambiente assistencial.
               </div>
             </div>
 

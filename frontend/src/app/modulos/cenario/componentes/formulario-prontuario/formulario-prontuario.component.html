@@ -5,10 +5,15 @@
   >
     <div>
       <h1 class="h4 fw-bold text-dark m-0">
-        {{ ehEdicao() ? 'Editar Prontuário Simulado #' + id() : 'Cadastrar Novo Prontuário Simulado' }}
+        {{
+          ehEdicao()
+            ? "Editar Prontuário Simulado #" + id()
+            : "Cadastrar Novo Prontuário Simulado"
+        }}
       </h1>
       <span class="text-secondary small">
-        Dados clínicos simulados do paciente e registros médicos para aplicação da metodologia IHI-GTT
+        Dados clínicos simulados do paciente e registros médicos para aplicação
+        da metodologia IHI-GTT
       </span>
     </div>
     <button
@@ -60,7 +65,8 @@
         class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
       >
         <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-clipboard2-pulse me-1"></i> Dados Clínicos e Administrativos do Prontuário
+          <i class="bi bi-clipboard2-pulse me-1"></i> Dados Clínicos e
+          Administrativos do Prontuário
         </span>
       </div>
 
@@ -69,7 +75,9 @@
           <!-- Seção 1: Identificação & Internação -->
           <div class="row g-3 mb-4">
             <div class="col-12">
-              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-1 border-bottom border-light-subtle">
+              <span
+                class="text-primary fw-bold small text-uppercase font-monospace d-block pb-1 border-bottom border-light-subtle"
+              >
                 1. Identificação do Caso e Internação
               </span>
             </div>
@@ -167,7 +175,9 @@
           <!-- Seção 2: Documentação Clínica do Paciente -->
           <div class="row g-3 mb-4">
             <div class="col-12">
-              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-1 border-bottom border-light-subtle">
+              <span
+                class="text-primary fw-bold small text-uppercase font-monospace d-block pb-1 border-bottom border-light-subtle"
+              >
                 2. Registros Clínicos do Prontuário
               </span>
             </div>

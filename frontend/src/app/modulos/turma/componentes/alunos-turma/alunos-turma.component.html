@@ -6,7 +6,9 @@
     <div>
       <h1 class="h4 fw-bold text-dark m-0">Gestão de Alunos da Turma</h1>
       <span class="text-secondary small" *ngIf="turma()">
-        Turma: <strong>{{ turma()?.codigoDisciplina }}</strong> (Período: {{ turma()?.periodoLetivo }}) &bull; Docente: {{ turma()?.professorResponsavelNome || 'Não atribuído' }}
+        Turma: <strong>{{ turma()?.codigoDisciplina }}</strong> (Período:
+        {{ turma()?.periodoLetivo }}) &bull; Docente:
+        {{ turma()?.professorResponsavelNome || "Não atribuído" }}
       </span>
     </div>
     <button
@@ -60,7 +62,9 @@
   >
     <div class="row g-2 align-items-end">
       <div class="col-md-4">
-        <label class="form-label small fw-semibold text-secondary mb-1">Filtrar Alunos Disponíveis</label>
+        <label class="form-label small fw-semibold text-secondary mb-1"
+          >Filtrar Alunos Disponíveis</label
+        >
         <input
           type="text"
           class="form-control form-control-sm"
@@ -70,17 +74,24 @@
         />
       </div>
       <div class="col-md-5">
-        <label class="form-label small fw-semibold text-secondary mb-1">Selecionar Aluno</label>
+        <label class="form-label small fw-semibold text-secondary mb-1"
+          >Selecionar Aluno</label
+        >
         <select
           class="form-select form-select-sm"
           [(ngModel)]="alunoSelecionadoId"
           [disabled]="alunosDisponiveis().length === 0"
         >
           <option [ngValue]="null">
-            {{ alunosDisponiveis().length === 0 ? 'Nenhum aluno disponível' : 'Selecione um aluno da lista...' }}
+            {{
+              alunosDisponiveis().length === 0
+                ? "Nenhum aluno disponível"
+                : "Selecione um aluno da lista..."
+            }}
           </option>
           <option *ngFor="let a of alunosDisponiveis()" [ngValue]="a.id">
-            {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || 'S/M' }}) - {{ a.email }}
+            {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || "S/M" }}) -
+            {{ a.email }}
           </option>
         </select>
       </div>
@@ -164,7 +175,9 @@
         <tbody class="small font-monospace bg-white">
           @for (item of alunosPaginados(); track item.id) {
             <tr class="bg-white">
-              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
+              <td
+                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
+              >
                 {{ item.nome }}
               </td>
               <td class="py-2 px-2 text-secondary bg-white">

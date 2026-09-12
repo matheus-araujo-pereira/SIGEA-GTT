@@ -9,9 +9,14 @@
         Total realizado: {{ totalNotas() }} auditorias discentes no SIGEA-GTT
       </span>
     </div>
-    <div *ngIf="mediaGeral()" class="d-flex align-items-center gap-2 bg-white px-3 py-1 rounded-2 border border-light-subtle shadow-sm">
+    <div
+      *ngIf="mediaGeral()"
+      class="d-flex align-items-center gap-2 bg-white px-3 py-1 rounded-2 border border-light-subtle shadow-sm"
+    >
       <span class="small text-secondary">MÉDIA GERAL:</span>
-      <span class="fs-5 fw-bold text-primary font-monospace">{{ mediaGeral() }}</span>
+      <span class="fs-5 fw-bold text-primary font-monospace">{{
+        mediaGeral()
+      }}</span>
       <span class="small text-muted">/ 10.0</span>
     </div>
   </div>
@@ -90,7 +95,10 @@
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
               SITUAÇÃO
             </th>
-            <th scope="col" class="py-2 px-2 text-center bg-white text-secondary">
+            <th
+              scope="col"
+              class="py-2 px-2 text-center bg-white text-secondary"
+            >
               NOTA
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
@@ -104,7 +112,9 @@
         <tbody class="small font-monospace bg-white">
           @for (n of notasPaginadas(); track n.id) {
             <tr class="bg-white">
-              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
+              <td
+                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
+              >
                 {{ n.atividadeTitulo }}
               </td>
               <td class="py-2 px-2 text-secondary bg-white font-monospace">
@@ -129,7 +139,11 @@
                 </span>
               </td>
               <td class="py-2 px-2 text-secondary bg-white small">
-                <div class="text-truncate" style="max-width: 220px;" [title]="n.parecerDocente">
+                <div
+                  class="text-truncate"
+                  style="max-width: 220px"
+                  [title]="n.parecerDocente"
+                >
                   {{ n.parecerDocente }}
                 </div>
               </td>

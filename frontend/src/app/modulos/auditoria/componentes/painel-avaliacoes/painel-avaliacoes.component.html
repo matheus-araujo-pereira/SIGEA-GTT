@@ -6,7 +6,8 @@
     <div>
       <h1 class="h4 fw-bold text-dark m-0">Avaliações e Correções Docentes</h1>
       <span class="text-secondary small">
-        Total submetido: {{ totalSubmissoes() }} auditorias discentes no SIGEA-GTT
+        Total submetido: {{ totalSubmissoes() }} auditorias discentes no
+        SIGEA-GTT
       </span>
     </div>
   </div>
@@ -117,7 +118,10 @@
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
               SITUAÇÃO
             </th>
-            <th scope="col" class="py-2 px-2 text-center bg-white text-secondary">
+            <th
+              scope="col"
+              class="py-2 px-2 text-center bg-white text-secondary"
+            >
               NOTA
             </th>
             <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
@@ -128,7 +132,9 @@
         <tbody class="small font-monospace bg-white">
           @for (s of submissoesPaginadas(); track s.id) {
             <tr class="bg-white">
-              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
+              <td
+                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
+              >
                 {{ s.alunoNome }}
               </td>
               <td class="py-2 px-2 font-sans-serif text-dark bg-white">
@@ -151,9 +157,7 @@
                 <span *ngIf="s.foiCorrigida" class="fw-bold fs-6 text-primary">
                   {{ s.notaStr }}
                 </span>
-                <span *ngIf="!s.foiCorrigida" class="text-muted">
-                  -
-                </span>
+                <span *ngIf="!s.foiCorrigida" class="text-muted"> - </span>
               </td>
               <td class="py-2 px-3 text-end text-nowrap bg-white">
                 <button
@@ -162,7 +166,11 @@
                   [class.btn-primary]="!s.foiCorrigida"
                   [class.btn-outline-secondary]="s.foiCorrigida"
                   (click)="avaliar(s.id)"
-                  [title]="s.foiCorrigida ? 'Revisar Avaliação e Nota' : 'Avaliar e Atribuir Nota'"
+                  [title]="
+                    s.foiCorrigida
+                      ? 'Revisar Avaliação e Nota'
+                      : 'Avaliar e Atribuir Nota'
+                  "
                 >
                   {{ s.foiCorrigida ? "REVISAR" : "AVALIAR" }}
                 </button>
@@ -171,8 +179,11 @@
           } @empty {
             <tr>
               <td colspan="7" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-clipboard2-check fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma submissão discente encontrada com os filtros selecionados.
+                <i
+                  class="bi bi-clipboard2-check fs-2 d-block text-secondary mb-2"
+                ></i>
+                Nenhuma submissão discente encontrada com os filtros
+                selecionados.
               </td>
             </tr>
           }

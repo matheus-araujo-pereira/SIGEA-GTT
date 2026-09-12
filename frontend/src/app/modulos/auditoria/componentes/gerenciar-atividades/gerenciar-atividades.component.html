@@ -6,7 +6,8 @@
     <div>
       <h1 class="h4 fw-bold text-dark m-0">Atividades de Auditoria Docente</h1>
       <span class="text-secondary small">
-        Total cadastrado: {{ totalAtividades() }} atividades de auditoria no SIGEA-GTT
+        Total cadastrado: {{ totalAtividades() }} atividades de auditoria no
+        SIGEA-GTT
       </span>
     </div>
     <button
@@ -101,9 +102,7 @@
             <th scope="col" class="py-2 px-3 bg-white text-secondary">
               TÍTULO DA ATIVIDADE
             </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TURMA
-            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">TURMA</th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
               CENÁRIO CLÍNICO
             </th>
@@ -124,15 +123,23 @@
         <tbody class="small font-monospace bg-white">
           @for (at of atividadesPaginadas(); track at.id) {
             <tr class="bg-white">
-              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
+              <td
+                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
+              >
                 {{ at.titulo }}
-                <div class="small text-muted font-monospace fw-normal">{{ at.totalAuditorias }} submissão(ões)</div>
+                <div class="small text-muted font-monospace fw-normal">
+                  {{ at.totalAuditorias }} submissão(ões)
+                </div>
               </td>
               <td class="py-2 px-2 font-monospace text-secondary bg-white">
                 {{ at.turmaStr }}
               </td>
               <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                <div class="text-truncate" style="max-width: 220px;" [title]="at.cenarioTitulo">
+                <div
+                  class="text-truncate"
+                  style="max-width: 220px"
+                  [title]="at.cenarioTitulo"
+                >
                   {{ at.cenarioTitulo }}
                 </div>
               </td>
@@ -170,7 +177,9 @@
                   type="button"
                   class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
                   (click)="alternarFinalizada(at.original)"
-                  [title]="at.finalizada ? 'Reabrir Atividade' : 'Encerrar Atividade'"
+                  [title]="
+                    at.finalizada ? 'Reabrir Atividade' : 'Encerrar Atividade'
+                  "
                 >
                   {{ at.finalizada ? "REABRIR" : "ENCERRAR" }}
                 </button>
@@ -188,7 +197,8 @@
             <tr>
               <td colspan="7" class="text-center py-5 text-muted bg-white">
                 <i class="bi bi-journal-x fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma atividade de auditoria encontrada com os filtros selecionados.
+                Nenhuma atividade de auditoria encontrada com os filtros
+                selecionados.
               </td>
             </tr>
           }

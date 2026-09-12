@@ -118,11 +118,17 @@
         <tbody class="small font-monospace bg-white">
           @for (c of cenariosPaginados(); track c.id) {
             <tr class="bg-white">
-              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
+              <td
+                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
+              >
                 {{ c.titulo }}
               </td>
               <td class="py-2 px-2 text-secondary bg-white">
-                <div class="text-truncate" style="max-width: 380px;" [title]="c.descricaoPedagogica">
+                <div
+                  class="text-truncate"
+                  style="max-width: 380px"
+                  [title]="c.descricaoPedagogica"
+                >
                   {{ c.descricaoPedagogica }}
                 </div>
               </td>
@@ -162,7 +168,9 @@
           } @empty {
             <tr>
               <td colspan="5" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-file-earmark-medical fs-2 d-block text-secondary mb-2"></i>
+                <i
+                  class="bi bi-file-earmark-medical fs-2 d-block text-secondary mb-2"
+                ></i>
                 Nenhum cenário clínico encontrado com os filtros selecionados.
               </td>
             </tr>

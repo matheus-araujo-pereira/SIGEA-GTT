@@ -5,10 +5,15 @@
   >
     <div>
       <h1 class="h4 fw-bold text-dark m-0">
-        {{ ehEdicao() ? 'Editar Atividade de Auditoria #' + id() : 'Cadastrar Nova Atividade de Auditoria' }}
+        {{
+          ehEdicao()
+            ? "Editar Atividade de Auditoria #" + id()
+            : "Cadastrar Nova Atividade de Auditoria"
+        }}
       </h1>
       <span class="text-secondary small">
-        Vincule uma turma a um cenário clínico simulado definindo prazos e tempo limite de auditoria
+        Vincule uma turma a um cenário clínico simulado definindo prazos e tempo
+        limite de auditoria
       </span>
     </div>
     <button
@@ -60,7 +65,8 @@
         class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
       >
         <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-journal-check me-1"></i> Parâmetros Pedagógicos da Atividade
+          <i class="bi bi-journal-check me-1"></i> Parâmetros Pedagógicos da
+          Atividade
         </span>
       </div>
 
@@ -180,7 +186,8 @@
                 for="tempoLimiteMinutos"
                 class="form-label small fw-semibold text-secondary"
               >
-                Tempo Limite por Prontuário (min) <span class="text-danger">*</span>
+                Tempo Limite por Prontuário (min)
+                <span class="text-danger">*</span>
               </label>
               <input
                 id="tempoLimiteMinutos"

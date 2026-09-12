@@ -85,7 +85,9 @@ export class MinhasTurmasComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar turmas: ' + (err.message || 'Falha na conexão'));
+        this.mensagemErro.set(
+          'Erro ao carregar turmas: ' + (err.message || 'Falha na conexão'),
+        );
         this.carregando.set(false);
       },
     });
