@@ -1,0 +1,199 @@
+<div>
+  <!-- CABEÇALHO -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">
+        Prontuário Simulado: {{ prontuario()?.numeroAtendimento || 'Carregando...' }}
+      </h1>
+      <span class="text-secondary small" *ngIf="prontuario()">
+        Cenário: <strong>{{ prontuario()?.cenarioTitulo }}</strong> &bull; Unidade: {{ prontuario()?.unidadeHospitalarNome }} ({{ prontuario()?.unidadeHospitalarSigla }})
+      </span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        (click)="voltar()"
+      >
+        <i class="bi bi-arrow-left"></i>
+        <span>VOLTAR</span>
+      </button>
+      <button
+        *ngIf="prontuario()"
+        type="button"
+        class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        (click)="editar()"
+      >
+        <i class="bi bi-pencil"></i>
+        <span>EDITAR PRONTUÁRIO</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemErro()) {
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados do prontuário...
+      </p>
+    </div>
+  } @else if (prontuario()) {
+    <div class="row g-3">
+      <!-- Card de Dados Básicos da Internação -->
+      <div class="col-12">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+          <div class="row g-3 text-secondary small">
+            <div class="col-md-3">
+              <span class="d-block text-muted">Nº Atendimento:</span>
+              <strong class="text-dark fs-6 font-monospace">{{ prontuario()?.numeroAtendimento }}</strong>
+            </div>
+            <div class="col-md-3">
+              <span class="d-block text-muted">Paciente:</span>
+              <strong class="text-dark">{{ prontuario()?.idadePaciente }} anos</strong>
+            </div>
+            <div class="col-md-3">
+              <span class="d-block text-muted">Período de Internação:</span>
+              <span class="text-dark font-monospace">{{ formatarData(prontuario()?.dataAdmissao) }} até {{ formatarData(prontuario()?.dataAlta) }}</span>
+            </div>
+            <div class="col-md-3">
+              <span class="d-block text-muted">Tempo de Permanência:</span>
+              <strong class="text-dark">{{ prontuario()?.tempoPermanenciaDias }} dia(s)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navegação por Abas dos Registros Médicos -->
+      <div class="col-12">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+          <div class="card-header bg-white border-bottom border-light-subtle p-0">
+            <ul class="nav nav-tabs card-header-tabs m-0 px-3">
+              <li class="nav-item">
+                <button
+                  class="nav-link border-top-0 border-start-0 border-end-0 py-3"
+                  [class.active]="abaAtiva() === 'SUMARIO'"
+                  (click)="abaAtiva.set('SUMARIO')"
+                >
+                  <i class="bi bi-file-earmark-medical me-1"></i> Sumário de Alta
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link border-top-0 border-start-0 border-end-0 py-3"
+                  [class.active]="abaAtiva() === 'PRESCRICOES'"
+                  (click)="abaAtiva.set('PRESCRICOES')"
+                >
+                  <i class="bi bi-prescription2 me-1"></i> Prescrições Médicas
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link border-top-0 border-start-0 border-end-0 py-3"
+                  [class.active]="abaAtiva() === 'EXAMES'"
+                  (click)="abaAtiva.set('EXAMES')"
+                >
+                  <i class="bi bi-activity me-1"></i> Exames Laboratoriais
+                </button>
+              </li>
+              <li class="nav-item">
+                <button
+                  class="nav-link border-top-0 border-start-0 border-end-0 py-3"
+                  [class.active]="abaAtiva() === 'EVOLUCOES'"
+                  (click)="abaAtiva.set('EVOLUCOES')"
+                >
+                  <i class="bi bi-card-checklist me-1"></i> Evoluções Multiprofissionais
+                </button>
+              </li>
+              <li class="nav-item" *ngIf="prontuario()?.relatorioCirurgico">
+                <button
+                  class="nav-link border-top-0 border-start-0 border-end-0 py-3"
+                  [class.active]="abaAtiva() === 'CIRURGICO'"
+                  (click)="abaAtiva.set('CIRURGICO')"
+                >
+                  <i class="bi bi-scissors me-1"></i> Relatório Cirúrgico
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card-body p-4 bg-white">
+            <!-- Sumário de Alta -->
+            <div *ngIf="abaAtiva() === 'SUMARIO'">
+              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-2 border-bottom border-light-subtle mb-3">
+                Sumário de Alta do Paciente
+              </span>
+              <div class="p-3 bg-light rounded-2 border border-light-subtle text-dark" style="white-space: pre-wrap; line-height: 1.6;">
+                {{ prontuario()?.sumarioAlta }}
+              </div>
+            </div>
+
+            <!-- Prescrições Médicas -->
+            <div *ngIf="abaAtiva() === 'PRESCRICOES'">
+              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-2 border-bottom border-light-subtle mb-3">
+                Prescrições e Medicamentos
+              </span>
+              <div class="p-3 bg-light rounded-2 border border-light-subtle font-monospace small text-dark" style="white-space: pre-wrap; line-height: 1.6;">
+                {{ prontuario()?.prescricoesMedicas }}
+              </div>
+            </div>
+
+            <!-- Exames Laboratoriais -->
+            <div *ngIf="abaAtiva() === 'EXAMES'">
+              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-2 border-bottom border-light-subtle mb-3">
+                Resultados de Exames Laboratoriais
+              </span>
+              <div class="p-3 bg-light rounded-2 border border-light-subtle font-monospace small text-dark" style="white-space: pre-wrap; line-height: 1.6;">
+                {{ prontuario()?.examesLaboratoriais || 'Nenhum exame cadastrado para este caso.' }}
+              </div>
+            </div>
+
+            <!-- Evoluções Multiprofissionais -->
+            <div *ngIf="abaAtiva() === 'EVOLUCOES'">
+              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-2 border-bottom border-light-subtle mb-3">
+                Evoluções Multiprofissionais
+              </span>
+              <div class="p-3 bg-light rounded-2 border border-light-subtle text-dark" style="white-space: pre-wrap; line-height: 1.6;">
+                {{ prontuario()?.evolucoesMultiprofissionais }}
+              </div>
+            </div>
+
+            <!-- Relatório Cirúrgico -->
+            <div *ngIf="abaAtiva() === 'CIRURGICO'">
+              <span class="text-primary fw-bold small text-uppercase font-monospace d-block pb-2 border-bottom border-light-subtle mb-3">
+                Relatório Cirúrgico e Procedimentos
+              </span>
+              <div class="p-3 bg-light rounded-2 border border-light-subtle text-dark" style="white-space: pre-wrap; line-height: 1.6;">
+                {{ prontuario()?.relatorioCirurgico }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

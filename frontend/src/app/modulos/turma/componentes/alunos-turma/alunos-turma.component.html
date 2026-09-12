@@ -4,18 +4,18 @@
     class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Atividades de Auditoria Docente</h1>
-      <span class="text-secondary small">
-        Total cadastrado: {{ totalAtividades() }} atividades de auditoria no SIGEA-GTT
+      <h1 class="h4 fw-bold text-dark m-0">Gestão de Alunos da Turma</h1>
+      <span class="text-secondary small" *ngIf="turma()">
+        Turma: <strong>{{ turma()?.codigoDisciplina }}</strong> (Período: {{ turma()?.periodoLetivo }}) &bull; Docente: {{ turma()?.professorResponsavelNome || 'Não atribuído' }}
       </span>
     </div>
     <button
       type="button"
-      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      (click)="novaAtividade()"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltarParaTurmas()"
     >
-      <i class="bi bi-plus-circle-fill"></i>
-      <span>NOVA ATIVIDADE</span>
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA TURMAS</span>
     </button>
   </div>
 
@@ -54,7 +54,56 @@
     </div>
   }
 
-  <!-- BARRA DE FILTROS E BUSCA -->
+  <!-- CARD DE MATRÍCULA DE NOVO ALUNO -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold text-secondary mb-1">Filtrar Alunos Disponíveis</label>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          placeholder="Buscar por nome, matrícula ou e-mail..."
+          [ngModel]="termoBuscaDisponivel()"
+          (ngModelChange)="termoBuscaDisponivel.set($event)"
+        />
+      </div>
+      <div class="col-md-5">
+        <label class="form-label small fw-semibold text-secondary mb-1">Selecionar Aluno</label>
+        <select
+          class="form-select form-select-sm"
+          [(ngModel)]="alunoSelecionadoId"
+          [disabled]="alunosDisponiveis().length === 0"
+        >
+          <option [ngValue]="null">
+            {{ alunosDisponiveis().length === 0 ? 'Nenhum aluno disponível' : 'Selecione um aluno da lista...' }}
+          </option>
+          <option *ngFor="let a of alunosDisponiveis()" [ngValue]="a.id">
+            {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || 'S/M' }}) - {{ a.email }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button
+          type="button"
+          class="btn btn-primary btn-sm w-100 d-inline-flex align-items-center justify-content-center gap-1"
+          [disabled]="!alunoSelecionadoId || matriculando()"
+          (click)="matricular()"
+        >
+          @if (matriculando()) {
+            <span class="spinner-border spinner-border-sm" role="status"></span>
+            <span>MATRICULANDO...</span>
+          } @else {
+            <i class="bi bi-person-check-fill"></i>
+            <span>MATRICULAR ALUNO</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE BUSCA EM MATRICULADOS -->
   <div
     class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
   >
@@ -67,7 +116,7 @@
           <input
             type="text"
             class="form-control border-start-0"
-            placeholder="Filtrar por título, código da turma ou cenário..."
+            placeholder="Filtrar matriculados por nome, matrícula ou e-mail..."
             [ngModel]="termoBusca()"
             (ngModelChange)="atualizarBusca($event)"
           />
@@ -83,12 +132,12 @@
         </div>
       </div>
       <div class="col-md-4 text-md-end text-secondary small">
-        Exibindo {{ totalFiltradas() }} de {{ totalAtividades() }} atividades
+        Total matriculado: {{ totalMatriculados() }} aluno(s)
       </div>
     </div>
   </div>
 
-  <!-- TABELA DE ATIVIDADES COM FUNDO BRANCO E SEM BADGES -->
+  <!-- TABELA DE ALUNOS MATRICULADOS COM FUNDO BRANCO E SEM BADGES -->
   <div
     class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
   >
@@ -99,22 +148,13 @@
         >
           <tr>
             <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              TÍTULO DA ATIVIDADE
+              NOME DO ALUNO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TURMA
+              MATRÍCULA SIGAA
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              CENÁRIO CLÍNICO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PERÍODO DE REALIZAÇÃO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TEMPO / CASO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              STATUS
+              E-MAIL INSTITUCIONAL
             </th>
             <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
               AÇÕES
@@ -122,73 +162,33 @@
           </tr>
         </thead>
         <tbody class="small font-monospace bg-white">
-          @for (at of atividadesPaginadas(); track at.id) {
+          @for (item of alunosPaginados(); track item.id) {
             <tr class="bg-white">
               <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
-                {{ at.titulo }}
-                <div class="small text-muted font-monospace fw-normal">{{ at.totalAuditorias }} submissão(ões)</div>
+                {{ item.nome }}
               </td>
-              <td class="py-2 px-2 font-monospace text-secondary bg-white">
-                {{ at.turmaStr }}
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ item.matricula }}
               </td>
               <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                <div class="text-truncate" style="max-width: 220px;" [title]="at.cenarioTitulo">
-                  {{ at.cenarioTitulo }}
-                </div>
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white small">
-                {{ at.periodoStr }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white font-monospace">
-                {{ at.tempoLimiteStr }}
-              </td>
-              <td
-                class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="!at.finalizada"
-                [class.text-muted]="at.finalizada"
-              >
-                {{ at.status }}
+                {{ item.email }}
               </td>
               <td class="py-2 px-3 text-end text-nowrap bg-white">
                 <button
                   type="button"
-                  class="btn btn-outline-success btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="verAvaliacoes(at.original)"
-                  title="Ver Avaliações e Submissões dos Alunos"
-                >
-                  AVALIAÇÕES
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="editarAtividade(at.original)"
-                  title="Editar Atividade"
-                >
-                  EDITAR
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="alternarFinalizada(at.original)"
-                  [title]="at.finalizada ? 'Reabrir Atividade' : 'Encerrar Atividade'"
-                >
-                  {{ at.finalizada ? "REABRIR" : "ENCERRAR" }}
-                </button>
-                <button
-                  type="button"
                   class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                  (click)="excluir(at.original)"
-                  title="Excluir Atividade"
+                  (click)="desmatricular(item.original)"
+                  title="Desmatricular Aluno"
                 >
-                  EXCLUIR
+                  DESMATRICULAR
                 </button>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-journal-x fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma atividade de auditoria encontrada com os filtros selecionados.
+              <td colspan="4" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-people fs-2 d-block text-secondary mb-2"></i>
+                Nenhum aluno matriculado encontrado nesta turma.
               </td>
             </tr>
           }
@@ -198,7 +198,7 @@
 
     <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
     <app-paginacao
-      [totalItens]="totalFiltradas()"
+      [totalItens]="totalFiltrados()"
       [itensPorPagina]="itensPorPagina"
       [paginaAtual]="paginaAtual()"
       (paginaAlterada)="mudarPagina($event)"

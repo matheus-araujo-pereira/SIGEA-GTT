@@ -44,6 +44,21 @@ public class RevisaoIndividualControlador {
         return ResponseEntity.ok(servico.salvarAchadosETempo(id, dto));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<RevisaoIndividualRespostaDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(servico.buscarPorId(id));
+    }
+
+    @GetMapping("/minhas-notas")
+    public ResponseEntity<List<RevisaoIndividualRespostaDTO>> listarMinhasNotas(@RequestParam Long alunoId) {
+        return ResponseEntity.ok(servico.listarMinhasNotas(alunoId));
+    }
+
+    @GetMapping("/professor/{professorId}")
+    public ResponseEntity<List<RevisaoIndividualRespostaDTO>> listarPorProfessor(@PathVariable Long professorId) {
+        return ResponseEntity.ok(servico.listarPorProfessor(professorId));
+    }
+
     @PutMapping("/{id}/correcao")
     public ResponseEntity<RevisaoIndividualRespostaDTO> corrigir(@PathVariable Long id,
             @RequestParam Long professorId,

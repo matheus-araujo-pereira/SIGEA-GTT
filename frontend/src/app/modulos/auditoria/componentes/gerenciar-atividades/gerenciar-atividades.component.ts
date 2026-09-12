@@ -1,32 +1,11 @@
-import {
-  Component,
-  OnInit,
-  OnChanges,
-  SimpleChanges,
-  Input,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import {
-  AtividadeAuditoriaService,
-  AtividadeAuditoriaRequisicao,
-} from '../../servicos/atividade-auditoria.service';
-import { TurmaService } from '../../../turma/servicos/turma.service';
-import { CenarioClinicoService } from '../../../cenario/servicos/cenario-clinico.service';
-import {
-  RevisaoIndividualService,
-  AuditoriaAluno,
-  CorrigirAuditoriaPayload,
-} from '../../servicos/revisao-individual.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AtividadeAuditoriaService } from '../../servicos/atividade-auditoria.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 import { AtividadeAuditoria } from '../../modelos/auditoria.modelos';
-import { Turma } from '../../../turma/modelos/turma.modelos';
-import { CenarioClinico } from '../../../cenario/modelos/cenario.modelos';
-import { Usuario } from '../../../usuario/modelos/usuario.modelos';
+import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface AtividadeLinha {
   id: number;
@@ -35,206 +14,150 @@ export interface AtividadeLinha {
   cenarioTitulo: string;
   periodoStr: string;
   tempoLimiteStr: string;
-  totalAuditoriasStr: string;
+  totalAuditorias: number;
   status: string;
   finalizada: boolean;
-  selecionada: boolean;
   original: AtividadeAuditoria;
 }
 
 @Component({
   selector: 'app-gerenciar-atividades',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './gerenciar-atividades.component.html',
 })
-export class GerenciarAtividadesComponent implements OnInit, OnChanges {
-  @Input() turmaIdContextual: number | null = null;
+export class GerenciarAtividadesComponent implements OnInit {
   private readonly atividadeService = inject(AtividadeAuditoriaService);
-  private readonly turmaService = inject(TurmaService);
-  private readonly cenarioService = inject(CenarioClinicoService);
-  private readonly revisaoService = inject(RevisaoIndividualService);
-  readonly auth = inject(AutenticacaoService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly auth = inject(AutenticacaoService);
 
   readonly atividades = signal<AtividadeAuditoria[]>([]);
-  readonly turmas = signal<Turma[]>([]);
-  readonly cenarios = signal<CenarioClinico[]>([]);
-
-  readonly atividadeSelecionada = signal<AtividadeAuditoria | null>(null);
-  readonly alunosDaTurma = signal<Usuario[]>([]);
-  readonly auditoriasDosAlunos = signal<AuditoriaAluno[]>([]);
-  readonly revisaoSelecionada = signal<number | null>(null);
-  parecerDocente = '';
-  homologada = false;
-
   readonly carregando = signal(false);
-  exibirFormAtividade = false;
-  idEdicaoAtividade: number | null = null;
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
-  formAtividade: AtividadeAuditoriaRequisicao = this.obterFormAtividadeVazio();
+  readonly turmaFiltroId = signal<number | null>(null);
+  readonly termoBusca = signal('');
+  readonly paginaAtual = signal(1);
+  readonly itensPorPagina = 10;
 
   readonly totalAtividades = computed(() => this.atividades().length);
 
-  readonly tituloFormAtividade = computed(() => {
-    return this.idEdicaoAtividade
-      ? `EDITAR ATIVIDADE #${this.idEdicaoAtividade}`
-      : 'NOVA ATIVIDADE DE AUDITORIA';
-  });
-
-  readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicaoAtividade ? 'Editar Atividade' : 'Cadastrar Atividade';
-  });
-
-  readonly infoAtividadeSelecionada = computed(() => {
-    const at = this.atividadeSelecionada();
-    return at
-      ? `[${at.turmaCodigo}] ${at.titulo} | Cenário: ${at.cenarioTitulo}`
-      : '';
-  });
-
   readonly atividadesLinhas = computed<AtividadeLinha[]>(() => {
-    const selecionadaId = this.atividadeSelecionada()?.id;
+    const termo = this.termoBusca().trim().toLowerCase();
 
-    return this.atividades().map((at) => ({
-      id: at.id,
-      titulo: at.titulo,
-      turmaStr: `[${at.turmaCodigo}] ${at.turmaPeriodo}`,
-      cenarioTitulo: at.cenarioTitulo,
-      periodoStr: `${this.formatarDataHora(at.dataInicio)} a ${this.formatarDataHora(at.dataFim)}`,
-      tempoLimiteStr: `${at.tempoLimiteMinutos} min/caso`,
-      totalAuditoriasStr: `${at.totalAuditorias} auditoria(s)`,
-      status: at.finalizada ? '[ENCERRADA]' : '[ABERTA]',
-      finalizada: at.finalizada,
-      selecionada: at.id === selecionadaId,
-      original: at,
-    }));
+    return this.atividades()
+      .filter((at) => {
+        return (
+          !termo ||
+          at.titulo.toLowerCase().includes(termo) ||
+          at.turmaCodigo.toLowerCase().includes(termo) ||
+          at.cenarioTitulo.toLowerCase().includes(termo)
+        );
+      })
+      .sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'))
+      .map((at) => ({
+        id: at.id,
+        titulo: at.titulo,
+        turmaStr: `${at.turmaCodigo} (${at.turmaPeriodo})`,
+        cenarioTitulo: at.cenarioTitulo,
+        periodoStr: `${this.formatarDataHora(at.dataInicio)} a ${this.formatarDataHora(at.dataFim)}`,
+        tempoLimiteStr: `${at.tempoLimiteMinutos} min`,
+        totalAuditorias: at.totalAuditorias,
+        status: at.finalizada ? 'Encerrada' : 'Aberta',
+        finalizada: at.finalizada,
+        original: at,
+      }));
+  });
+
+  readonly totalFiltradas = computed(() => this.atividadesLinhas().length);
+
+  readonly atividadesPaginadas = computed<AtividadeLinha[]>(() => {
+    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
+    return this.atividadesLinhas().slice(inicio, inicio + this.itensPorPagina);
   });
 
   ngOnInit(): void {
-    this.carregarDados();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (
-      changes['turmaIdContextual'] &&
-      !changes['turmaIdContextual'].firstChange
-    ) {
-      this.carregarDados();
+    const turmaParam = this.route.snapshot.queryParamMap.get('turmaId');
+    if (turmaParam) {
+      const tId = Number(turmaParam);
+      if (!isNaN(tId)) {
+        this.turmaFiltroId.set(tId);
+      }
     }
+    this.carregarAtividades();
   }
 
-  carregarDados(): void {
-    this.turmaService.listar().subscribe({
-      next: (t) => this.turmas.set(t.filter((item) => item.ativa)),
-      error: (err) => console.error('Erro ao listar turmas:', err),
-    });
-
-    this.cenarioService.listar().subscribe({
-      next: (c) => this.cenarios.set(c),
-      error: (err) => console.error('Erro ao listar cenários:', err),
-    });
-
-    this.atividadeService
-      .listar(this.turmaIdContextual ?? undefined)
-      .subscribe({
-        next: (dados) => this.atividades.set(dados),
-        error: (err) =>
-          this.mensagemErro.set('Erro ao listar atividades: ' + err.message),
-      });
-  }
-
-  iniciarNovaAtividade(): void {
-    this.idEdicaoAtividade = null;
-    this.formAtividade = this.obterFormAtividadeVazio();
-    if (this.turmaIdContextual) {
-      this.formAtividade.turmaId = this.turmaIdContextual;
-    } else if (this.turmas().length > 0) {
-      this.formAtividade.turmaId = this.turmas()[0].id;
-    }
-    if (this.cenarios().length > 0)
-      this.formAtividade.cenarioId = this.cenarios()[0].id;
-    this.exibirFormAtividade = !this.exibirFormAtividade;
-    this.limparMensagens();
-  }
-
-  iniciarEdicaoAtividade(at: AtividadeAuditoria): void {
-    this.idEdicaoAtividade = at.id;
-    this.formAtividade = {
-      turmaId: at.turmaId,
-      cenarioId: at.cenarioId,
-      titulo: at.titulo,
-      dataInicio: at.dataInicio.substring(0, 16),
-      dataFim: at.dataFim.substring(0, 16),
-      tempoLimiteMinutos: at.tempoLimiteMinutos,
-    };
-    this.exibirFormAtividade = true;
-    this.limparMensagens();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  fecharFormAtividade(): void {
-    this.exibirFormAtividade = false;
-    this.idEdicaoAtividade = null;
-  }
-
-  salvarAtividade(): void {
+  carregarAtividades(): void {
     this.carregando.set(true);
-    this.limparMensagens();
+    const turmaId = this.turmaFiltroId() ?? undefined;
 
-    if (this.idEdicaoAtividade) {
-      this.atividadeService
-        .editar(this.idEdicaoAtividade, this.formAtividade)
-        .subscribe({
-          next: (atualizada) => {
-            this.mensagemSucesso.set(
-              `Atividade "${atualizada.titulo}" atualizada.`,
-            );
-            this.fecharFormAtividade();
-            this.carregando.set(false);
-            this.carregarDados();
-          },
-          error: (err) => {
-            this.mensagemErro.set(
-              err.error?.mensagem || 'Falha ao atualizar atividade.',
-            );
-            this.carregando.set(false);
-          },
-        });
-    } else {
-      this.atividadeService.cadastrar(this.formAtividade).subscribe({
-        next: (criada) => {
-          this.mensagemSucesso.set(
-            `Atividade "${criada.titulo}" criada com sucesso.`,
-          );
-          this.fecharFormAtividade();
-          this.carregando.set(false);
-          this.carregarDados();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar atividade.',
-          );
-          this.carregando.set(false);
-        },
+    this.atividadeService.listar(turmaId).subscribe({
+      next: (dados) => {
+        this.atividades.set(dados);
+        this.carregando.set(false);
+      },
+      error: (err) => {
+        this.mensagemErro.set('Erro ao listar atividades: ' + err.message);
+        this.carregando.set(false);
+      },
+    });
+  }
+
+  atualizarBusca(termo: string): void {
+    this.termoBusca.set(termo);
+    this.paginaAtual.set(1);
+  }
+
+  mudarPagina(p: number): void {
+    this.paginaAtual.set(p);
+  }
+
+  novaAtividade(): void {
+    const turmaId = this.turmaFiltroId();
+    if (turmaId) {
+      this.router.navigate(['/atividades/novo'], {
+        queryParams: { turmaId },
       });
+    } else {
+      this.router.navigate(['/atividades/novo']);
     }
   }
 
-  excluirAtividade(at: AtividadeAuditoria): void {
+  editarAtividade(at: AtividadeAuditoria): void {
+    this.router.navigate(['/atividades', at.id, 'editar']);
+  }
+
+  verAvaliacoes(at: AtividadeAuditoria): void {
+    this.router.navigate(['/avaliacoes'], {
+      queryParams: { atividadeId: at.id },
+    });
+  }
+
+  alternarFinalizada(at: AtividadeAuditoria): void {
+    this.atividadeService.alternarFinalizada(at.id).subscribe({
+      next: () => {
+        this.mensagemSucesso.set(
+          `Situação da atividade "${at.titulo}" alterada.`,
+        );
+        this.carregarAtividades();
+      },
+      error: (err) =>
+        this.mensagemErro.set('Erro ao alterar status: ' + err.message),
+    });
+  }
+
+  excluir(at: AtividadeAuditoria): void {
     const confirmacao = confirm(
-      `Deseja excluir a atividade "${at.titulo}"? As auditorias individuais associadas serão excluídas.`,
+      `Deseja realmente excluir a atividade "${at.titulo}"? Todas as auditorias e notas vinculadas serão removidas.`,
     );
     if (!confirmacao) return;
 
     this.atividadeService.excluir(at.id).subscribe({
       next: () => {
         this.mensagemSucesso.set('Atividade excluída com sucesso.');
-        if (this.atividadeSelecionada()?.id === at.id)
-          this.atividadeSelecionada.set(null);
-        this.carregarDados();
+        this.carregarAtividades();
       },
       error: (err) =>
         this.mensagemErro.set(
@@ -243,70 +166,9 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
     });
   }
 
-  alternarFinalizada(id: number): void {
-    this.atividadeService.alternarFinalizada(id).subscribe({
-      next: () => this.carregarDados(),
-      error: (err) =>
-        this.mensagemErro.set('Erro ao alterar status: ' + err.message),
-    });
-  }
-
-  selecionarAtividadeParaAuditorias(at: AtividadeAuditoria): void {
-    this.atividadeSelecionada.set(at);
-    this.revisaoSelecionada.set(null);
-    this.parecerDocente = '';
-    this.homologada = false;
-    this.revisaoService.listarAuditoriasDaAtividade(at.id).subscribe({
-      next: (dados) => this.auditoriasDosAlunos.set(dados),
-      error: (err) =>
-        this.mensagemErro.set(
-          'Erro ao carregar auditorias dos alunos: ' + err.message,
-        ),
-    });
-  }
-
-  selecionarRevisao(revisao: {
-    id: number;
-    parecerDocente?: string | null;
-    homologada?: boolean | null;
-  }): void {
-    this.revisaoSelecionada.set(revisao.id);
-    this.parecerDocente = revisao.parecerDocente || '';
-    this.homologada = Boolean(revisao.homologada);
-  }
-
-  salvarCorrecao(): void {
-    const revisaoId = this.revisaoSelecionada();
-    const professorId = Number(this.auth.usuarioLogado()?.id);
-    if (!revisaoId || !professorId || !this.parecerDocente.trim()) return;
-
-    const payload: CorrigirAuditoriaPayload = {
-      parecerDocente: this.parecerDocente,
-      homologada: this.homologada,
-    };
-    this.carregando.set(true);
-    this.revisaoService
-      .corrigirAuditoria(revisaoId, professorId, payload)
-      .subscribe({
-        next: (atualizada) => {
-          this.mensagemSucesso.set('Parecer docente salvo.');
-          this.carregando.set(false);
-          const atividade = this.atividadeSelecionada();
-          if (atividade) this.selecionarAtividadeParaAuditorias(atividade);
-          this.selecionarRevisao(atualizada);
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao salvar parecer docente.',
-          );
-          this.carregando.set(false);
-        },
-      });
-  }
-
-  abrirMelhoriaQualidade(): void {
-    const revisaoId = this.revisaoSelecionada();
-    if (revisaoId) this.router.navigate(['/melhoria', revisaoId]);
+  limparFiltroTurma(): void {
+    this.turmaFiltroId.set(null);
+    this.carregarAtividades();
   }
 
   private formatarDataHora(dataHoraStr: string): string {
@@ -316,23 +178,5 @@ export class GerenciarAtividadesComponent implements OnInit, OnChanges {
       dateStyle: 'short',
       timeStyle: 'short',
     });
-  }
-
-  private limparMensagens(): void {
-    this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
-  }
-
-  private obterFormAtividadeVazio(): AtividadeAuditoriaRequisicao {
-    const agora = new Date();
-    const amanha = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
-    return {
-      turmaId: 1,
-      cenarioId: 1,
-      titulo: '',
-      dataInicio: agora.toISOString().substring(0, 16),
-      dataFim: amanha.toISOString().substring(0, 16),
-      tempoLimiteMinutos: 20,
-    };
   }
 }

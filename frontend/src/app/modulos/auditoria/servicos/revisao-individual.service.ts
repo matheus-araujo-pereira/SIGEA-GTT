@@ -5,31 +5,11 @@ import {
   AtividadeDiscente,
   RevisaoIndividual,
   AchadoGatilho,
+  IniciarRevisaoPayload,
+  AuditoriaAluno,
+  CorrigirAuditoriaPayload,
+  SalvarRevisaoPayload,
 } from '../modelos/auditoria.modelos';
-
-export interface IniciarRevisaoPayload {
-  atividadeId: number;
-  alunoId: number;
-  prontuarioId: number;
-}
-
-export interface AuditoriaAluno {
-  alunoId: number;
-  alunoNome: string;
-  alunoMatricula?: string;
-  revisoes: RevisaoIndividual[];
-}
-
-export interface CorrigirAuditoriaPayload {
-  parecerDocente: string;
-  homologada: boolean;
-}
-
-export interface SalvarRevisaoPayload {
-  tempoGastoSegundos: number;
-  finalizar: boolean;
-  achados: AchadoGatilho[];
-}
 
 @Injectable({
   providedIn: 'root',
@@ -38,11 +18,28 @@ export class RevisaoIndividualService {
   private readonly http = inject(HttpClient);
   private readonly url = '/api/revisoes-individuais';
 
+  buscarPorId(id: number): Observable<RevisaoIndividual> {
+    return this.http.get<RevisaoIndividual>(`${this.url}/${id}`);
+  }
+
   listarMinhasAtividades(alunoId: number): Observable<AtividadeDiscente[]> {
     const params = new HttpParams().set('alunoId', alunoId.toString());
     return this.http.get<AtividadeDiscente[]>(`${this.url}/minhas-atividades`, {
       params,
     });
+  }
+
+  listarMinhasNotas(alunoId: number): Observable<RevisaoIndividual[]> {
+    const params = new HttpParams().set('alunoId', alunoId.toString());
+    return this.http.get<RevisaoIndividual[]>(`${this.url}/minhas-notas`, {
+      params,
+    });
+  }
+
+  listarPorProfessor(professorId: number): Observable<RevisaoIndividual[]> {
+    return this.http.get<RevisaoIndividual[]>(
+      `${this.url}/professor/${professorId}`,
+    );
   }
 
   iniciarRevisao(

@@ -1,263 +1,163 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TurmaService, TurmaRequisicao } from '../../servicos/turma.service';
-import { UsuarioService } from '../../../usuario/servicos/usuario.service';
+import { Router } from '@angular/router';
+import { TurmaService } from '../../servicos/turma.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
-import { GerenciarAtividadesComponent } from '../../../auditoria/componentes/gerenciar-atividades/gerenciar-atividades.component';
 import { Turma } from '../../modelos/turma.modelos';
-import { Usuario } from '../../../usuario/modelos/usuario.modelos';
+import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface TurmaLinha {
   id: number;
   codigo: string;
   periodo: string;
-  semestre: string;
   professor: string;
   totalAlunosStr: string;
   status: string;
   ativa: boolean;
-  selecionada: boolean;
   original: Turma;
-}
-
-export interface AlunoMatriculadoLinha {
-  id: number;
-  nome: string;
-  matricula: string;
-  email: string;
-  original: Usuario;
 }
 
 @Component({
   selector: 'app-turmas',
   standalone: true,
-  imports: [CommonModule, FormsModule, GerenciarAtividadesComponent],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './turmas.component.html',
 })
 export class TurmasComponent implements OnInit {
   private readonly turmaService = inject(TurmaService);
-  private readonly usuarioService = inject(UsuarioService);
+  private readonly router = inject(Router);
   readonly auth = inject(AutenticacaoService);
 
   readonly turmas = signal<Turma[]>([]);
-  readonly professores = signal<Usuario[]>([]);
-  readonly todosAlunos = signal<Usuario[]>([]);
-  readonly alunosDaTurma = signal<Usuario[]>([]);
-
-  readonly turmaSelecionada = signal<Turma | null>(null);
-  readonly termoBuscaAlunos = signal('');
-  idAlunoParaMatricular: number | null = null;
-
   readonly carregando = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
-  exibirFormTurma = false;
-  idEdicaoTurma: number | null = null;
-  formTurma: TurmaRequisicao = {
-    codigoDisciplina: '',
-    periodoLetivo: '',
-    anoSemestre: '',
-    professorResponsavelId: 1,
-  };
-
   readonly termoBusca = signal('');
+  readonly filtroStatus = signal('TODOS');
+
+  readonly paginaAtual = signal(1);
+  readonly itensPorPagina = 10;
 
   readonly totalTurmas = computed(() => this.turmas().length);
   readonly ehAdministrador = computed(
     () => this.auth.usuarioLogado()?.perfil === 'ADMINISTRADOR',
   );
 
-  readonly tituloFormTurma = computed(() => {
-    return this.idEdicaoTurma
-      ? `EDITAR TURMA #${this.idEdicaoTurma}`
-      : 'NOVA TURMA';
-  });
-
-  readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicaoTurma ? 'Editar Turma' : 'Cadastrar Turma';
-  });
-
-  readonly infoTurmaSelecionada = computed(() => {
-    const t = this.turmaSelecionada();
-    return t
-      ? `[${t.codigoDisciplina}] ${t.periodoLetivo} - Prof. ${t.professorResponsavelNome}`
-      : '';
-  });
-
-  readonly turmasLinhas = computed<TurmaLinha[]>(() => {
+  readonly turmasLinhasFiltradas = computed<TurmaLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
-    const selecionadaId = this.turmaSelecionada()?.id;
+    const statusFiltro = this.filtroStatus();
 
     return this.turmas()
       .filter((t) => {
-        return (
+        const matchStatus =
+          statusFiltro === 'TODOS' ||
+          (statusFiltro === 'ATIVAS' ? t.ativa : !t.ativa);
+        const matchTermo =
           !termo ||
           t.codigoDisciplina.toLowerCase().includes(termo) ||
           t.periodoLetivo.toLowerCase().includes(termo) ||
-          t.anoSemestre.toLowerCase().includes(termo) ||
-          t.professorResponsavelNome.toLowerCase().includes(termo)
-        );
+          t.professorResponsavelNome.toLowerCase().includes(termo);
+
+        return matchStatus && matchTermo;
       })
+      .sort((a, b) =>
+        a.codigoDisciplina.localeCompare(b.codigoDisciplina, undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        }),
+      )
       .map((t) => ({
         id: t.id,
-        codigo: `[${t.codigoDisciplina}]`,
+        codigo: t.codigoDisciplina,
         periodo: t.periodoLetivo,
-        semestre: t.anoSemestre,
         professor: t.professorResponsavelNome,
         totalAlunosStr: `${t.totalAlunos} aluno(s)`,
-        status: t.ativa ? '[ATIVO]' : '[INATIVO]',
+        status: t.ativa ? 'ATIVO' : 'INATIVO',
         ativa: t.ativa,
-        selecionada: t.id === selecionadaId,
         original: t,
       }));
   });
 
-  readonly alunosDisponiveisParaMatricula = computed(() => {
-    const matriculadosIds = new Set(this.alunosDaTurma().map((a) => a.id));
-    const termo = this.termoBuscaAlunos().trim().toLowerCase();
-    return this.todosAlunos().filter((a) => {
-      const corresponde =
-        !termo ||
-        a.nomeCompleto.toLowerCase().includes(termo) ||
-        (a.matriculaSigaa || '').toLowerCase().includes(termo) ||
-        a.email.toLowerCase().includes(termo);
-      return a.ativo && !matriculadosIds.has(a.id) && corresponde;
-    });
-  });
+  readonly totalFiltrados = computed(() => this.turmasLinhasFiltradas().length);
 
-  readonly alunosMatriculadosLinhas = computed<AlunoMatriculadoLinha[]>(() => {
-    const termo = this.termoBuscaAlunos().trim().toLowerCase();
-    return this.alunosDaTurma()
-      .filter(
-        (a) =>
-          !termo ||
-          a.nomeCompleto.toLowerCase().includes(termo) ||
-          (a.matriculaSigaa || '').toLowerCase().includes(termo) ||
-          a.email.toLowerCase().includes(termo),
-      )
-      .map((a) => ({
-        id: a.id,
-        nome: a.nomeCompleto,
-        matricula: a.matriculaSigaa || '-',
-        email: a.email,
-        original: a,
-      }));
+  readonly turmasLinhasPaginadas = computed<TurmaLinha[]>(() => {
+    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
+    return this.turmasLinhasFiltradas().slice(
+      inicio,
+      inicio + this.itensPorPagina,
+    );
   });
 
   ngOnInit(): void {
     this.carregarTurmas();
-    this.carregarUsuarios();
   }
 
   carregarTurmas(): void {
-    const usuarioLogado = this.auth.usuarioLogado();
-    const profId =
-      usuarioLogado?.perfil === 'PROFESSOR' ? usuarioLogado.id : undefined;
-
-    this.turmaService.listar(profId).subscribe({
-      next: (dados) => this.turmas.set(dados),
-      error: (err) =>
-        this.mensagemErro.set('Erro ao listar turmas: ' + err.message),
-    });
-  }
-
-  carregarUsuarios(): void {
-    this.usuarioService.listar().subscribe({
-      next: (usuarios) => {
-        this.professores.set(usuarios.filter((u) => u.perfil === 'PROFESSOR'));
-        this.todosAlunos.set(usuarios.filter((u) => u.perfil === 'ALUNO'));
-        if (
-          this.professores().length > 0 &&
-          !this.formTurma.professorResponsavelId
-        ) {
-          this.formTurma.professorResponsavelId = this.professores()[0].id;
-        }
-      },
-      error: (err) => console.error('Erro ao carregar usuários:', err),
-    });
-  }
-
-  iniciarNovaTurma(): void {
-    this.idEdicaoTurma = null;
-    const profId =
-      this.auth.usuarioLogado()?.id || this.professores()[0]?.id || 1;
-    this.formTurma = {
-      codigoDisciplina: '',
-      periodoLetivo: '',
-      anoSemestre: '',
-      professorResponsavelId: profId,
-    };
-    this.exibirFormTurma = !this.exibirFormTurma;
-    this.limparMensagens();
-  }
-
-  iniciarEdicaoTurma(t: Turma): void {
-    this.idEdicaoTurma = t.id;
-    this.formTurma = {
-      codigoDisciplina: t.codigoDisciplina,
-      periodoLetivo: t.periodoLetivo,
-      anoSemestre: t.anoSemestre,
-      professorResponsavelId: t.professorResponsavelId,
-    };
-    this.exibirFormTurma = true;
-    this.limparMensagens();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  fecharFormTurma(): void {
-    this.exibirFormTurma = false;
-    this.idEdicaoTurma = null;
-  }
-
-  salvarTurma(): void {
-    if (!this.ehAdministrador()) {
-      const professorId = this.auth.usuarioLogado()?.id;
-      if (professorId) this.formTurma.professorResponsavelId = professorId;
-    }
-
     this.carregando.set(true);
-    this.limparMensagens();
-
-    if (this.idEdicaoTurma) {
-      this.turmaService.editar(this.idEdicaoTurma, this.formTurma).subscribe({
-        next: (atualizada) => {
-          this.mensagemSucesso.set(
-            `Turma ${atualizada.codigoDisciplina} atualizada.`,
-          );
-          this.fecharFormTurma();
-          this.carregando.set(false);
-          this.carregarTurmas();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar turma.',
-          );
-          this.carregando.set(false);
-        },
-      });
-    } else {
-      this.turmaService.cadastrar(this.formTurma).subscribe({
-        next: (criada) => {
-          this.mensagemSucesso.set(
-            `Turma ${criada.codigoDisciplina} cadastrada.`,
-          );
-          this.fecharFormTurma();
-          this.carregando.set(false);
-          this.carregarTurmas();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar turma.',
-          );
-          this.carregando.set(false);
-        },
-      });
-    }
+    this.turmaService.listar().subscribe({
+      next: (dados) => {
+        this.turmas.set(dados);
+        this.carregando.set(false);
+      },
+      error: (err) => {
+        this.mensagemErro.set(
+          'Erro ao listar turmas: ' + (err.error?.mensagem || err.message),
+        );
+        this.carregando.set(false);
+      },
+    });
   }
 
-  excluirTurma(t: Turma): void {
+  navegarParaNovo(): void {
+    this.router.navigate(['/turmas/novo']);
+  }
+
+  navegarParaEditar(t: Turma): void {
+    this.router.navigate(['/turmas', t.id, 'editar']);
+  }
+
+  navegarParaAlunos(t: Turma): void {
+    this.router.navigate(['/turmas', t.id, 'alunos']);
+  }
+
+  navegarParaAtividades(t: Turma): void {
+    this.router.navigate(['/atividades'], {
+      queryParams: { turmaId: t.id },
+    });
+  }
+
+  atualizarBusca(termo: string): void {
+    this.termoBusca.set(termo);
+    this.paginaAtual.set(1);
+  }
+
+  atualizarFiltroStatus(status: string): void {
+    this.filtroStatus.set(status);
+    this.paginaAtual.set(1);
+  }
+
+  mudarPagina(novaPagina: number): void {
+    this.paginaAtual.set(novaPagina);
+  }
+
+  alternarStatus(t: Turma): void {
+    this.turmaService.alternarStatus(t.id).subscribe({
+      next: () => {
+        this.mensagemSucesso.set(
+          `Turma ${t.codigoDisciplina} ${t.ativa ? 'inativada' : 'ativada'} com sucesso.`,
+        );
+        this.carregarTurmas();
+      },
+      error: (err) =>
+        this.mensagemErro.set(
+          'Erro ao alternar status: ' + (err.error?.mensagem || err.message),
+        ),
+    });
+  }
+
+  excluir(t: Turma): void {
     const conf = confirm(
       `Confirma a exclusão definitiva da turma "${t.codigoDisciplina} (${t.periodoLetivo})"? Todas as matrículas serão removidas.`,
     );
@@ -266,84 +166,12 @@ export class TurmasComponent implements OnInit {
     this.turmaService.excluir(t.id).subscribe({
       next: () => {
         this.mensagemSucesso.set(`Turma ${t.codigoDisciplina} excluída.`);
-        if (this.turmaSelecionada()?.id === t.id)
-          this.turmaSelecionada.set(null);
         this.carregarTurmas();
       },
       error: (err) =>
-        this.mensagemErro.set('Erro ao excluir turma: ' + err.message),
+        this.mensagemErro.set(
+          'Erro ao excluir turma: ' + (err.error?.mensagem || err.message),
+        ),
     });
-  }
-
-  alternarStatusTurma(id: number): void {
-    this.turmaService.alternarStatus(id).subscribe({
-      next: () => this.carregarTurmas(),
-      error: (err) =>
-        this.mensagemErro.set('Erro ao alterar status: ' + err.message),
-    });
-  }
-
-  selecionarTurmaParaEnturmar(t: Turma): void {
-    this.turmaSelecionada.set(t);
-    this.idAlunoParaMatricular = null;
-    this.termoBuscaAlunos.set('');
-    this.carregarAlunosDaTurma(t.id);
-  }
-
-  carregarAlunosDaTurma(turmaId: number): void {
-    this.turmaService.listarAlunos(turmaId).subscribe({
-      next: (alunos) => this.alunosDaTurma.set(alunos),
-      error: (err) =>
-        this.mensagemErro.set('Erro ao listar alunos da turma: ' + err.message),
-    });
-  }
-
-  matricularAluno(): void {
-    const turma = this.turmaSelecionada();
-    if (!turma || !this.idAlunoParaMatricular) return;
-
-    this.carregando.set(true);
-    this.turmaService
-      .matricularAluno(turma.id, this.idAlunoParaMatricular)
-      .subscribe({
-        next: () => {
-          this.mensagemSucesso.set('Aluno matriculado com sucesso.');
-          this.idAlunoParaMatricular = null;
-          this.carregando.set(false);
-          this.carregarAlunosDaTurma(turma.id);
-          this.carregarTurmas();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao matricular aluno.',
-          );
-          this.carregando.set(false);
-        },
-      });
-  }
-
-  desmatricularAluno(aluno: Usuario): void {
-    const turma = this.turmaSelecionada();
-    if (!turma) return;
-
-    const conf = confirm(
-      `Desmatricular ${aluno.nomeCompleto} da turma ${turma.codigoDisciplina}?`,
-    );
-    if (!conf) return;
-
-    this.turmaService.desmatricularAluno(turma.id, aluno.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(`Aluno ${aluno.nomeCompleto} desmatriculado.`);
-        this.carregarAlunosDaTurma(turma.id);
-        this.carregarTurmas();
-      },
-      error: (err) =>
-        this.mensagemErro.set('Erro ao desmatricular aluno: ' + err.message),
-    });
-  }
-
-  private limparMensagens(): void {
-    this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
   }
 }

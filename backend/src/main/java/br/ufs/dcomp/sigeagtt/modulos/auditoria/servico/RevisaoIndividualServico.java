@@ -193,6 +193,7 @@ public class RevisaoIndividualServico {
         validacao.setRevisaoIndividual(revisao);
         validacao.setProfessorValidador(professor);
         validacao.setParecerFormativo(dto.parecerDocente().trim());
+        validacao.setNota(dto.nota());
         validacao.setHomologado(dto.homologada());
         validacaoRepositorio.save(validacao);
         return converterParaDTO(revisao);
@@ -264,6 +265,30 @@ public class RevisaoIndividualServico {
                 r.getDataSubmissao(),
                 achadosDTO,
                 validacao != null ? validacao.getParecerFormativo() : null,
+                validacao != null ? validacao.getNota() : null,
                 validacao != null && Boolean.TRUE.equals(validacao.getHomologado()));
+    }
+
+    @Transactional(readOnly = true)
+    public RevisaoIndividualRespostaDTO buscarPorId(Long id) {
+        RevisaoIndividual revisao = revisaoRepositorio.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Revisão individual não encontrada: " + id));
+        return converterParaDTO(revisao);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RevisaoIndividualRespostaDTO> listarMinhasNotas(Long alunoId) {
+        return revisaoRepositorio.findByAlunoId(alunoId).stream()
+                .filter(r -> Boolean.TRUE.equals(r.getFinalizada()))
+                .map(this::converterParaDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RevisaoIndividualRespostaDTO> listarPorProfessor(Long professorId) {
+        return revisaoRepositorio.findByProfessorId(professorId).stream()
+                .filter(r -> Boolean.TRUE.equals(r.getFinalizada()))
+                .map(this::converterParaDTO)
+                .toList();
     }
 }

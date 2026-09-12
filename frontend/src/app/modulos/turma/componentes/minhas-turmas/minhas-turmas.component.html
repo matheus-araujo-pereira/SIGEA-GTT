@@ -4,39 +4,14 @@
     class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Atividades de Auditoria Docente</h1>
+      <h1 class="h4 fw-bold text-dark m-0">Minhas Turmas Acadêmicas</h1>
       <span class="text-secondary small">
-        Total cadastrado: {{ totalAtividades() }} atividades de auditoria no SIGEA-GTT
+        Total atribuído: {{ totalTurmas() }} turmas sob sua responsabilidade docente
       </span>
     </div>
-    <button
-      type="button"
-      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      (click)="novaAtividade()"
-    >
-      <i class="bi bi-plus-circle-fill"></i>
-      <span>NOVA ATIVIDADE</span>
-    </button>
   </div>
 
   <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
   @if (mensagemErro()) {
     <div
       class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
@@ -67,7 +42,7 @@
           <input
             type="text"
             class="form-control border-start-0"
-            placeholder="Filtrar por título, código da turma ou cenário..."
+            placeholder="Filtrar por código da disciplina ou período letivo..."
             [ngModel]="termoBusca()"
             (ngModelChange)="atualizarBusca($event)"
           />
@@ -83,12 +58,12 @@
         </div>
       </div>
       <div class="col-md-4 text-md-end text-secondary small">
-        Exibindo {{ totalFiltradas() }} de {{ totalAtividades() }} atividades
+        Exibindo {{ totalFiltradas() }} de {{ totalTurmas() }} turmas
       </div>
     </div>
   </div>
 
-  <!-- TABELA DE ATIVIDADES COM FUNDO BRANCO E SEM BADGES -->
+  <!-- TABELA DE MINHAS TURMAS COM FUNDO BRANCO E SEM BADGES -->
   <div
     class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
   >
@@ -99,19 +74,13 @@
         >
           <tr>
             <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              TÍTULO DA ATIVIDADE
+              CÓDIGO DA DISCIPLINA
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TURMA
+              PERÍODO LETIVO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              CENÁRIO CLÍNICO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PERÍODO DE REALIZAÇÃO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TEMPO / CASO
+              ALUNOS MATRICULADOS
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
               STATUS
@@ -122,73 +91,56 @@
           </tr>
         </thead>
         <tbody class="small font-monospace bg-white">
-          @for (at of atividadesPaginadas(); track at.id) {
+          @for (t of turmasPaginadas(); track t.id) {
             <tr class="bg-white">
-              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
-                {{ at.titulo }}
-                <div class="small text-muted font-monospace fw-normal">{{ at.totalAuditorias }} submissão(ões)</div>
+              <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
+                {{ t.codigoDisciplina }}
               </td>
-              <td class="py-2 px-2 font-monospace text-secondary bg-white">
-                {{ at.turmaStr }}
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ t.periodoLetivo }}
               </td>
-              <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                <div class="text-truncate" style="max-width: 220px;" [title]="at.cenarioTitulo">
-                  {{ at.cenarioTitulo }}
-                </div>
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white small">
-                {{ at.periodoStr }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white font-monospace">
-                {{ at.tempoLimiteStr }}
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ t.totalAlunos }} aluno(s)
               </td>
               <td
                 class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="!at.finalizada"
-                [class.text-muted]="at.finalizada"
+                [class.text-success]="t.status === 'ATIVO'"
+                [class.text-muted]="t.status !== 'ATIVO'"
               >
-                {{ at.status }}
+                {{ t.status }}
               </td>
               <td class="py-2 px-3 text-end text-nowrap bg-white">
                 <button
                   type="button"
-                  class="btn btn-outline-success btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="verAvaliacoes(at.original)"
-                  title="Ver Avaliações e Submissões dos Alunos"
-                >
-                  AVALIAÇÕES
-                </button>
-                <button
-                  type="button"
                   class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="editarAtividade(at.original)"
-                  title="Editar Atividade"
+                  (click)="verAlunos(t.id)"
+                  title="Ver Alunos Matriculados"
                 >
-                  EDITAR
+                  ALUNOS
                 </button>
                 <button
                   type="button"
                   class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="alternarFinalizada(at.original)"
-                  [title]="at.finalizada ? 'Reabrir Atividade' : 'Encerrar Atividade'"
+                  (click)="verAtividades(t.id)"
+                  title="Gerenciar Atividades da Turma"
                 >
-                  {{ at.finalizada ? "REABRIR" : "ENCERRAR" }}
+                  ATIVIDADES
                 </button>
                 <button
                   type="button"
-                  class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                  (click)="excluir(at.original)"
-                  title="Excluir Atividade"
+                  class="btn btn-outline-success btn-sm py-0 px-2 rounded-1"
+                  (click)="verAvaliacoes(t.id)"
+                  title="Avaliações e Correções da Turma"
                 >
-                  EXCLUIR
+                  AVALIAÇÕES
                 </button>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-journal-x fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma atividade de auditoria encontrada com os filtros selecionados.
+              <td colspan="5" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-mortarboard fs-2 d-block text-secondary mb-2"></i>
+                Nenhuma turma atribuída a você foi encontrada.
               </td>
             </tr>
           }

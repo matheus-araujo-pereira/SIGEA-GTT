@@ -1,0 +1,236 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">
+        {{ ehEdicao() ? 'Editar Atividade de Auditoria #' + id() : 'Cadastrar Nova Atividade de Auditoria' }}
+      </h1>
+      <span class="text-secondary small">
+        Vincule uma turma a um cenário clínico simulado definindo prazos e tempo limite de auditoria
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltar()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA ATIVIDADES</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemErro()) {
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados da atividade...
+      </p>
+    </div>
+  } @else {
+    <!-- CARD DO FORMULÁRIO -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+    >
+      <div
+        class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+      >
+        <span class="fw-bold text-dark small text-uppercase font-monospace">
+          <i class="bi bi-journal-check me-1"></i> Parâmetros Pedagógicos da Atividade
+        </span>
+      </div>
+
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <!-- TÍTULO DA ATIVIDADE -->
+            <div class="col-12">
+              <label
+                for="titulo"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Título da Atividade <span class="text-danger">*</span>
+              </label>
+              <input
+                id="titulo"
+                type="text"
+                class="form-control"
+                placeholder="Ex: Auditoria Prática - Rastreamento de Gatilhos em UTI Adulto"
+                [(ngModel)]="formulario.titulo"
+                name="titulo"
+                required
+                maxlength="150"
+              />
+              <div class="form-text text-muted small">
+                Identificação pedagógica da atividade para a turma.
+              </div>
+            </div>
+
+            <!-- TURMA VINCULADA -->
+            <div class="col-md-6">
+              <label
+                for="turmaId"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Turma Vinculada <span class="text-danger">*</span>
+              </label>
+              <select
+                id="turmaId"
+                class="form-select"
+                [(ngModel)]="formulario.turmaId"
+                name="turmaId"
+                required
+              >
+                <option *ngFor="let t of turmas()" [ngValue]="t.id">
+                  {{ t.codigoDisciplina }} - {{ t.periodoLetivo }}
+                </option>
+              </select>
+              <div class="form-text text-muted small">
+                Turma de discentes que executará esta auditoria.
+              </div>
+            </div>
+
+            <!-- CENÁRIO CLÍNICO REUTILIZÁVEL -->
+            <div class="col-md-6">
+              <label
+                for="cenarioId"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Cenário Clínico Reutilizável <span class="text-danger">*</span>
+              </label>
+              <select
+                id="cenarioId"
+                class="form-select"
+                [(ngModel)]="formulario.cenarioId"
+                name="cenarioId"
+                required
+              >
+                <option *ngFor="let c of cenarios()" [ngValue]="c.id">
+                  {{ c.titulo }}
+                </option>
+              </select>
+              <div class="form-text text-muted small">
+                Os prontuários deste cenário serão auditados pelos alunos.
+              </div>
+            </div>
+
+            <!-- DATA E HORA DE INÍCIO -->
+            <div class="col-md-4">
+              <label
+                for="dataInicio"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Data e Hora de Início <span class="text-danger">*</span>
+              </label>
+              <input
+                id="dataInicio"
+                type="datetime-local"
+                class="form-control"
+                [(ngModel)]="formulario.dataInicio"
+                name="dataInicio"
+                required
+              />
+            </div>
+
+            <!-- DATA E HORA DE TÉRMINO -->
+            <div class="col-md-4">
+              <label
+                for="dataFim"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Data e Hora de Término <span class="text-danger">*</span>
+              </label>
+              <input
+                id="dataFim"
+                type="datetime-local"
+                class="form-control"
+                [(ngModel)]="formulario.dataFim"
+                name="dataFim"
+                required
+              />
+            </div>
+
+            <!-- TEMPO LIMITE -->
+            <div class="col-md-4">
+              <label
+                for="tempoLimiteMinutos"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Tempo Limite por Prontuário (min) <span class="text-danger">*</span>
+              </label>
+              <input
+                id="tempoLimiteMinutos"
+                type="number"
+                class="form-control"
+                [(ngModel)]="formulario.tempoLimiteMinutos"
+                name="tempoLimiteMinutos"
+                min="5"
+                max="180"
+                required
+              />
+              <div class="form-text text-muted small">
+                Recomendado IHI-GTT: 20 minutos por prontuário.
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÕES DE SUBMISSÃO -->
+          <div
+            class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+          >
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-3"
+              (click)="voltar()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
+              [disabled]="salvando()"
+            >
+              @if (salvando()) {
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span>Salvando...</span>
+              } @else {
+                <i class="bi bi-check-lg"></i>
+                <span>{{
+                  ehEdicao() ? "Salvar Alterações" : "Cadastrar Atividade"
+                }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

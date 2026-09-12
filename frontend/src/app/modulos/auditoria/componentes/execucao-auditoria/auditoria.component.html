@@ -184,6 +184,15 @@
                   </td>
                   <td class="p-2 text-end text-nowrap">
                     <button
+                      *ngIf="p.finalizada && p.revisaoId"
+                      type="button"
+                      class="btn btn-outline-secondary btn-sm py-0 px-2 me-1"
+                      title="Visualizar Submissão e Parecer Docente"
+                      (click)="visualizarSubmissao(p.revisaoId)"
+                    >
+                      VISUALIZAR
+                    </button>
+                    <button
                       type="button"
                       class="btn btn-outline-primary btn-sm py-0 px-2 me-1"
                       (click)="abrirAuditoria(p.atividadeOriginal, p.original)"

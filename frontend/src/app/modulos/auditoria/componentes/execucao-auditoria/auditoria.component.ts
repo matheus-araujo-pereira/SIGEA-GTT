@@ -398,6 +398,12 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.buscaGatilho.set('');
   }
 
+  visualizarSubmissao(revisaoId?: number): void {
+    if (revisaoId) {
+      this.router.navigate(['/auditoria', revisaoId, 'visualizar']);
+    }
+  }
+
   private formatarSegundos(totalSegundos: number): string {
     if (!totalSegundos) return '00:00';
     const min = Math.floor(totalSegundos / 60);

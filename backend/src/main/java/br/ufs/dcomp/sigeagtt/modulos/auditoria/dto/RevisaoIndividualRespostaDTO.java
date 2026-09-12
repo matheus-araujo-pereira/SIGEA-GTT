@@ -2,6 +2,7 @@ package br.ufs.dcomp.sigeagtt.modulos.auditoria.dto;
 
 import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.RevisaoIndividual;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public record RevisaoIndividualRespostaDTO(
         LocalDateTime dataSubmissao,
         List<AchadoGatilhoDTO> achados,
         String parecerDocente,
+        BigDecimal nota,
         Boolean homologada) {
     public static RevisaoIndividualRespostaDTO deEntidade(RevisaoIndividual r, List<AchadoGatilhoDTO> achados) {
         return new RevisaoIndividualRespostaDTO(
@@ -30,6 +32,7 @@ public record RevisaoIndividualRespostaDTO(
                 r.getFinalizada(),
                 r.getDataSubmissao(),
                 achados,
+                null,
                 null,
                 false);
     }

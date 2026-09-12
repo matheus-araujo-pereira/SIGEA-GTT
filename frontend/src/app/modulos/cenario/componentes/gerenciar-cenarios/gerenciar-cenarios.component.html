@@ -1,259 +1,183 @@
 <div>
-  <!-- TOPO -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+  <!-- CABEÇALHO DA LISTAGEM -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
-      <h1 class="h5 fw-bold text-dark m-0">Cenários Clínicos Simulados</h1>
-      <span class="text-secondary small"
-        >Total cadastrado: {{ totalCenarios() }}</span
-      >
+      <h1 class="h4 fw-bold text-dark m-0">Cenários Clínicos Reutilizáveis</h1>
+      <span class="text-secondary small">
+        Total cadastrado: {{ totalCenarios() }} cenários clínicos no SIGEA-GTT
+      </span>
     </div>
     <button
       type="button"
-      class="btn btn-primary btn-sm"
-      (click)="iniciarNovoCenario()"
+      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="novoCenario()"
     >
-      {{ exibirFormulario ? "FECHAR" : "NOVO CENÁRIO" }}
+      <i class="bi bi-plus-circle-fill"></i>
+      <span>NOVO CENÁRIO</span>
     </button>
   </div>
 
   <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
     <div
-      class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between"
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
     >
-      <span>{{ mensagemSucesso() }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
       <button
         type="button"
-        class="btn btn-sm p-0 text-success"
+        class="btn-close btn-sm"
         (click)="mensagemSucesso.set(null)"
-      >
-        [X]
-      </button>
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   @if (mensagemErro()) {
     <div
-      class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between"
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
     >
-      <span>{{ mensagemErro() }}</span>
-      <button
-        type="button"
-        class="btn btn-sm p-0 text-danger"
-        (click)="mensagemErro.set(null)"
-      >
-        [X]
-      </button>
-    </div>
-  }
-
-  <!-- FORMULARIO RETANGULAR COMPACTO -->
-  @if (exibirFormulario) {
-    <div class="p-3 mb-3 bg-white b-1">
-      <div
-        class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b"
-      >
-        <span class="fw-bold text-dark small font-monospace">{{
-          tituloFormulario()
-        }}</span>
-        <button
-          type="button"
-          class="btn btn-sm p-0 text-muted"
-          (click)="fecharFormulario()"
-        >
-          [FECHAR]
-        </button>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
       </div>
-
-      <form (ngSubmit)="salvar()">
-        <div class="row g-2">
-          <div class="col-md-8">
-            <label
-              for="tituloCenario"
-              class="form-label small text-secondary m-0"
-              >Título do Cenário</label
-            >
-            <input
-              id="tituloCenario"
-              type="text"
-              class="form-control form-control-sm"
-              [(ngModel)]="formulario.titulo"
-              name="titulo"
-              required
-              maxlength="150"
-              placeholder="Ex.: Evento Adverso Medicamentoso em Paciente Idoso Hospitalizado"
-            />
-          </div>
-          @if (ehAdministrador()) {
-            <div class="col-md-4">
-              <label
-                for="profCriador"
-                class="form-label small text-secondary m-0"
-                >Docente Criador</label
-              >
-              <select
-                id="profCriador"
-                class="form-select form-select-sm"
-                [(ngModel)]="formulario.professorCriadorId"
-                name="profCriador"
-                required
-              >
-                @for (p of professores(); track p.id) {
-                  <option [value]="p.id">{{ p.nomeCompleto }}</option>
-                }
-              </select>
-            </div>
-          } @else {
-            <div class="col-md-4">
-              <label class="form-label small text-secondary m-0"
-                >Docente Criador</label
-              >
-              <div class="form-control form-control-sm bg-light">
-                {{ auth.usuarioLogado()?.nomeCompleto }}
-              </div>
-            </div>
-          }
-          <div class="col-12">
-            <label
-              for="descPedagogica"
-              class="form-label small text-secondary m-0"
-              >Descrição Pedagógica do Caso</label
-            >
-            <textarea
-              id="descPedagogica"
-              class="form-control form-control-sm"
-              rows="2"
-              [(ngModel)]="formulario.descricaoPedagogica"
-              name="descPedagogica"
-              required
-            ></textarea>
-          </div>
-          <div class="col-12">
-            <label
-              for="objAprendizagem"
-              class="form-label small text-secondary m-0"
-              >Objetivos de Aprendizagem (Competências IHI-GTT)</label
-            >
-            <textarea
-              id="objAprendizagem"
-              class="form-control form-control-sm"
-              rows="2"
-              [(ngModel)]="formulario.objetivosAprendizagem"
-              name="objAprendizagem"
-              required
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            (click)="fecharFormulario()"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-sm px-3"
-            [disabled]="carregando()"
-          >
-            {{ textoBotaoSubmit() }}
-          </button>
-        </div>
-      </form>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
-  <!-- FILTRO COMPACTO -->
-  <div class="d-flex gap-2 mb-3 bg-white p-2 b-1">
-    <input
-      type="text"
-      class="form-control form-control-sm"
-      [ngModel]="termoBusca()"
-      (ngModelChange)="termoBusca.set($event)"
-      placeholder="Filtrar por título, objetivos ou docente..."
-    />
-
-    @if (termoBusca()) {
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm"
-        (click)="termoBusca.set('')"
-      >
-        LIMPAR
-      </button>
-    }
+  <!-- BARRA DE FILTROS E BUSCA -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-secondary border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            placeholder="Filtrar por título, contexto pedagógico ou docente..."
+            [ngModel]="termoBusca()"
+            (ngModelChange)="atualizarBusca($event)"
+          />
+          @if (termoBusca()) {
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="atualizarBusca('')"
+            >
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end text-secondary small">
+        Exibindo {{ totalFiltrados() }} de {{ totalCenarios() }} cenários
+      </div>
+    </div>
   </div>
 
-  <!-- TABELA DE ALTO CONTRASTE -->
-  <div class="bg-white b-1">
-    <table class="table table-hover table-sm m-0">
-      <thead class="bg-light text-secondary small font-monospace b-b">
-        <tr>
-          <th scope="col" class="p-2">ID</th>
-          <th scope="col" class="p-2">TÍTULO DO CENÁRIO</th>
-          <th scope="col" class="p-2">DOCENTE</th>
-          <th scope="col" class="p-2">OBJETIVOS</th>
-          <th scope="col" class="p-2">CRIAÇÃO</th>
-          <th scope="col" class="p-2 text-end">AÇÕES</th>
-        </tr>
-      </thead>
-      <tbody class="small font-monospace">
-        @for (c of cenariosLinhas(); track c.id) {
+  <!-- TABELA DE CENÁRIOS COM FUNDO BRANCO E SEM BADGES -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+  >
+    <div class="table-responsive bg-white">
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead
+          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+        >
           <tr>
-            <td class="p-2">{{ c.id }}</td>
-            <td class="p-2 font-sans-serif">
-              <div class="fw-semibold text-dark">{{ c.titulo }}</div>
-              <div
-                class="text-secondary text-truncate small"
-                style="max-width: 480px"
-              >
-                {{ c.descricaoPedagogica }}
-              </div>
-            </td>
-            <td class="p-2 font-sans-serif text-dark">
-              {{ c.professorCriadorNome }}
-            </td>
-            <td
-              class="p-2 font-sans-serif text-secondary text-truncate"
-              style="max-width: 320px"
-            >
-              {{ c.objetivosAprendizagem }}
-            </td>
-            <td class="p-2">{{ c.dataCriacao }}</td>
-            <td class="p-2 text-end text-nowrap">
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm py-0 px-2 me-1"
-                (click)="iniciarEdicao(c.original)"
-              >
-                EDITAR
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-primary btn-sm py-0 px-2 me-1"
-                (click)="abrirProntuarios(c.original)"
-              >
-                PRONTUÁRIOS
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-danger btn-sm py-0 px-2"
-                (click)="excluir(c.original)"
-              >
-                EXCLUIR
-              </button>
-            </td>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">
+              TÍTULO DO CENÁRIO
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              CONTEXTO PEDAGÓGICO
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              DOCENTE RESPONSÁVEL
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              DATA DE CRIAÇÃO
+            </th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
+              AÇÕES
+            </th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="text-center py-4 text-muted">
-              Nenhum cenário clínico cadastrado.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="small font-monospace bg-white">
+          @for (c of cenariosPaginados(); track c.id) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
+                {{ c.titulo }}
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <div class="text-truncate" style="max-width: 380px;" [title]="c.descricaoPedagogica">
+                  {{ c.descricaoPedagogica }}
+                </div>
+              </td>
+              <td class="py-2 px-2 font-sans-serif text-dark bg-white">
+                {{ c.professorCriadorNome }}
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white font-monospace">
+                {{ c.dataCriacao }}
+              </td>
+              <td class="py-2 px-3 text-end text-nowrap bg-white">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
+                  (click)="abrirProntuarios(c.original)"
+                  title="Gerenciar Prontuários Simulados"
+                >
+                  PRONTUÁRIOS
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
+                  (click)="editarCenario(c.original)"
+                  title="Editar Cenário Clínico"
+                >
+                  EDITAR
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
+                  (click)="excluir(c.original)"
+                  title="Excluir Cenário Clínico"
+                >
+                  EXCLUIR
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-file-earmark-medical fs-2 d-block text-secondary mb-2"></i>
+                Nenhum cenário clínico encontrado com os filtros selecionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)"
+    >
+    </app-paginacao>
   </div>
 </div>

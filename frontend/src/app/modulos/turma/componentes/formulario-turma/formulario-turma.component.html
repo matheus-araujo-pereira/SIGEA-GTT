@@ -1,0 +1,200 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
+      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltarParaListagem()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA TURMAS</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemSucesso()) {
+    <div
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados da turma...
+      </p>
+    </div>
+  } @else {
+    <!-- CARD DO FORMULÁRIO -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+    >
+      <div
+        class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+      >
+        <span class="fw-bold text-dark small text-uppercase font-monospace">
+          <i class="bi bi-mortarboard me-1"></i> Informações Cadastrais da Turma
+        </span>
+      </div>
+
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <!-- CÓDIGO DA DISCIPLINA -->
+            <div class="col-md-6">
+              <label
+                for="codigoDisciplina"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Código da Disciplina <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span
+                  class="input-group-text bg-light text-secondary border-end-0"
+                >
+                  <i class="bi bi-journal-bookmark"></i>
+                </span>
+                <input
+                  id="codigoDisciplina"
+                  type="text"
+                  class="form-control font-monospace border-start-0 text-uppercase"
+                  [(ngModel)]="formulario.codigoDisciplina"
+                  name="codigoDisciplina"
+                  required
+                  maxlength="20"
+                  placeholder="Ex.: MED0023, ENF0010"
+                />
+              </div>
+              <div class="form-text text-muted small">
+                Identificador oficial da disciplina curricular no SIGAA.
+              </div>
+            </div>
+
+            <!-- PERÍODO LETIVO -->
+            <div class="col-md-6">
+              <label
+                for="periodoLetivo"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Período Letivo <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span
+                  class="input-group-text bg-light text-secondary border-end-0"
+                >
+                  <i class="bi bi-calendar-event"></i>
+                </span>
+                <input
+                  id="periodoLetivo"
+                  type="text"
+                  class="form-control font-monospace border-start-0"
+                  [(ngModel)]="formulario.periodoLetivo"
+                  name="periodoLetivo"
+                  required
+                  maxlength="20"
+                  placeholder="Ex.: 2026.1"
+                />
+              </div>
+              <div class="form-text text-muted small">
+                Período acadêmico da oferta (ex: 2026.1, 2026.2).
+              </div>
+            </div>
+
+            <!-- PROFESSOR RESPONSÁVEL -->
+            <div class="col-12">
+              <label
+                for="professorResponsavelId"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Docente Responsável <span class="text-danger">*</span>
+              </label>
+              <select
+                id="professorResponsavelId"
+                class="form-select"
+                [(ngModel)]="formulario.professorResponsavelId"
+                name="professorResponsavelId"
+                required
+              >
+                <option [ngValue]="0" disabled>
+                  Selecione o professor responsável...
+                </option>
+                <option *ngFor="let prof of professores()" [ngValue]="prof.id">
+                  {{ prof.nomeCompleto }} ({{ prof.email }})
+                </option>
+              </select>
+              <div class="form-text text-muted small">
+                Docente que terá acesso às atividades, correções e notas desta turma.
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÕES DE SUBMISSÃO -->
+          <div
+            class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+          >
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-3"
+              (click)="voltarParaListagem()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
+              [disabled]="salvando()"
+            >
+              @if (salvando()) {
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span>Salvando...</span>
+              } @else {
+                <i class="bi bi-check-lg"></i>
+                <span>{{
+                  modoEdicao() ? "Salvar Alterações" : "Cadastrar Turma"
+                }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

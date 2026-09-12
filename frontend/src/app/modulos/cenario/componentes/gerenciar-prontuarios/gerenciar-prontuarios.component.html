@@ -1,385 +1,203 @@
 <div>
-  <!-- TOPO -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+  <!-- CABEÇALHO DA LISTAGEM -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
-      <h1 class="h5 fw-bold text-dark m-0">Prontuários Clínicos Simulados</h1>
+      <h1 class="h4 fw-bold text-dark m-0">Prontuários Simulados (IHI-GTT)</h1>
       <span class="text-secondary small">
-        @if (cenarioContextual()) {
-          Cenário: {{ cenarioContextual()?.titulo }} |
-        }
-        Total cadastrado: {{ totalProntuarios() }}
+        <span *ngIf="cenarioContextual()">
+          Cenário: <strong>{{ cenarioContextual()?.titulo }}</strong> &bull;
+        </span>
+        Total cadastrado: {{ totalProntuarios() }} prontuários simulados no SIGEA-GTT
       </span>
     </div>
-    <button
-      type="button"
-      class="btn btn-primary btn-sm"
-      (click)="iniciarNovoProntuario()"
-    >
-      {{ exibirFormulario ? "FECHAR" : "NOVO PRONTUÁRIO" }}
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        *ngIf="cenarioContextual()"
+        type="button"
+        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        (click)="voltarParaCenarios()"
+      >
+        <i class="bi bi-arrow-left"></i>
+        <span>CENÁRIOS</span>
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        (click)="novoProntuario()"
+      >
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>NOVO PRONTUÁRIO</span>
+      </button>
+    </div>
   </div>
 
   <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
     <div
-      class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between"
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
     >
-      <span>{{ mensagemSucesso() }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
       <button
         type="button"
-        class="btn btn-sm p-0 text-success"
+        class="btn-close btn-sm"
         (click)="mensagemSucesso.set(null)"
-      >
-        [X]
-      </button>
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   @if (mensagemErro()) {
     <div
-      class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between"
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
     >
-      <span>{{ mensagemErro() }}</span>
-      <button
-        type="button"
-        class="btn btn-sm p-0 text-danger"
-        (click)="mensagemErro.set(null)"
-      >
-        [X]
-      </button>
-    </div>
-  }
-
-  <!-- FORMULARIO RETANGULAR COMPACTO -->
-  @if (exibirFormulario) {
-    <div class="p-3 mb-3 bg-white b-1">
-      <div
-        class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b"
-      >
-        <span class="fw-bold text-dark small font-monospace">{{
-          tituloFormulario()
-        }}</span>
-        <button
-          type="button"
-          class="btn btn-sm p-0 text-muted"
-          (click)="fecharFormulario()"
-        >
-          [FECHAR]
-        </button>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
       </div>
-
-      <form (ngSubmit)="salvar()">
-        <!-- DADOS GERAIS DO CASO -->
-        <div class="row g-2 mb-3 pb-2 b-b">
-          @if (cenarioContextual()) {
-            <div class="col-md-4">
-              <label class="form-label small text-secondary m-0"
-                >Cenário Clínico</label
-              >
-              <div class="form-control form-control-sm bg-light">
-                {{ cenarioContextual()?.titulo }}
-              </div>
-            </div>
-          } @else {
-            <div class="col-md-4">
-              <label
-                for="cenarioVinculado"
-                class="form-label small text-secondary m-0"
-                >Cenário Clínico</label
-              >
-              <select
-                id="cenarioVinculado"
-                class="form-select form-select-sm"
-                [(ngModel)]="formulario.cenarioId"
-                name="cenarioId"
-                required
-              >
-                @for (c of cenarios(); track c.id) {
-                  <option [value]="c.id">{{ c.titulo }}</option>
-                }
-              </select>
-            </div>
-          }
-          <div class="col-md-3">
-            <label
-              for="unidadeSetor"
-              class="form-label small text-secondary m-0"
-              >Unidade (Setor HU)</label
-            >
-            <select
-              id="unidadeSetor"
-              class="form-select form-select-sm"
-              [(ngModel)]="formulario.unidadeHospitalarId"
-              name="unidadeId"
-              required
-            >
-              @for (u of unidades(); track u.id) {
-                <option [value]="u.id">{{ u.sigla }} - {{ u.nome }}</option>
-              }
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label
-              for="numAtendimento"
-              class="form-label small text-secondary m-0"
-              >Nº Atendimento</label
-            >
-            <input
-              id="numAtendimento"
-              type="text"
-              class="form-control form-control-sm font-monospace text-uppercase"
-              [(ngModel)]="formulario.numeroAtendimento"
-              name="numAtendimento"
-              required
-              maxlength="50"
-              placeholder="Ex.: ATEND-2026-001"
-            />
-          </div>
-          <div class="col-md-2">
-            <label
-              for="idadePaciente"
-              class="form-label small text-secondary m-0"
-              >Idade (anos)</label
-            >
-            <input
-              id="idadePaciente"
-              type="number"
-              class="form-control form-control-sm"
-              [(ngModel)]="formulario.idadePaciente"
-              name="idade"
-              required
-              min="18"
-            />
-          </div>
-
-          <div class="col-md-4">
-            <label
-              for="dataAdmissao"
-              class="form-label small text-secondary m-0"
-              >Data de Admissão</label
-            >
-            <input
-              id="dataAdmissao"
-              type="date"
-              class="form-control form-control-sm font-monospace"
-              [(ngModel)]="formulario.dataAdmissao"
-              name="dataAdmissao"
-              required
-              (change)="recalcularDias()"
-            />
-          </div>
-          <div class="col-md-4">
-            <label for="dataAlta" class="form-label small text-secondary m-0"
-              >Data da Alta</label
-            >
-            <input
-              id="dataAlta"
-              type="date"
-              class="form-control form-control-sm font-monospace"
-              [(ngModel)]="formulario.dataAlta"
-              name="dataAlta"
-              required
-              (change)="recalcularDias()"
-            />
-          </div>
-          <div class="col-md-4">
-            <label
-              for="permanenciaDias"
-              class="form-label small text-secondary m-0"
-              >Permanência (Dias)</label
-            >
-            <input
-              id="permanenciaDias"
-              type="number"
-              class="form-control form-control-sm font-monospace"
-              [(ngModel)]="formulario.tempoPermanenciaDias"
-              name="permanencia"
-              required
-              min="1"
-            />
-          </div>
-        </div>
-
-        <!-- 5 SEÇÕES CLÍNICAS IHI-GTT -->
-        <div class="row g-2">
-          <div class="col-12">
-            <label
-              for="sumarioAlta"
-              class="form-label small fw-bold text-dark m-0"
-            >
-              1. Sumário / Relatório de Alta e Diagnósticos
-            </label>
-            <textarea
-              id="sumarioAlta"
-              class="form-control form-control-sm font-monospace"
-              rows="2"
-              [(ngModel)]="formulario.sumarioAlta"
-              name="sumarioAlta"
-              required
-            ></textarea>
-          </div>
-
-          <div class="col-12">
-            <label
-              for="prescricoesMedicas"
-              class="form-label small fw-bold text-dark m-0"
-            >
-              2. Prescrições Médicas e Aprazamento
-            </label>
-            <textarea
-              id="prescricoesMedicas"
-              class="form-control form-control-sm font-monospace"
-              rows="2"
-              [(ngModel)]="formulario.prescricoesMedicas"
-              name="prescricoes"
-              required
-            ></textarea>
-          </div>
-
-          <div class="col-12">
-            <label
-              for="examesLaboratoriais"
-              class="form-label small fw-bold text-dark m-0"
-            >
-              3. Resultados de Exames Laboratoriais
-            </label>
-            <textarea
-              id="examesLaboratoriais"
-              class="form-control form-control-sm font-monospace"
-              rows="2"
-              [(ngModel)]="formulario.examesLaboratoriais"
-              name="exames"
-              required
-            ></textarea>
-          </div>
-
-          <div class="col-12">
-            <label
-              for="relatorioCirurgico"
-              class="form-label small fw-bold text-dark m-0"
-            >
-              4. Relatório Cirúrgico e Anestésico (Opcional)
-            </label>
-            <textarea
-              id="relatorioCirurgico"
-              class="form-control form-control-sm font-monospace"
-              rows="2"
-              [(ngModel)]="formulario.relatorioCirurgico"
-              name="cirurgico"
-            ></textarea>
-          </div>
-
-          <div class="col-12">
-            <label
-              for="evolucoesMultiprofissionais"
-              class="form-label small fw-bold text-dark m-0"
-            >
-              5. Evoluções Multiprofissionais e Enfermagem
-            </label>
-            <textarea
-              id="evolucoesMultiprofissionais"
-              class="form-control form-control-sm font-monospace"
-              rows="3"
-              [(ngModel)]="formulario.evolucoesMultiprofissionais"
-              name="evolucoes"
-              required
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            (click)="fecharFormulario()"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-sm px-3"
-            [disabled]="carregando()"
-          >
-            {{ textoBotaoSubmit() }}
-          </button>
-        </div>
-      </form>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
-  <!-- FILTROS COMPACTOS -->
-  <div class="d-flex gap-2 mb-3 bg-white p-2 b-1">
-    <input
-      type="text"
-      class="form-control form-control-sm"
-      [ngModel]="termoBusca()"
-      (ngModelChange)="termoBusca.set($event)"
-      placeholder="Filtrar por atendimento, diagnóstico ou setor..."
-    />
-
-    @if (termoBusca()) {
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm"
-        (click)="termoBusca.set('')"
-      >
-        LIMPAR
-      </button>
-    }
+  <!-- BARRA DE FILTROS E BUSCA -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-secondary border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            placeholder="Filtrar por atendimento, hospital ou diagnóstico..."
+            [ngModel]="termoBusca()"
+            (ngModelChange)="atualizarBusca($event)"
+          />
+          @if (termoBusca()) {
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="atualizarBusca('')"
+            >
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end text-secondary small">
+        Exibindo {{ totalFiltrados() }} de {{ totalProntuarios() }} prontuários
+      </div>
+    </div>
   </div>
 
-  <!-- TABELA DE ALTO CONTRASTE -->
-  <div class="bg-white b-1">
-    <table class="table table-hover table-sm m-0">
-      <thead class="bg-light text-secondary small font-monospace b-b">
-        <tr>
-          <th scope="col" class="p-2">ID</th>
-          <th scope="col" class="p-2">ATENDIMENTO</th>
-          <th scope="col" class="p-2">CENÁRIO CLÍNICO</th>
-          <th scope="col" class="p-2">UNIDADE</th>
-          <th scope="col" class="p-2">IDADE</th>
-          <th scope="col" class="p-2">PERMANÊNCIA</th>
-          <th scope="col" class="p-2">PERÍODO</th>
-          <th scope="col" class="p-2 text-end">AÇÕES</th>
-        </tr>
-      </thead>
-      <tbody class="small font-monospace">
-        @for (p of prontuariosLinhas(); track p.id) {
+  <!-- TABELA DE PRONTUÁRIOS COM FUNDO BRANCO E SEM BADGES -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+  >
+    <div class="table-responsive bg-white">
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead
+          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+        >
           <tr>
-            <td class="p-2">{{ p.id }}</td>
-            <td class="p-2 fw-bold text-dark">{{ p.atendimento }}</td>
-            <td class="p-2 font-sans-serif fw-semibold text-dark">
-              {{ p.cenarioTitulo }}
-            </td>
-            <td class="p-2 text-primary">{{ p.unidadeSigla }}</td>
-            <td class="p-2">{{ p.idadeStr }}</td>
-            <td class="p-2">{{ p.permanenciaStr }}</td>
-            <td class="p-2 text-muted">{{ p.periodoStr }}</td>
-            <td class="p-2 text-end text-nowrap">
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm py-0 px-2 me-1"
-                (click)="iniciarEdicao(p.original)"
-              >
-                EDITAR
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-danger btn-sm py-0 px-2"
-                (click)="excluir(p.original)"
-              >
-                EXCLUIR
-              </button>
-            </td>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">
+              Nº ATENDIMENTO
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              CENÁRIO CLÍNICO
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              UNIDADE HOSPITALAR
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              IDADE
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              PERMANÊNCIA
+            </th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
+              AÇÕES
+            </th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="8" class="text-center py-4 text-muted">
-              Nenhum prontuário simulado encontrado.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="small font-monospace bg-white">
+          @for (p of prontuariosPaginados(); track p.id) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
+                {{ p.atendimento }}
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                <div class="text-truncate" style="max-width: 260px;" [title]="p.cenarioTitulo">
+                  {{ p.cenarioTitulo }}
+                </div>
+              </td>
+              <td class="py-2 px-2 font-sans-serif text-dark bg-white">
+                {{ p.unidadeNome }} ({{ p.unidadeSigla }})
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ p.idadeStr }}
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white small">
+                {{ p.periodoStr }} ({{ p.permanenciaStr }})
+              </td>
+              <td class="py-2 px-3 text-end text-nowrap bg-white">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
+                  (click)="visualizarProntuario(p.original)"
+                  title="Visualizar Detalhes do Prontuário"
+                >
+                  VER
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
+                  (click)="editarProntuario(p.original)"
+                  title="Editar Prontuário"
+                >
+                  EDITAR
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
+                  (click)="excluir(p.original)"
+                  title="Excluir Prontuário"
+                >
+                  EXCLUIR
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-clipboard2-pulse fs-2 d-block text-secondary mb-2"></i>
+                Nenhum prontuário simulado encontrado com os filtros selecionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
+    <app-paginacao
+      [totalItens]="totalFiltrados()"
+      [itensPorPagina]="itensPorPagina"
+      [paginaAtual]="paginaAtual()"
+      (paginaAlterada)="mudarPagina($event)"
+    >
+    </app-paginacao>
   </div>
 </div>

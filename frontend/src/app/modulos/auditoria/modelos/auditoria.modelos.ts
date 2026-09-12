@@ -44,6 +44,7 @@ export interface AchadoGatilho {
 export interface RevisaoIndividual {
   id: number;
   atividadeId?: number | null;
+  atividadeTitulo?: string | null;
   alunoId: number;
   alunoNome: string;
   prontuarioId: number;
@@ -53,6 +54,7 @@ export interface RevisaoIndividual {
   dataSubmissao?: string;
   parecerDocente?: string | null;
   homologada?: boolean | null;
+  nota?: number | null;
   achados: AchadoGatilho[];
 }
 
@@ -89,6 +91,7 @@ export interface ValidacaoDocente {
   professorValidadorNome: string;
   parecerFormativo: string;
   homologado: boolean;
+  nota?: number | null;
   dataValidacao: string;
 }
 
@@ -108,6 +111,7 @@ export interface AuditoriaAluno {
 export interface CorrigirAuditoriaPayload {
   parecerDocente: string;
   homologada: boolean;
+  nota: number;
 }
 
 export interface SalvarRevisaoPayload {

@@ -1,0 +1,197 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">
+        {{ ehEdicao() ? 'Editar Cenário Clínico #' + id() : 'Cadastrar Novo Cenário Clínico' }}
+      </h1>
+      <span class="text-secondary small">
+        {{ ehEdicao() ? 'Atualize as informações pedagógicas do caso clínico reutilizável.' : 'Cadastre um caso clínico com registros simulados para auditoria retrospectiva.' }}
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltar()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA CENÁRIOS</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemErro()) {
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados do cenário clínico...
+      </p>
+    </div>
+  } @else {
+    <!-- CARD DO FORMULÁRIO -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+    >
+      <div
+        class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+      >
+        <span class="fw-bold text-dark small text-uppercase font-monospace">
+          <i class="bi bi-journal-text me-1"></i> Informações do Cenário Clínico Reutilizável
+        </span>
+      </div>
+
+      <div class="card-body p-4">
+        <form (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <!-- TÍTULO -->
+            <div class="col-12">
+              <label
+                for="titulo"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Título do Cenário <span class="text-danger">*</span>
+              </label>
+              <input
+                id="titulo"
+                type="text"
+                class="form-control"
+                [(ngModel)]="formulario.titulo"
+                name="titulo"
+                required
+                maxlength="150"
+                placeholder="Ex.: Auditoria em Paciente Crítico Cirúrgico com Eventos Adversos"
+              />
+              <div class="form-text text-muted small">
+                Título descritivo do caso para identificação pedagógica.
+              </div>
+            </div>
+
+            <!-- DOCENTE (se admin) -->
+            <div class="col-12" *ngIf="ehAdministrador()">
+              <label
+                for="professorCriadorId"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Docente Responsável <span class="text-danger">*</span>
+              </label>
+              <select
+                id="professorCriadorId"
+                class="form-select"
+                [(ngModel)]="formulario.professorCriadorId"
+                name="professorCriadorId"
+                required
+              >
+                <option *ngFor="let p of professores()" [ngValue]="p.id">
+                  {{ p.nomeCompleto }} ({{ p.email }})
+                </option>
+              </select>
+              <div class="form-text text-muted small">
+                Professor autor ou curador pedagógico deste cenário.
+              </div>
+            </div>
+
+            <!-- CONTEXTO PEDAGÓGICO -->
+            <div class="col-12">
+              <label
+                for="descricaoPedagogica"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Descrição Pedagógica <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="descricaoPedagogica"
+                class="form-control"
+                rows="4"
+                placeholder="Detalhe o contexto pedagógico, complexidade assistencial e contexto dos prontuários que compõem este cenário..."
+                [(ngModel)]="formulario.descricaoPedagogica"
+                name="descricaoPedagogica"
+                required
+              ></textarea>
+              <div class="form-text text-muted small">
+                Contextualize a situação clínica e as especificidades do ambiente assistencial.
+              </div>
+            </div>
+
+            <!-- OBJETIVOS DE APRENDIZAGEM -->
+            <div class="col-12">
+              <label
+                for="objetivosAprendizagem"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Objetivos de Aprendizagem <span class="text-danger">*</span>
+              </label>
+              <textarea
+                id="objetivosAprendizagem"
+                class="form-control"
+                rows="4"
+                placeholder="Ex.: Capacitar o discente a identificar gatilhos de medicação, classificar dano segundo NCC MERP e propor ações corretivas..."
+                [(ngModel)]="formulario.objetivosAprendizagem"
+                name="objetivosAprendizagem"
+                required
+              ></textarea>
+              <div class="form-text text-muted small">
+                Competências e habilidades esperadas para este cenário.
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÕES DE SUBMISSÃO -->
+          <div
+            class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+          >
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-3"
+              (click)="voltar()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
+              [disabled]="salvando()"
+            >
+              @if (salvando()) {
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span>Salvando...</span>
+              } @else {
+                <i class="bi bi-check-lg"></i>
+                <span>{{
+                  ehEdicao() ? "Salvar Alterações" : "Cadastrar Cenário"
+                }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

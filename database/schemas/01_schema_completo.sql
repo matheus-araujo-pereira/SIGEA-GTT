@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS validacoes_docentes (
     revisao_individual_id BIGINT NOT NULL UNIQUE REFERENCES revisoes_individuais(id) ON DELETE CASCADE,
     professor_validador_id BIGINT NOT NULL REFERENCES usuarios(id),
     parecer_formativo TEXT NOT NULL,
+    nota NUMERIC(4,2),
     homologado BOOLEAN NOT NULL DEFAULT FALSE,
     data_validacao TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

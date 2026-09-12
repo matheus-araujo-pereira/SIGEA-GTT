@@ -13,11 +13,23 @@ import { FormularioModuloComponent } from './modulos/gtt/componentes/formulario-
 import { GerenciarUnidadesComponent } from './modulos/unidade/componentes/gerenciar-unidades/gerenciar-unidades.component';
 import { FormularioUnidadeComponent } from './modulos/unidade/componentes/formulario-unidade/formulario-unidade.component';
 import { AuditoriaComponent } from './modulos/auditoria/componentes/execucao-auditoria/auditoria.component';
+import { VisualizarSubmissaoComponent } from './modulos/auditoria/componentes/visualizar-submissao/visualizar-submissao.component';
+import { MinhasNotasComponent } from './modulos/auditoria/componentes/minhas-notas/minhas-notas.component';
+import { GerenciarAtividadesComponent } from './modulos/auditoria/componentes/gerenciar-atividades/gerenciar-atividades.component';
+import { FormularioAtividadeComponent } from './modulos/auditoria/componentes/formulario-atividade/formulario-atividade.component';
+import { PainelAvaliacoesComponent } from './modulos/auditoria/componentes/painel-avaliacoes/painel-avaliacoes.component';
+import { CorrigirAuditoriaComponent } from './modulos/auditoria/componentes/corrigir-auditoria/corrigir-auditoria.component';
 import { MelhoriaQualidadeComponent } from './modulos/qualidade/componentes/melhoria-qualidade/melhoria-qualidade.component';
 import { IndicadoresComponent } from './modulos/indicadores/componentes/dashboard-indicadores/indicadores.component';
 import { TurmasComponent } from './modulos/turma/componentes/gerenciar-turmas/turmas.component';
+import { FormularioTurmaComponent } from './modulos/turma/componentes/formulario-turma/formulario-turma.component';
+import { AlunosTurmaComponent } from './modulos/turma/componentes/alunos-turma/alunos-turma.component';
+import { MinhasTurmasComponent } from './modulos/turma/componentes/minhas-turmas/minhas-turmas.component';
 import { GerenciarCenariosComponent } from './modulos/cenario/componentes/gerenciar-cenarios/gerenciar-cenarios.component';
+import { FormularioCenarioComponent } from './modulos/cenario/componentes/formulario-cenario/formulario-cenario.component';
 import { GerenciarProntuariosComponent } from './modulos/cenario/componentes/gerenciar-prontuarios/gerenciar-prontuarios.component';
+import { FormularioProntuarioComponent } from './modulos/cenario/componentes/formulario-prontuario/formulario-prontuario.component';
+import { VisualizarProntuarioComponent } from './modulos/cenario/componentes/visualizar-prontuario/visualizar-prontuario.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
 import { AutenticacaoService } from './modulos/autenticacao/servicos/autenticacao.service';
@@ -59,7 +71,7 @@ export const routes: Routes = [
         data: { perfis: ['ADMINISTRADOR'] },
       },
 
-      // Meu Perfil (acessível por qualquer perfil autenticado)
+      // Meu Perfil (acessível por qualquer usuário autenticado)
       {
         path: 'perfil',
         component: MeuPerfilComponent,
@@ -125,33 +137,147 @@ export const routes: Routes = [
         data: { perfis: ['ADMINISTRADOR'] },
       },
 
-      // Gestão Acadêmica Docente
+      // Turmas - Administração
       {
         path: 'turmas',
         component: TurmasComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
+        data: { perfis: ['ADMINISTRADOR'] },
       },
+      {
+        path: 'turmas/novo',
+        component: FormularioTurmaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'turmas/:id/editar',
+        component: FormularioTurmaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'turmas/:id/alunos',
+        component: AlunosTurmaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+
+      // Minhas Turmas - Professor
+      {
+        path: 'minhas-turmas',
+        component: MinhasTurmasComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR'] },
+      },
+
+      // Cenários Clínicos Reutilizáveis
       {
         path: 'cenarios',
         component: GerenciarCenariosComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'cenarios/novo',
+        component: FormularioCenarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'cenarios/:id/editar',
+        component: FormularioCenarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+
+      // Prontuários Simulados
+      {
+        path: 'prontuarios',
+        component: GerenciarProntuariosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
       {
         path: 'cenarios/:cenarioId/prontuarios',
         component: GerenciarProntuariosComponent,
         canActivate: [perfilGuard],
-        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR'] },
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'prontuarios/novo',
+        component: FormularioProntuarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'prontuarios/:id/editar',
+        component: FormularioProntuarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'prontuarios/:id/visualizar',
+        component: VisualizarProntuarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
 
-      // Auditoria, Melhoria e Indicadores
+      // Atividades de Auditoria Docente
+      {
+        path: 'atividades',
+        component: GerenciarAtividadesComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'atividades/novo',
+        component: FormularioAtividadeComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'atividades/:id/editar',
+        component: FormularioAtividadeComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+
+      // Avaliações & Correções Docentes
+      {
+        path: 'avaliacoes',
+        component: PainelAvaliacoesComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+      {
+        path: 'avaliacoes/:id/corrigir',
+        component: CorrigirAuditoriaComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
+      },
+
+      // Auditoria Clínica do Aluno
       {
         path: 'auditoria',
         component: AuditoriaComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
       },
+      {
+        path: 'auditoria/:revisaoId/visualizar',
+        component: VisualizarSubmissaoComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ALUNO', 'PROFESSOR', 'ADMINISTRADOR'] },
+      },
+      {
+        path: 'minhas-notas',
+        component: MinhasNotasComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ALUNO'] },
+      },
+
+      // Melhoria e Indicadores
       {
         path: 'melhoria/:revisaoId',
         component: MelhoriaQualidadeComponent,

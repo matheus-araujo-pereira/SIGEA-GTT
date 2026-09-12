@@ -1,0 +1,256 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">Avaliação e Correção Docente</h1>
+      <span class="text-secondary small">
+        Análise formativa das evidências auditadas pelo discente e atribuição de nota final
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltar()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA AVALIAÇÕES</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS -->
+  @if (mensagemSucesso()) {
+    <div
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemSucesso.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  <!-- ESTADO DE CARREGAMENTO -->
+  @if (carregando()) {
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados da submissão...
+      </p>
+    </div>
+  } @else if (revisao()) {
+    <div class="row g-3">
+      <!-- Card de Identificação da Submissão -->
+      <div class="col-12">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3">
+          <div class="row g-3 text-secondary small">
+            <div class="col-md-3">
+              <span class="d-block text-muted">Aluno Auditante:</span>
+              <strong class="text-dark fs-6">{{ revisao()?.alunoNome }}</strong>
+            </div>
+            <div class="col-md-3">
+              <span class="d-block text-muted">Atividade:</span>
+              <strong class="text-dark">{{ revisao()?.atividadeTitulo || 'Auditoria Prática' }}</strong>
+            </div>
+            <div class="col-md-2">
+              <span class="d-block text-muted">Prontuário / Caso:</span>
+              <strong class="text-dark font-monospace">{{ revisao()?.prontuarioAtendimento }}</strong>
+            </div>
+            <div class="col-md-2">
+              <span class="d-block text-muted">Data de Submissão:</span>
+              <span class="text-secondary">{{ formatarData(revisao()?.dataSubmissao) }}</span>
+            </div>
+            <div class="col-md-2">
+              <span class="d-block text-muted">Tempo Gasto:</span>
+              <strong class="text-secondary font-monospace">{{ formatarTempo(revisao()?.tempoGastoSegundos) }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de Gatilhos e Danos Rastreados pelo Aluno -->
+      <div class="col-12">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+          <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4 d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark small text-uppercase font-monospace">
+              <i class="bi bi-shield-check me-1"></i> Rastreamento de Gatilhos e Danos pelo Discente
+            </span>
+            <span class="text-secondary small font-monospace">({{ revisao()?.achados?.length || 0 }} achados)</span>
+          </div>
+
+          <div class="table-responsive bg-white">
+            <table class="table table-hover table-sm m-0 align-middle bg-white">
+              <thead class="bg-white text-secondary small font-monospace border-bottom border-light-subtle">
+                <tr>
+                  <th scope="col" class="py-2 px-3 bg-white text-secondary">CÓDIGO / MÓDULO</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">DESCRIÇÃO DO GATILHO</th>
+                  <th scope="col" class="py-2 px-2 text-center bg-white text-secondary">DANO CONFIRMADO?</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">GRAVIDADE (NCC MERP)</th>
+                  <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">JUSTIFICATIVA DO ALUNO</th>
+                </tr>
+              </thead>
+              <tbody class="small font-monospace bg-white">
+                @for (a of revisao()?.achados; track a.gatilhoId) {
+                  <tr class="bg-white">
+                    <td class="py-2 px-3 bg-white">
+                      <span class="fw-bold text-dark font-monospace">{{ a.gatilhoCodigo }}</span>
+                      <div class="small text-muted font-sans-serif">{{ a.moduloNome }}</div>
+                    </td>
+                    <td class="py-2 px-2 font-sans-serif text-secondary bg-white">
+                      {{ a.gatilhoDescricao }}
+                    </td>
+                    <td class="py-2 px-2 text-center bg-white">
+                      <span [class.text-danger]="a.confirmouDano" [class.text-secondary]="!a.confirmouDano" class="fw-semibold">
+                        {{ a.confirmouDano ? 'HOUVE DANO (EA)' : 'SEM DANO' }}
+                      </span>
+                    </td>
+                    <td class="py-2 px-2 text-secondary bg-white">
+                      {{ a.gravidade || '-' }}
+                    </td>
+                    <td class="py-2 px-3 text-end text-secondary bg-white font-sans-serif">
+                      {{ a.justificativaDano || 'Nenhuma justificativa inserida' }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="text-center py-4 text-muted bg-white">
+                      O discente não apontou nenhum gatilho nesta auditoria.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário de Avaliação e Nota (1 a 10) -->
+      <div class="col-12">
+        <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+          <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+            <span class="fw-bold text-dark small text-uppercase font-monospace">
+              <i class="bi bi-pencil-square me-1"></i> Parecer Formativo e Atribuição de Nota Docente
+            </span>
+          </div>
+
+          <div class="card-body p-4">
+            <form (ngSubmit)="salvarAvaliacao()">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-secondary">
+                    Nota da Avaliação (1.0 a 10.0) <span class="text-danger">*</span>
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-secondary border-end-0">
+                      <i class="bi bi-award"></i>
+                    </span>
+                    <input
+                      type="number"
+                      class="form-control form-control-lg font-monospace fw-bold text-primary border-start-0"
+                      [(ngModel)]="nota"
+                      name="nota"
+                      min="1.0"
+                      max="10.0"
+                      step="0.1"
+                      required
+                    />
+                  </div>
+                  <div class="form-text text-muted small">
+                    Escala de avaliação docente: entre 1.0 e 10.0.
+                  </div>
+                </div>
+
+                <div class="col-md-8 d-flex align-items-center pt-3">
+                  <div class="form-check form-switch fs-6">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="homologadaCheck"
+                      [(ngModel)]="homologada"
+                      name="homologada"
+                    />
+                    <label class="form-check-label fw-semibold text-dark ms-2" for="homologadaCheck">
+                      Homologar auditoria discente
+                    </label>
+                    <div class="form-text text-muted small">
+                      Indica que a auditoria cumpriu os critérios metodológicos mínimos do protocolo IHI-GTT.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-semibold text-secondary">
+                    Parecer Docente / Feedback Formativo <span class="text-danger">*</span>
+                  </label>
+                  <textarea
+                    class="form-control"
+                    rows="5"
+                    placeholder="Escreva orientações pedagógicas sobre o rastreamento executado pelo aluno, coerência na classificação dos danos e recomendações de melhoria..."
+                    [(ngModel)]="parecerDocente"
+                    name="parecerDocente"
+                    required
+                  ></textarea>
+                  <div class="form-text text-muted small">
+                    Este parecer ficará visível para o discente em seu painel de notas.
+                  </div>
+                </div>
+              </div>
+
+              <!-- BOTÕES DE SUBMISSÃO -->
+              <div class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary px-3"
+                  (click)="voltar()"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
+                  [disabled]="salvando()"
+                >
+                  @if (salvando()) {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span>Salvando...</span>
+                  } @else {
+                    <i class="bi bi-check-lg"></i>
+                    <span>Salvar Avaliação e Nota</span>
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -32,9 +32,7 @@ export class LayoutInternoComponent {
   readonly usuario = this.authService.usuarioLogado;
 
   readonly nomeUsuario = computed(() => this.usuario()?.nomeCompleto || '');
-  readonly perfilUsuario = computed(() =>
-    this.usuario()?.perfil ? `[${this.usuario()?.perfil}]` : '',
-  );
+  readonly perfilUsuario = computed(() => this.usuario()?.perfil || '');
 
   readonly gruposMenu = computed<GrupoMenu[]>(() => {
     const perfil = this.usuario()?.perfil;
@@ -57,6 +55,11 @@ export class LayoutInternoComponent {
             icone: 'bi-collection',
           },
           {
+            rota: '/turmas',
+            rotulo: 'Turmas & Alunos',
+            icone: 'bi-mortarboard',
+          },
+          {
             rota: '/unidades',
             rotulo: 'Unidades HU',
             icone: 'bi-building',
@@ -68,9 +71,33 @@ export class LayoutInternoComponent {
           },
         ],
       });
-    }
 
-    if (perfil === 'PROFESSOR' || perfil === 'ADMINISTRADOR') {
+      grupos.push({
+        titulo: 'Gestão Acadêmica',
+        itens: [
+          {
+            rota: '/atividades',
+            rotulo: 'Atividades de Auditoria',
+            icone: 'bi-journal-check',
+          },
+          {
+            rota: '/avaliacoes',
+            rotulo: 'Avaliações & Notas',
+            icone: 'bi-clipboard-data',
+          },
+          {
+            rota: '/cenarios',
+            rotulo: 'Cenários Clínicos',
+            icone: 'bi-file-earmark-medical',
+          },
+          {
+            rota: '/prontuarios',
+            rotulo: 'Prontuários Simulados',
+            icone: 'bi-clipboard2-pulse',
+          },
+        ],
+      });
+
       grupos.push({
         titulo: 'Epidemiologia',
         itens: [
@@ -81,19 +108,47 @@ export class LayoutInternoComponent {
           },
         ],
       });
+    }
 
+    if (perfil === 'PROFESSOR') {
       grupos.push({
         titulo: 'Gestão Acadêmica',
         itens: [
+          {
+            rota: '/atividades',
+            rotulo: 'Atividades de Auditoria',
+            icone: 'bi-journal-check',
+          },
+          {
+            rota: '/avaliacoes',
+            rotulo: 'Avaliações & Notas',
+            icone: 'bi-clipboard-data',
+          },
           {
             rota: '/cenarios',
             rotulo: 'Cenários Clínicos',
             icone: 'bi-file-earmark-medical',
           },
           {
-            rota: '/turmas',
-            rotulo: 'Turmas & Alunos',
+            rota: '/minhas-turmas',
+            rotulo: 'Minhas Turmas',
             icone: 'bi-mortarboard',
+          },
+          {
+            rota: '/prontuarios',
+            rotulo: 'Prontuários Simulados',
+            icone: 'bi-clipboard2-pulse',
+          },
+        ],
+      });
+
+      grupos.push({
+        titulo: 'Epidemiologia',
+        itens: [
+          {
+            rota: '/indicadores',
+            rotulo: 'Indicadores IHI',
+            icone: 'bi-graph-up',
           },
         ],
       });
@@ -107,6 +162,22 @@ export class LayoutInternoComponent {
             rota: '/auditoria',
             rotulo: 'Minhas Auditorias',
             icone: 'bi-clipboard-pulse',
+          },
+          {
+            rota: '/minhas-notas',
+            rotulo: 'Minhas Notas',
+            icone: 'bi-award',
+          },
+        ],
+      });
+
+      grupos.push({
+        titulo: 'Epidemiologia',
+        itens: [
+          {
+            rota: '/indicadores',
+            rotulo: 'Indicadores IHI',
+            icone: 'bi-graph-up',
           },
         ],
       });

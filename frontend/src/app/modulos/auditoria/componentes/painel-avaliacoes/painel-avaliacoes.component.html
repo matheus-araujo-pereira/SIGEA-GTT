@@ -4,39 +4,14 @@
     class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Atividades de Auditoria Docente</h1>
+      <h1 class="h4 fw-bold text-dark m-0">Avaliações e Correções Docentes</h1>
       <span class="text-secondary small">
-        Total cadastrado: {{ totalAtividades() }} atividades de auditoria no SIGEA-GTT
+        Total submetido: {{ totalSubmissoes() }} auditorias discentes no SIGEA-GTT
       </span>
     </div>
-    <button
-      type="button"
-      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      (click)="novaAtividade()"
-    >
-      <i class="bi bi-plus-circle-fill"></i>
-      <span>NOVA ATIVIDADE</span>
-    </button>
   </div>
 
   <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
   @if (mensagemErro()) {
     <div
       class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
@@ -59,7 +34,7 @@
     class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
   >
     <div class="row g-2 align-items-center">
-      <div class="col-md-8">
+      <div class="col-md-5">
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-light text-secondary border-end-0">
             <i class="bi bi-search"></i>
@@ -67,7 +42,7 @@
           <input
             type="text"
             class="form-control border-start-0"
-            placeholder="Filtrar por título, código da turma ou cenário..."
+            placeholder="Filtrar por discente, atividade ou prontuário..."
             [ngModel]="termoBusca()"
             (ngModelChange)="atualizarBusca($event)"
           />
@@ -82,13 +57,42 @@
           }
         </div>
       </div>
-      <div class="col-md-4 text-md-end text-secondary small">
-        Exibindo {{ totalFiltradas() }} de {{ totalAtividades() }} atividades
+
+      <div class="col-md-7 d-flex justify-content-md-end">
+        <div class="btn-group btn-group-sm" role="group">
+          <button
+            type="button"
+            class="btn py-0 px-3 rounded-1 me-1"
+            [class.btn-primary]="filtroStatus() === 'TODAS'"
+            [class.btn-outline-secondary]="filtroStatus() !== 'TODAS'"
+            (click)="definirFiltro('TODAS')"
+          >
+            TODAS ({{ totalSubmissoes() }})
+          </button>
+          <button
+            type="button"
+            class="btn py-0 px-3 rounded-1 me-1"
+            [class.btn-warning]="filtroStatus() === 'PENDENTES'"
+            [class.btn-outline-secondary]="filtroStatus() !== 'PENDENTES'"
+            (click)="definirFiltro('PENDENTES')"
+          >
+            PENDENTES ({{ totalPendentes() }})
+          </button>
+          <button
+            type="button"
+            class="btn py-0 px-3 rounded-1"
+            [class.btn-success]="filtroStatus() === 'CORRIGIDAS'"
+            [class.btn-outline-secondary]="filtroStatus() !== 'CORRIGIDAS'"
+            (click)="definirFiltro('CORRIGIDAS')"
+          >
+            CORRIGIDAS ({{ totalCorrigidas() }})
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- TABELA DE ATIVIDADES COM FUNDO BRANCO E SEM BADGES -->
+  <!-- TABELA DE AVALIAÇÕES COM FUNDO BRANCO E SEM BADGES -->
   <div
     class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
   >
@@ -99,22 +103,22 @@
         >
           <tr>
             <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              TÍTULO DA ATIVIDADE
+              DISCENTE
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TURMA
+              ATIVIDADE
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              CENÁRIO CLÍNICO
+              PRONTUÁRIO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PERÍODO DE REALIZAÇÃO
+              SUBMISSÃO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TEMPO / CASO
+              SITUAÇÃO
             </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              STATUS
+            <th scope="col" class="py-2 px-2 text-center bg-white text-secondary">
+              NOTA
             </th>
             <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
               AÇÕES
@@ -122,73 +126,53 @@
           </tr>
         </thead>
         <tbody class="small font-monospace bg-white">
-          @for (at of atividadesPaginadas(); track at.id) {
+          @for (s of submissoesPaginadas(); track s.id) {
             <tr class="bg-white">
               <td class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white">
-                {{ at.titulo }}
-                <div class="small text-muted font-monospace fw-normal">{{ at.totalAuditorias }} submissão(ões)</div>
-              </td>
-              <td class="py-2 px-2 font-monospace text-secondary bg-white">
-                {{ at.turmaStr }}
+                {{ s.alunoNome }}
               </td>
               <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                <div class="text-truncate" style="max-width: 220px;" [title]="at.cenarioTitulo">
-                  {{ at.cenarioTitulo }}
-                </div>
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white small">
-                {{ at.periodoStr }}
+                {{ s.atividadeTitulo }}
               </td>
               <td class="py-2 px-2 text-secondary bg-white font-monospace">
-                {{ at.tempoLimiteStr }}
+                {{ s.atendimento }}
+              </td>
+              <td class="py-2 px-2 text-secondary bg-white">
+                {{ s.dataSubmissao }}
               </td>
               <td
                 class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="!at.finalizada"
-                [class.text-muted]="at.finalizada"
+                [class.text-success]="s.foiCorrigida"
+                [class.text-warning]="!s.foiCorrigida"
               >
-                {{ at.status }}
+                {{ s.statusCorrecao.toUpperCase() }}
+              </td>
+              <td class="py-2 px-2 text-center bg-white">
+                <span *ngIf="s.foiCorrigida" class="fw-bold fs-6 text-primary">
+                  {{ s.notaStr }}
+                </span>
+                <span *ngIf="!s.foiCorrigida" class="text-muted">
+                  -
+                </span>
               </td>
               <td class="py-2 px-3 text-end text-nowrap bg-white">
                 <button
                   type="button"
-                  class="btn btn-outline-success btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="verAvaliacoes(at.original)"
-                  title="Ver Avaliações e Submissões dos Alunos"
+                  class="btn btn-sm py-0 px-2 rounded-1"
+                  [class.btn-primary]="!s.foiCorrigida"
+                  [class.btn-outline-secondary]="s.foiCorrigida"
+                  (click)="avaliar(s.id)"
+                  [title]="s.foiCorrigida ? 'Revisar Avaliação e Nota' : 'Avaliar e Atribuir Nota'"
                 >
-                  AVALIAÇÕES
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="editarAtividade(at.original)"
-                  title="Editar Atividade"
-                >
-                  EDITAR
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="alternarFinalizada(at.original)"
-                  [title]="at.finalizada ? 'Reabrir Atividade' : 'Encerrar Atividade'"
-                >
-                  {{ at.finalizada ? "REABRIR" : "ENCERRAR" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                  (click)="excluir(at.original)"
-                  title="Excluir Atividade"
-                >
-                  EXCLUIR
+                  {{ s.foiCorrigida ? "REVISAR" : "AVALIAR" }}
                 </button>
               </td>
             </tr>
           } @empty {
             <tr>
               <td colspan="7" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-journal-x fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma atividade de auditoria encontrada com os filtros selecionados.
+                <i class="bi bi-clipboard2-check fs-2 d-block text-secondary mb-2"></i>
+                Nenhuma submissão discente encontrada com os filtros selecionados.
               </td>
             </tr>
           }
