@@ -1,0 +1,412 @@
+<div>
+  <!-- CABEÇALHO DA PÁGINA (PADRÃO ADMINISTRAÇÃO / GESTÃO ACADÊMICA) -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">
+        Rastreabilidade e Rendimento de Gatilhos
+      </h1>
+      <span class="text-secondary small">
+        Avaliação da sensibilidade diagnóstica dos 6 módulos e taxa de conversão
+        em eventos adversos reais
+      </span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm rounded-1 font-monospace"
+        (click)="limparFiltros()"
+      >
+        LIMPAR FILTROS
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm rounded-1 font-monospace d-inline-flex align-items-center gap-1"
+        (click)="exportarPDF()"
+        [disabled]="exportandoPdf() || carregando()"
+      >
+        @if (exportandoPdf()) {
+          <span
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          <span>GERANDO PDF...</span>
+        } @else {
+          <i class="bi bi-file-earmark-pdf"></i>
+          <span>EXPORTAR RELATÓRIO PDF</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO EPIDEMIOLOGIA) -->
+  <ul class="nav nav-pills mb-3 gap-2">
+    <li class="nav-item">
+      <a
+        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
+        routerLink="/indicadores"
+      >
+        <i class="bi bi-graph-up me-1"></i>DASHBOARD EXECUTIVO
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
+        routerLink="/indicadores/quadro-resumo"
+      >
+        <i class="bi bi-table me-1"></i>QUADRO RESUMO
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link active rounded-1 py-1 px-3 small font-monospace"
+        routerLink="/indicadores/gatilhos"
+      >
+        <i class="bi bi-bullseye me-1"></i>RASTREABILIDADE & GATILHOS
+      </a>
+    </li>
+  </ul>
+
+  <!-- CARD DE FILTROS E BUSCA PADRONIZADO -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
+    <div class="row g-2 align-items-end">
+      <!-- BUSCA TEXTUAL -->
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Buscar Código ou Descrição do Gatilho
+        </label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-search text-secondary"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            placeholder="Ex: C1, naloxona, INR..."
+            [ngModel]="termoBusca()"
+            (ngModelChange)="termoBusca.set($event)"
+          />
+        </div>
+      </div>
+
+      <!-- PERÍODO LETIVO (SEM DUPLICAÇÃO) -->
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Período Letivo
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroPeriodoLetivo()"
+          (ngModelChange)="
+            filtroPeriodoLetivo.set($event); carregarDesempenhoGatilhos()
+          "
+        >
+          <option value="TODOS">Todos os Períodos</option>
+          @for (p of periodosDisponiveis(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- TURMA -->
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Turma
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroTurmaId()"
+          (ngModelChange)="
+            filtroTurmaId.set($event); carregarDesempenhoGatilhos()
+          "
+        >
+          <option value="TODOS">Todas as Turmas</option>
+          @for (t of turmasFiltradas(); track t.id) {
+            <option [value]="t.id">{{ t.codigoDisciplina }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- MÓDULO GTT -->
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Módulo GTT
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroModulo()"
+          (ngModelChange)="filtroModulo.set($event)"
+        >
+          <option value="TODOS">Todos os Módulos</option>
+          <option value="CUIDADOS">Cuidados Gerais (C)</option>
+          <option value="MEDICACAO">Medicamentos (M)</option>
+          <option value="CIRURGICO">Cirúrgico (S)</option>
+          <option value="TERAPIA_INTENSIVA">Terapia Intensiva (I)</option>
+          <option value="PERINATAL">Perinatal (P)</option>
+          <option value="URGENCIA">Pronto Atendimento (E)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER DO RELATÓRIO DE GATILHOS PARA EXPORTAÇÃO PDF -->
+  <div id="relatorio-gatilhos">
+    <!-- METRICAS EM DESTAQUE (KPIS DE SENSIBILIDADE) -->
+    <div class="row g-2 mb-3">
+      <div class="col-6 col-md-3">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
+        >
+          <span class="text-secondary small font-monospace d-block"
+            >TRIGGERS RASTREADOS</span
+          >
+          <span class="h3 fw-bold text-dark my-1 font-monospace">{{
+            totalGatilhosRastreados()
+          }}</span>
+          <span class="text-muted" style="font-size: 0.72rem"
+            >ocorrências positivas</span
+          >
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
+        >
+          <span class="text-secondary small font-monospace d-block"
+            >DANOS CONFIRMADOS</span
+          >
+          <span class="h3 fw-bold text-danger my-1 font-monospace">{{
+            totalDanosConfirmados()
+          }}</span>
+          <span class="text-muted" style="font-size: 0.72rem"
+            >eventos adversos reais</span
+          >
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
+        >
+          <span class="text-secondary small font-monospace d-block"
+            >RENDIMENTO GLOBAL</span
+          >
+          <span class="h3 fw-bold text-success my-1 font-monospace"
+            >{{ taxaConversaoGeral() }}%</span
+          >
+          <span class="text-muted" style="font-size: 0.72rem"
+            >taxa de conversão em dano</span
+          >
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
+        >
+          <span class="text-secondary small font-monospace d-block"
+            >DANOS GRAVES (G, H, I)</span
+          >
+          <span class="h3 fw-bold text-warning-emphasis my-1 font-monospace">{{
+            totalDanosGraves()
+          }}</span>
+          <span class="text-muted" style="font-size: 0.72rem"
+            >ameaça à vida ou óbito</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMO COMPARATIVO DOS 6 MÓDULOS DO IHI -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+    >
+      <div class="pb-2 mb-2 border-bottom border-light-subtle">
+        <span class="fw-bold text-dark small font-monospace d-block">
+          DESEMPENHO COMPARATIVO POR MÓDULO GTT (SEÇÃO II-C DO WHITE PAPER)
+        </span>
+        <span class="text-secondary" style="font-size: 0.75rem">
+          Volume de gatilhos rastreados vs eventos adversos gerados por setor
+          hospitalar
+        </span>
+      </div>
+
+      <div class="row g-2">
+        @for (m of modulos(); track m.moduloCodigo) {
+          <div class="col-md-4 col-lg-2">
+            <div
+              class="p-2 border border-light-subtle rounded-2 bg-light text-center h-100"
+            >
+              <span class="fw-bold text-dark font-monospace d-block small">{{
+                m.moduloCodigo
+              }}</span>
+              <span class="text-secondary d-block" style="font-size: 0.72rem">{{
+                m.moduloNome
+              }}</span>
+              <div class="my-1">
+                <span class="h5 fw-bold text-danger font-monospace m-0">{{
+                  m.totalDanos
+                }}</span>
+                <span class="text-muted small"> / {{ m.totalPositivos }}</span>
+              </div>
+              <span
+                class="badge bg-white border border-light-subtle text-success font-monospace px-1"
+              >
+                {{ m.taxaConversaoPercentual }}% conv.
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- TABELA COMPLETA DE DESEMPENHO E SENSILIBIDADE POR GATILHO -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3"
+    >
+      <div
+        class="p-2 border-bottom border-light-subtle bg-light d-flex justify-content-between align-items-center"
+      >
+        <span class="fw-bold text-dark small font-monospace">
+          RANKING DE GATILHOS POR EFICÁCIA DE RASTREAMENTO E RISCO
+        </span>
+        <span class="text-secondary small font-monospace">
+          Exibindo {{ gatilhosFiltrados().length }} gatilhos
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover table-sm m-0 align-middle bg-white">
+          <thead
+            class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+          >
+            <tr>
+              <th scope="col" class="py-2 px-3">CÓDIGO</th>
+              <th scope="col" class="py-2 px-2">MÓDULO</th>
+              <th scope="col" class="py-2 px-3">
+                DESCRIÇÃO CLÍNICA DO GATILHO
+              </th>
+              <th scope="col" class="py-2 px-2 text-center">POSITIVOS</th>
+              <th scope="col" class="py-2 px-2 text-center">DANOS</th>
+              <th scope="col" class="py-2 px-2 text-center">RENDIMENTO (%)</th>
+              <th scope="col" class="py-2 px-2 text-center">GRAVES (G-I)</th>
+              <th scope="col" class="py-2 px-2 text-center">NA ADMISSÃO</th>
+            </tr>
+          </thead>
+          <tbody class="small font-monospace bg-white">
+            @for (g of gatilhosFiltrados(); track g.gatilhoId) {
+              <tr class="bg-white">
+                <!-- CÓDIGO -->
+                <td class="py-2 px-3 fw-bold text-dark bg-white">
+                  <span
+                    class="badge bg-light text-primary border border-primary-subtle font-monospace px-2 py-1"
+                  >
+                    {{ g.codigo }}
+                  </span>
+                </td>
+
+                <!-- MÓDULO -->
+                <td class="py-2 px-2 text-secondary bg-white font-sans-serif">
+                  <span
+                    class="badge bg-light text-secondary border border-light-subtle font-monospace"
+                  >
+                    {{ g.moduloCodigo }}
+                  </span>
+                </td>
+
+                <!-- DESCRIÇÃO -->
+                <td
+                  class="py-2 px-3 font-sans-serif fw-medium text-dark bg-white"
+                >
+                  {{ g.descricao }}
+                </td>
+
+                <!-- POSITIVOS -->
+                <td
+                  class="py-2 px-2 text-center fw-semibold text-dark bg-white"
+                >
+                  {{ g.totalPositivos }}
+                </td>
+
+                <!-- DANOS CONFIRMADOS -->
+                <td class="py-2 px-2 text-center fw-bold text-danger bg-white">
+                  {{ g.totalDanos }}
+                </td>
+
+                <!-- RENDIMENTO / TAXA DE CONVERSÃO -->
+                <td class="py-2 px-2 text-center bg-white">
+                  <div
+                    class="d-flex align-items-center justify-content-center gap-1"
+                  >
+                    <span class="fw-bold text-success font-monospace">
+                      {{ g.taxaConversaoPercentual }}%
+                    </span>
+                  </div>
+                  <div
+                    class="progress mt-1 mx-auto"
+                    style="height: 3px; max-width: 60px"
+                  >
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      [style.width.%]="g.taxaConversaoPercentual"
+                    ></div>
+                  </div>
+                </td>
+
+                <!-- DANOS GRAVES (G, H, I) -->
+                <td class="py-2 px-2 text-center bg-white">
+                  @if (g.danosGraves > 0) {
+                    <span
+                      class="badge bg-danger-subtle text-danger border border-danger-subtle font-monospace px-2"
+                    >
+                      {{ g.danosGraves }}
+                    </span>
+                  } @else {
+                    <span class="text-muted">0</span>
+                  }
+                </td>
+
+                <!-- NA ADMISSÃO -->
+                <td class="py-2 px-2 text-center bg-white">
+                  @if (g.presentesAdmissao > 0) {
+                    <span
+                      class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace px-1"
+                    >
+                      {{ g.presentesAdmissao }}
+                    </span>
+                  } @else {
+                    <span class="text-muted">0</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="text-center py-5 text-muted bg-white">
+                  <i
+                    class="bi bi-bullseye fs-2 d-block text-secondary mb-2"
+                  ></i>
+                  Nenhum gatilho localizado com os filtros selecionados.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RODAPÉ INSTITUCIONAL -->
+    <div
+      class="d-flex justify-content-between align-items-center text-muted px-3 py-2 bg-white rounded-2 border border-light-subtle font-monospace"
+      style="font-size: 0.7rem"
+    >
+      <span
+        >SIGEA-GTT v2.0 • Análise de Rendimento Diagnóstico de Gatilhos</span
+      >
+      <span>Metodologia: IHI Global Trigger Tool (White Paper 2ª Edição)</span>
+      <span class="fw-bold text-dark">Emissão: {{ dataHoraEmissao() }}</span>
+    </div>
+  </div>
+</div>

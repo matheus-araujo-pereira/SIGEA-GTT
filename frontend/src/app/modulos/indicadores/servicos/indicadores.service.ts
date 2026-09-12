@@ -1,32 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import {
+  IndicadoresIHI,
+  FiltrosIndicadores,
+  QuadroResumoResultado,
+  DesempenhoGatilhosResultado,
+} from '../modelos/indicadores.modelos';
 
-export interface IndicadoresIHI {
-  totalProntuariosRevistos: number;
-  totalDiasInternacao: number;
-  totalEventosAdversos: number;
-  prontuariosComDano: number;
-  taxaDanosPorMilDias: number;
-  frequenciaPorCemAdmissoes: number;
-  prevalenciaPercentual: number;
-  distribuicaoSeveridade: {
-    CATEGORIA_E: number;
-    CATEGORIA_F: number;
-    CATEGORIA_G: number;
-    CATEGORIA_H: number;
-    CATEGORIA_I: number;
-  };
-}
-
-export interface FiltrosIndicadores {
-  turmaId?: number;
-  periodoLetivo?: string;
-  cenarioId?: number;
-  unidadeId?: number;
-  dataInicio?: string;
-  dataFim?: string;
-}
+export * from '../modelos/indicadores.modelos';
 
 @Injectable({
   providedIn: 'root',
@@ -45,5 +27,33 @@ export class IndicadoresService {
       }
     }
     return this.http.get<IndicadoresIHI>(this.url, { params });
+  }
+
+  obterQuadroResumo(
+    filtros: Record<string, any> = {},
+  ): Observable<QuadroResumoResultado> {
+    let params = new HttpParams();
+    for (const [chave, valor] of Object.entries(filtros)) {
+      if (valor !== undefined && valor !== null && valor !== '') {
+        params = params.set(chave, valor.toString());
+      }
+    }
+    return this.http.get<QuadroResumoResultado>(`${this.url}/quadro-resumo`, {
+      params,
+    });
+  }
+
+  obterDesempenhoGatilhos(
+    filtros: FiltrosIndicadores = {},
+  ): Observable<DesempenhoGatilhosResultado> {
+    let params = new HttpParams();
+    for (const [chave, valor] of Object.entries(filtros)) {
+      if (valor !== undefined && valor !== null && valor !== '') {
+        params = params.set(chave, valor.toString());
+      }
+    }
+    return this.http.get<DesempenhoGatilhosResultado>(`${this.url}/gatilhos`, {
+      params,
+    });
   }
 }

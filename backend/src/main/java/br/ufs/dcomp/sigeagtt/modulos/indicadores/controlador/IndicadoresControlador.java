@@ -27,8 +27,45 @@ public class IndicadoresControlador {
             @RequestParam(required = false) Long cenarioId,
             @RequestParam(required = false) Long unidadeId,
             @RequestParam(required = false) LocalDate dataInicio,
-            @RequestParam(required = false) LocalDate dataFim) {
+            @RequestParam(required = false) LocalDate dataFim,
+            @RequestParam(required = false) String moduloCodigo,
+            @RequestParam(required = false) String gravidade,
+            @RequestParam(required = false) Boolean danoPresenteAdmissao) {
         return ResponseEntity.ok(servico.calcularIndicadoresIndividuais(
+                turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim,
+                moduloCodigo, gravidade, danoPresenteAdmissao));
+    }
+
+    @GetMapping("/quadro-resumo")
+    public ResponseEntity<Map<String, Object>> obterQuadroResumo(
+            @RequestParam(required = false) Long turmaId,
+            @RequestParam(required = false) String periodoLetivo,
+            @RequestParam(required = false) Long cenarioId,
+            @RequestParam(required = false) Long unidadeId,
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim,
+            @RequestParam(required = false) String moduloCodigo,
+            @RequestParam(required = false) String gravidade,
+            @RequestParam(required = false) Boolean danoPresenteAdmissao,
+            @RequestParam(required = false) Boolean apenasComDano,
+            @RequestParam(required = false) String busca,
+            @RequestParam(defaultValue = "0") Integer pagina,
+            @RequestParam(defaultValue = "15") Integer tamanho) {
+        return ResponseEntity.ok(servico.obterQuadroResumo(
+                turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim,
+                moduloCodigo, gravidade, danoPresenteAdmissao, apenasComDano,
+                busca, pagina, tamanho));
+    }
+
+    @GetMapping("/gatilhos")
+    public ResponseEntity<Map<String, Object>> obterDesempenhoGatilhos(
+            @RequestParam(required = false) Long turmaId,
+            @RequestParam(required = false) String periodoLetivo,
+            @RequestParam(required = false) Long cenarioId,
+            @RequestParam(required = false) Long unidadeId,
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim) {
+        return ResponseEntity.ok(servico.obterDesempenhoGatilhos(
                 turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim));
     }
 }

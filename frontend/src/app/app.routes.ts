@@ -21,6 +21,8 @@ import { PainelAvaliacoesComponent } from './modulos/auditoria/componentes/paine
 import { CorrigirAuditoriaComponent } from './modulos/auditoria/componentes/corrigir-auditoria/corrigir-auditoria.component';
 import { MelhoriaQualidadeComponent } from './modulos/qualidade/componentes/melhoria-qualidade/melhoria-qualidade.component';
 import { IndicadoresComponent } from './modulos/indicadores/componentes/dashboard-indicadores/indicadores.component';
+import { QuadroResumoComponent } from './modulos/indicadores/componentes/quadro-resumo/quadro-resumo.component';
+import { RastreabilidadeGatilhosComponent } from './modulos/indicadores/componentes/rastreabilidade-gatilhos/rastreabilidade-gatilhos.component';
 import { TurmasComponent } from './modulos/turma/componentes/gerenciar-turmas/turmas.component';
 import { FormularioTurmaComponent } from './modulos/turma/componentes/formulario-turma/formulario-turma.component';
 import { AlunosTurmaComponent } from './modulos/turma/componentes/alunos-turma/alunos-turma.component';
@@ -287,6 +289,18 @@ export const routes: Routes = [
       {
         path: 'indicadores',
         component: IndicadoresComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR', 'ALUNO'] },
+      },
+      {
+        path: 'indicadores/quadro-resumo',
+        component: QuadroResumoComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['PROFESSOR', 'ADMINISTRADOR', 'ALUNO'] },
+      },
+      {
+        path: 'indicadores/gatilhos',
+        component: RastreabilidadeGatilhosComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['PROFESSOR', 'ADMINISTRADOR', 'ALUNO'] },
       },

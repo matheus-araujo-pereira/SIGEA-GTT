@@ -1,82 +1,26 @@
 <div>
-  <!-- TOPO -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+  <!-- CABEÇALHO DA PÁGINA (PADRÃO ADMINISTRAÇÃO / GESTÃO ACADÊMICA) -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
-      <h1 class="h5 fw-bold text-dark m-0">
-        Indicadores Epidemiológicos (IHI-GTT)
-      </h1>
-      <span class="text-secondary small"
-        >Métricas consolidadas de auditorias clínicas homologadas</span
-      >
+      <h1 class="h4 fw-bold text-dark m-0">Painel Epidemiológico IHI-GTT</h1>
+      <span class="text-secondary small">
+        Metodologia Global Trigger Tool (IHI White Paper 2ª Edição) &bull;
+        Hospital Universitário da UFS / EBSERH
+      </span>
     </div>
-    <div class="d-flex flex-wrap align-items-center gap-2">
-      <select
-        class="form-select form-select-sm w-auto"
-        [ngModel]="filtros().turmaId || 'TODOS'"
-        (ngModelChange)="atualizarFiltro('turmaId', $event)"
-      >
-        <option value="TODOS">Todas as Turmas</option>
-        @for (t of turmas(); track t.id) {
-          <option [value]="t.id">
-            {{ t.codigoDisciplina }} ({{ t.periodoLetivo }})
-          </option>
-        }
-      </select>
-      <select
-        class="form-select form-select-sm w-auto"
-        [ngModel]="filtros().periodoLetivo || 'TODOS'"
-        (ngModelChange)="atualizarFiltro('periodoLetivo', $event)"
-      >
-        <option value="TODOS">Todos os Períodos</option>
-        @for (t of turmas(); track t.id) {
-          <option [value]="t.periodoLetivo">{{ t.periodoLetivo }}</option>
-        }
-      </select>
-      <select
-        class="form-select form-select-sm w-auto"
-        [ngModel]="filtros().cenarioId || 'TODOS'"
-        (ngModelChange)="atualizarFiltro('cenarioId', $event)"
-      >
-        <option value="TODOS">Todos os Cenários</option>
-        @for (c of cenarios(); track c.id) {
-          <option [value]="c.id">{{ c.titulo }}</option>
-        }
-      </select>
-      <select
-        class="form-select form-select-sm w-auto"
-        [ngModel]="filtros().unidadeId || 'TODOS'"
-        (ngModelChange)="atualizarFiltro('unidadeId', $event)"
-      >
-        <option value="TODOS">Todas as Unidades</option>
-        @for (u of unidades(); track u.id) {
-          <option [value]="u.id">{{ u.sigla }}</option>
-        }
-      </select>
-      <input
-        type="date"
-        class="form-control form-control-sm w-auto"
-        [ngModel]="filtros().dataInicio || ''"
-        (ngModelChange)="atualizarFiltro('dataInicio', $event)"
-        aria-label="Data inicial"
-      />
-      <input
-        type="date"
-        class="form-control form-control-sm w-auto"
-        [ngModel]="filtros().dataFim || ''"
-        (ngModelChange)="atualizarFiltro('dataFim', $event)"
-        aria-label="Data final"
-      />
+    <div class="d-flex align-items-center gap-2">
       <button
         type="button"
-        class="btn btn-outline-secondary btn-sm font-monospace"
-        (click)="carregarIndicadores()"
-        [disabled]="carregando()"
+        class="btn btn-outline-secondary btn-sm rounded-1 font-monospace"
+        (click)="limparFiltros()"
       >
-        ATUALIZAR
+        LIMPAR FILTROS
       </button>
       <button
         type="button"
-        class="btn btn-primary btn-sm font-monospace d-inline-flex align-items-center gap-1"
+        class="btn btn-primary btn-sm rounded-1 font-monospace d-inline-flex align-items-center gap-1"
         (click)="exportarPDF()"
         [disabled]="exportandoPdf() || carregando()"
       >
@@ -95,21 +39,211 @@
     </div>
   </div>
 
-  <!-- CONTAINER DE CAPTURA DO RELATÓRIO (DIMENSIONADO PARA 1 PÁGINA A4) -->
-  <div id="relatorio-dashboard" class="p-3 bg-light b-1 mb-3">
-    <!-- CABEÇALHO INSTITUCIONAL EXECUTIVO (HU-UFS / EBSERH / SIGEA-GTT) -->
+  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO EPIDEMIOLOGIA) -->
+  <ul class="nav nav-pills mb-3 gap-2">
+    <li class="nav-item">
+      <a
+        class="nav-link active rounded-1 py-1 px-3 small font-monospace"
+        routerLink="/indicadores"
+      >
+        <i class="bi bi-graph-up me-1"></i>DASHBOARD EXECUTIVO
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
+        routerLink="/indicadores/quadro-resumo"
+      >
+        <i class="bi bi-table me-1"></i>QUADRO RESUMO
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
+        routerLink="/indicadores/gatilhos"
+      >
+        <i class="bi bi-bullseye me-1"></i>RASTREABILIDADE & GATILHOS
+      </a>
+    </li>
+  </ul>
+
+  <!-- CARD DE BUSCA E FILTROS PADRONIZADO -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
+    <div class="row g-2 align-items-end">
+      <!-- PERÍODO LETIVO (SEM DUPLICAÇÃO) -->
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Período Letivo
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroPeriodoLetivo()"
+          (ngModelChange)="
+            filtroPeriodoLetivo.set($event); carregarIndicadores()
+          "
+        >
+          <option value="TODOS">Todos os Períodos</option>
+          @for (p of periodosDisponiveis(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- TURMA -->
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Turma Acadêmica
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroTurmaId()"
+          (ngModelChange)="filtroTurmaId.set($event); carregarIndicadores()"
+        >
+          <option value="TODOS">Todas as Turmas</option>
+          @for (t of turmasFiltradas(); track t.id) {
+            <option [value]="t.id">
+              {{ t.codigoDisciplina }} ({{ t.periodoLetivo }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- UNIDADE HOSPITALAR -->
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Unidade Hospitalar
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroUnidadeId()"
+          (ngModelChange)="filtroUnidadeId.set($event); carregarIndicadores()"
+        >
+          <option value="TODOS">Todas as Unidades</option>
+          @for (u of unidades(); track u.id) {
+            <option [value]="u.id">{{ u.sigla }} - {{ u.nome }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- MÓDULO GTT -->
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Módulo de Gatilho
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroModulo()"
+          (ngModelChange)="filtroModulo.set($event); carregarIndicadores()"
+        >
+          <option value="TODOS">Todos os Módulos</option>
+          <option value="CUIDADOS">Cuidados Gerais (C)</option>
+          <option value="MEDICACAO">Medicamentos (M)</option>
+          <option value="CIRURGICO">Cirúrgico (S)</option>
+          <option value="TERAPIA_INTENSIVA">Terapia Intensiva (I)</option>
+          <option value="PERINATAL">Perinatal (P)</option>
+          <option value="URGENCIA">Pronto Atendimento (E)</option>
+        </select>
+      </div>
+
+      <!-- ORIGEM DO DANO -->
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Origem do Evento Adverso
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroOrigemDano()"
+          (ngModelChange)="filtroOrigemDano.set($event); carregarIndicadores()"
+        >
+          <option value="TODOS">Todas as Origens</option>
+          <option value="HOSPITALAR">
+            Intra-hospitalar (Durante a Internação)
+          </option>
+          <option value="ADMISSAO">
+            Presente na Admissão (Extra-hospitalar)
+          </option>
+        </select>
+      </div>
+
+      <!-- SEVERIDADE NCC MERP -->
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Gravidade NCC MERP
+        </label>
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroGravidade()"
+          (ngModelChange)="filtroGravidade.set($event); carregarIndicadores()"
+        >
+          <option value="TODOS">Todas as Gravidades</option>
+          <option value="CATEGORIA_E">Categoria E (Intervenção)</option>
+          <option value="CATEGORIA_F">Categoria F (Prolongamento)</option>
+          <option value="CATEGORIA_G">Categoria G (Dano Permanente)</option>
+          <option value="CATEGORIA_H">Categoria H (Ameaça à Vida)</option>
+          <option value="CATEGORIA_I">Categoria I (Óbito Contribuinte)</option>
+        </select>
+      </div>
+
+      <!-- DATA INICIAL -->
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Data Inicial
+        </label>
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [ngModel]="filtroDataInicio()"
+          (ngModelChange)="filtroDataInicio.set($event); carregarIndicadores()"
+        />
+      </div>
+
+      <!-- DATA FINAL -->
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold text-secondary mb-1">
+          Data Final
+        </label>
+        <input
+          type="date"
+          class="form-control form-control-sm"
+          [ngModel]="filtroDataFim()"
+          (ngModelChange)="filtroDataFim.set($event); carregarIndicadores()"
+        />
+      </div>
+
+      <!-- BOTÃO ATUALIZAR -->
+      <div class="col-md-2">
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm w-100 font-monospace rounded-1"
+          (click)="carregarIndicadores()"
+          [disabled]="carregando()"
+        >
+          <i class="bi bi-arrow-repeat me-1"></i>ATUALIZAR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTAINER DE CAPTURA DO RELATÓRIO PDF -->
+  <div
+    id="relatorio-dashboard"
+    class="bg-light p-3 rounded-2 border border-light-subtle mb-3"
+  >
+    <!-- CABEÇALHO INSTITUCIONAL EXECUTIVO -->
     <div
-      class="p-3 mb-3 bg-white b-1 d-flex justify-content-between align-items-center"
+      class="p-3 mb-3 bg-white rounded-2 border border-light-subtle shadow-sm d-flex justify-content-between align-items-center"
     >
       <div class="d-flex align-items-center gap-3">
         <div
-          class="bg-primary text-white px-2 py-1 fw-bold font-monospace small"
+          class="bg-primary text-white px-2 py-1 fw-bold font-monospace small rounded-1"
           style="letter-spacing: 1px"
         >
           HU-UFS / EBSERH
         </div>
         <div>
-          <div class="fw-bold text-dark h6 m-0">
+          <div class="fw-bold text-dark h5 m-0">
             SIGEA-GTT — Relatório Executivo de Indicadores Epidemiológicos
           </div>
           <div class="text-secondary small font-monospace">
@@ -118,7 +252,10 @@
           </div>
         </div>
       </div>
-      <div class="text-end font-monospace fs-xxs text-muted">
+      <div
+        class="text-end font-monospace text-muted"
+        style="font-size: 0.75rem"
+      >
         <div><strong>EMISSÃO:</strong> {{ dataHoraEmissao() }}</div>
         <div class="text-primary mt-1">
           <strong>FILTROS:</strong> {{ textoFiltrosAtivos() }}
@@ -126,357 +263,510 @@
       </div>
     </div>
 
-    <!-- MÉTRICAS PRIMÁRIAS -->
+    <!-- MÉTRICAS EPIDEMIOLÓGICAS CANÔNICAS DO IHI -->
     <div class="row g-2 mb-3">
-      @for (m of metricasPrincipais(); track m.rotulo) {
+      @for (m of metricasCanonicasIHI(); track m.titulo) {
         <div class="col-md-4">
-          <div class="bg-white b-1 p-3">
-            <div class="text-muted small font-monospace">{{ m.rotulo }}</div>
-            <div class="h3 fw-bold text-dark my-1">{{ m.valor }}</div>
-            <div class="text-secondary small">{{ m.descricao }}</div>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- MÉTRICAS SECUNDÁRIAS -->
-    <div class="row g-2 mb-3">
-      @for (m of metricasSecundarias(); track m.rotulo) {
-        <div class="col-6 col-md-3">
-          <div class="bg-white b-1 p-2 text-center">
-            <span class="text-muted small font-monospace d-block">{{
-              m.rotulo
-            }}</span>
-            <span class="h5 fw-bold text-dark m-0">{{ m.valor }}</span>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- FIGURAS 1 E 2 (GRÁFICOS SVG RETANGULARES) -->
-    <div class="row g-2 mb-3">
-      <!-- FIGURA 1: RUN CHART -->
-      <div class="col-lg-7">
-        <div class="bg-white b-1 p-3">
           <div
-            class="d-flex justify-content-between align-items-center mb-2 pb-2 b-b"
+            class="card border border-light-subtle rounded-2 shadow-sm p-3 h-100 bg-white"
+          >
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small font-monospace text-secondary fw-semibold">
+                {{ m.titulo }}
+              </span>
+            </div>
+            <div class="h2 fw-bold text-dark my-2 font-monospace">
+              {{ m.valor }}
+            </div>
+            <div class="text-dark small fw-medium">{{ m.subtitulo }}</div>
+            <div
+              class="text-secondary font-monospace mt-1"
+              style="font-size: 0.75rem"
+            >
+              <i class="bi bi-calculator me-1"></i>Fórmula: {{ m.formula }}
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ESTATÍSTICAS OPERACIONAIS DO PROCESSO DE AUDITORIA -->
+    <div class="row g-2 mb-3">
+      @for (op of estatisticasOperacionais(); track op.rotulo) {
+        <div class="col-6 col-md-3">
+          <div
+            class="card border border-light-subtle rounded-2 shadow-sm p-2 text-center bg-white h-100"
+          >
+            <span class="text-secondary small font-monospace d-block">
+              {{ op.rotulo }}
+            </span>
+            <span class="h4 fw-bold text-dark m-0 font-monospace">{{
+              op.valor
+            }}</span>
+            <span class="text-muted" style="font-size: 0.7rem">{{
+              op.unidade
+            }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ORIGEM DO DANO & RENDIMENTO DOS GATILHOS -->
+    <div class="row g-2 mb-3">
+      <!-- ORIGEM DO DANO: INTRA-HOSPITALAR VS ADMISSÃO (P. 13 E 16 DO WHITE PAPER) -->
+      <div class="col-lg-6">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
+        >
+          <div
+            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
           >
             <div>
-              <span class="fw-bold text-dark small d-block"
-                >Figura 1. Gráfico de Tendência dos Danos (Run Chart IHI)</span
-              >
-              <span class="text-muted fs-xxs"
-                >Eventos adversos por 1.000 pacientes-dia</span
-              >
+              <span class="fw-bold text-dark small font-monospace d-block">
+                ORIGEM DOS EVENTOS ADVERSOS
+              </span>
+              <span class="text-secondary" style="font-size: 0.75rem">
+                Intra-hospitalares vs Presentes na Admissão
+              </span>
             </div>
-            <span class="text-primary font-monospace fw-bold small"
-              >[TAXA ATUAL: {{ taxaAtual() }}]</span
-            >
+            <span class="text-secondary font-monospace small">
+              TOTAL: {{ dadosOrigemDano().total }} EA
+            </span>
           </div>
 
-          <svg viewBox="0 0 600 240" class="w-100">
-            <line
-              x1="50"
-              y1="30"
-              x2="570"
-              y2="30"
-              stroke="#eeeeee"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
-            <line
-              x1="50"
-              y1="75"
-              x2="570"
-              y2="75"
-              stroke="#eeeeee"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
-            <line
-              x1="50"
-              y1="120"
-              x2="570"
-              y2="120"
-              stroke="#eeeeee"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
-            <line
-              x1="50"
-              y1="165"
-              x2="570"
-              y2="165"
-              stroke="#eeeeee"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
-            <line
-              x1="50"
-              y1="210"
-              x2="570"
-              y2="210"
-              stroke="#cccccc"
-              stroke-width="1"
-            />
-            <line
-              x1="50"
-              y1="20"
-              x2="50"
-              y2="210"
-              stroke="#cccccc"
-              stroke-width="1"
-            />
-
-            <text
-              x="42"
-              y="34"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              200
-            </text>
-            <text
-              x="42"
-              y="79"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              150
-            </text>
-            <text
-              x="42"
-              y="124"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              100
-            </text>
-            <text
-              x="42"
-              y="169"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              50
-            </text>
-            <text
-              x="42"
-              y="214"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              0
-            </text>
-
-            <line
-              x1="50"
-              [attr.y1]="medianaY()"
-              x2="570"
-              [attr.y2]="medianaY()"
-              stroke="#b87a14"
-              stroke-width="1.5"
-              stroke-dasharray="4,4"
-            />
-            <text
-              x="565"
-              [attr.y]="medianaY() - 4"
-              font-size="9"
-              fill="#b87a14"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              MEDIANA: {{ medianaValor() }}
-            </text>
-
-            @if (caminhoAreaTendencia()) {
-              <polygon
-                [attr.points]="caminhoAreaTendencia()"
-                fill="#006666"
-                fill-opacity="0.08"
-              />
-            }
-
-            @if (caminhoLinhaTendencia()) {
-              <path
-                [attr.d]="caminhoLinhaTendencia()"
-                fill="none"
-                stroke="#006666"
-                stroke-width="2"
-              />
-            }
-
-            @for (pt of pontosTendencia(); track pt.rotulo) {
-              <rect
-                [attr.x]="pt.x - 3.5"
-                [attr.y]="pt.y - 3.5"
-                width="7"
-                height="7"
-                fill="#ffffff"
-                stroke="#006666"
-                stroke-width="2"
-              />
-              <text
-                [attr.x]="pt.x"
-                [attr.y]="pt.y - 7"
-                font-size="9"
-                fill="#122b2b"
-                font-weight="bold"
-                text-anchor="middle"
-                font-family="monospace"
-              >
-                {{ pt.valor }}
-              </text>
-              <text
-                [attr.x]="pt.x"
-                y="224"
-                font-size="9"
-                fill="#6c757d"
-                text-anchor="middle"
-                font-family="monospace"
-              >
-                {{ pt.rotulo }}
-              </text>
-            }
-          </svg>
-
-          <div
-            class="d-flex justify-content-center gap-4 mt-2 fs-xxs font-monospace text-muted"
-          >
-            <span>-- LINHA VERDE: TAXA OBSERVADA</span>
-            <span>-- LINHA TRACEJADA: MEDIANA DE REFERÊNCIA</span>
+          <div class="row g-2 text-center my-auto">
+            <div class="col-6">
+              <div class="p-2 border border-light-subtle rounded-2 bg-light">
+                <span
+                  class="text-primary fw-bold d-block h4 m-0 font-monospace"
+                >
+                  {{ dadosOrigemDano().intra }}
+                </span>
+                <span class="small font-semibold text-dark d-block"
+                  >Intra-hospitalares</span
+                >
+                <span class="text-secondary small font-monospace">
+                  {{ dadosOrigemDano().pctIntra }}% do total
+                </span>
+                <div class="progress mt-2" style="height: 4px">
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    [style.width.%]="dadosOrigemDano().pctIntra"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 border border-light-subtle rounded-2 bg-light">
+                <span
+                  class="text-warning-emphasis fw-bold d-block h4 m-0 font-monospace"
+                >
+                  {{ dadosOrigemDano().adm }}
+                </span>
+                <span class="small font-semibold text-dark d-block"
+                  >Presentes na Admissão</span
+                >
+                <span class="text-secondary small font-monospace">
+                  {{ dadosOrigemDano().pctAdm }}% do total
+                </span>
+                <div class="progress mt-2" style="height: 4px">
+                  <div
+                    class="progress-bar bg-warning"
+                    role="progressbar"
+                    [style.width.%]="dadosOrigemDano().pctAdm"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 text-muted font-monospace" style="font-size: 0.7rem">
+            * Danos externos/na admissão são computados nas taxas globais e
+            acompanhados separadamente.
           </div>
         </div>
       </div>
 
-      <!-- FIGURA 2: BARRAS NCC MERP -->
-      <div class="col-lg-5">
-        <div class="bg-white b-1 p-3">
+      <!-- EFICÁCIA E RENDIMENTO DO RASTREAMENTO -->
+      <div class="col-lg-6">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
+        >
           <div
-            class="d-flex justify-content-between align-items-center mb-2 pb-2 b-b"
+            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
           >
             <div>
-              <span class="fw-bold text-dark small d-block"
-                >Figura 2. Distribuição por Severidade (NCC MERP)</span
-              >
-              <span class="text-muted fs-xxs">Categorias E até I</span>
+              <span class="fw-bold text-dark small font-monospace d-block">
+                EFICÁCIA DE RASTREAMENTO DE GATILHOS
+              </span>
+              <span class="text-secondary" style="font-size: 0.75rem">
+                Gatilhos Positivos vs Danos Clínicos Confirmados
+              </span>
             </div>
-            <span class="text-dark font-monospace fw-bold small"
-              >[TOTAL: {{ totalDanos() }} EA]</span
+            <span
+              class="badge bg-success-subtle text-success border border-success-subtle font-monospace px-2"
             >
+              RENDIMENTO: {{ eficaciaRastreamento().taxaRendimentoGatilhos }}%
+            </span>
           </div>
 
-          <svg viewBox="0 0 450 240" class="w-100">
-            <line
-              x1="40"
-              y1="20"
-              x2="40"
-              y2="210"
-              stroke="#cccccc"
-              stroke-width="1"
-            />
-            <line
-              x1="40"
-              y1="210"
-              x2="430"
-              y2="210"
-              stroke="#cccccc"
-              stroke-width="1"
-            />
+          <div class="row g-2 text-center my-auto">
+            <div class="col-4">
+              <div class="p-2 border border-light-subtle rounded-2 bg-light">
+                <span class="fw-bold d-block h5 m-0 font-monospace text-dark">
+                  {{ eficaciaRastreamento().totalGatilhosRastreados }}
+                </span>
+                <span class="small text-secondary font-monospace d-block"
+                  >Triggers Positivos</span
+                >
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2 border border-light-subtle rounded-2 bg-light">
+                <span class="text-danger fw-bold d-block h5 m-0 font-monospace">
+                  {{ eficaciaRastreamento().totalDanosConfirmados }}
+                </span>
+                <span class="small text-secondary font-monospace d-block"
+                  >Danos Confirmados</span
+                >
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2 border border-light-subtle rounded-2 bg-light">
+                <span
+                  class="text-success fw-bold d-block h5 m-0 font-monospace"
+                >
+                  {{ eficaciaRastreamento().taxaRendimentoGatilhos }}%
+                </span>
+                <span class="small text-secondary font-monospace d-block"
+                  >Taxa de Conversão</span
+                >
+              </div>
+            </div>
+          </div>
+          <div class="mt-2 text-muted font-monospace" style="font-size: 0.7rem">
+            * O trigger positivo indica apenas a presença da pista clínica; a
+            auditoria médica e consenso determinam a ocorrência de dano.
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- FIGURAS 1 E 2 (RUN CHART IHI E DISTRIBUIÇÃO NCC MERP) -->
+    <div class="row g-2 mb-3">
+      <!-- FIGURA 1: RUN CHART IHI (GRÁFICO DE TENDÊNCIA HISTÓRICO REAL) -->
+      <div class="col-lg-7">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
+        >
+          <div
+            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
+          >
+            <div>
+              <span class="fw-bold text-dark small font-monospace d-block">
+                GRÁFICO DE TENDÊNCIA (RUN CHART)
+              </span>
+              <span class="text-secondary" style="font-size: 0.75rem">
+                {{
+                  metricaRunChartPorMilDias()
+                    ? "Eventos adversos por 1.000 pacientes-dia"
+                    : "Eventos adversos por 100 admissões"
+                }}
+              </span>
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+              <button
+                type="button"
+                class="btn btn-sm py-0 px-2 font-monospace rounded-1 me-1"
+                [class.btn-primary]="metricaRunChartPorMilDias()"
+                [class.btn-outline-secondary]="!metricaRunChartPorMilDias()"
+                (click)="alternarMetricaRunChart(true)"
+              >
+                1.000 DIAS
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm py-0 px-2 font-monospace rounded-1"
+                [class.btn-primary]="!metricaRunChartPorMilDias()"
+                [class.btn-outline-secondary]="metricaRunChartPorMilDias()"
+                (click)="alternarMetricaRunChart(false)"
+              >
+                100 ADMISSÕES
+              </button>
+            </div>
+          </div>
+
+          @if (pontosRunChart().length === 0) {
+            <div class="text-center py-5 text-muted">
+              <i class="bi bi-bar-chart fs-2 d-block text-secondary mb-2"></i>
+              Nenhum dado temporal disponível para os filtros selecionados.
+            </div>
+          } @else {
+            <svg viewBox="0 0 580 230" class="w-100">
+              <!-- Linhas de grade horizontais -->
+              <line
+                x1="45"
+                y1="35"
+                x2="560"
+                y2="35"
+                stroke="#f0f0f0"
+                stroke-width="1"
+                stroke-dasharray="2,2"
+              />
+              <line
+                x1="45"
+                y1="90"
+                x2="560"
+                y2="90"
+                stroke="#f0f0f0"
+                stroke-width="1"
+                stroke-dasharray="2,2"
+              />
+              <line
+                x1="45"
+                y1="145"
+                x2="560"
+                y2="145"
+                stroke="#f0f0f0"
+                stroke-width="1"
+                stroke-dasharray="2,2"
+              />
+              <line
+                x1="45"
+                y1="200"
+                x2="560"
+                y2="200"
+                stroke="#dee2e6"
+                stroke-width="1"
+              />
+              <!-- Eixo Y -->
+              <line
+                x1="45"
+                y1="25"
+                x2="45"
+                y2="200"
+                stroke="#dee2e6"
+                stroke-width="1"
+              />
+
+              <!-- Rótulos do Eixo Y -->
+              <text
+                x="38"
+                y="39"
+                font-size="9"
+                fill="#6c757d"
+                text-anchor="end"
+                font-family="monospace"
+              >
+                150
+              </text>
+              <text
+                x="38"
+                y="94"
+                font-size="9"
+                fill="#6c757d"
+                text-anchor="end"
+                font-family="monospace"
+              >
+                100
+              </text>
+              <text
+                x="38"
+                y="149"
+                font-size="9"
+                fill="#6c757d"
+                text-anchor="end"
+                font-family="monospace"
+              >
+                50
+              </text>
+              <text
+                x="38"
+                y="204"
+                font-size="9"
+                fill="#6c757d"
+                text-anchor="end"
+                font-family="monospace"
+              >
+                0
+              </text>
+
+              <!-- Linha Tracejada da Mediana Histórica Real (Regra do IHI) -->
+              <line
+                x1="45"
+                [attr.y1]="medianaY()"
+                x2="560"
+                [attr.y2]="medianaY()"
+                stroke="#fd7e14"
+                stroke-width="1.5"
+                stroke-dasharray="4,4"
+              />
+              <text
+                x="555"
+                [attr.y]="medianaY() - 5"
+                font-size="9"
+                fill="#fd7e14"
+                text-anchor="end"
+                font-family="monospace"
+                font-weight="bold"
+              >
+                MEDIANA: {{ medianaValor() }}
+              </text>
+
+              <!-- Área sombreada sob a curva -->
+              @if (caminhoAreaRunChart()) {
+                <polygon
+                  [attr.points]="caminhoAreaRunChart()"
+                  fill="#0d6efd"
+                  fill-opacity="0.08"
+                />
+              }
+
+              <!-- Linha da taxa observada -->
+              @if (caminhoLinhaRunChart()) {
+                <path
+                  [attr.d]="caminhoLinhaRunChart()"
+                  fill="none"
+                  stroke="#0d6efd"
+                  stroke-width="2.2"
+                />
+              }
+
+              <!-- Pontos de dados reais -->
+              @for (pt of pontosRunChart(); track pt.rotulo) {
+                <circle
+                  [attr.cx]="pt.x"
+                  [attr.cy]="pt.y"
+                  r="4.5"
+                  fill="#ffffff"
+                  stroke="#0d6efd"
+                  stroke-width="2"
+                />
+                <text
+                  [attr.x]="pt.x"
+                  [attr.y]="pt.y - 8"
+                  font-size="9"
+                  fill="#212529"
+                  font-weight="bold"
+                  text-anchor="middle"
+                  font-family="monospace"
+                >
+                  {{ pt.valor }}
+                </text>
+                <text
+                  [attr.x]="pt.x"
+                  y="214"
+                  font-size="9"
+                  fill="#6c757d"
+                  text-anchor="middle"
+                  font-family="monospace"
+                >
+                  {{ pt.rotulo }}
+                </text>
+              }
+            </svg>
+            <div
+              class="d-flex justify-content-center gap-4 mt-2 font-monospace text-secondary"
+              style="font-size: 0.7rem"
+            >
+              <span
+                ><span class="text-primary fw-bold">● LINHA AZUL:</span> TAXA
+                OBSERVADA</span
+              >
+              <span
+                ><span class="text-warning-emphasis fw-bold"
+                  >- - LINHA TRACEJADA:</span
+                >
+                MEDIANA HISTÓRICA DO IHI</span
+              >
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- FIGURA 2: DISTRIBUIÇÃO DE GRAVIDADE NCC MERP (CATEGORIAS E A I) -->
+      <div class="col-lg-5">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
+        >
+          <div
+            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
+          >
+            <div>
+              <span class="fw-bold text-dark small font-monospace d-block">
+                DISTRIBUIÇÃO POR GRAVIDADE (NCC MERP)
+              </span>
+              <span class="text-secondary" style="font-size: 0.75rem">
+                Categorias E até I (Danos Físicos Reais)
+              </span>
+            </div>
+            <span class="text-dark font-monospace fw-bold small">
+              TOTAL: {{ indicadores()?.totalEventosAdversos || 0 }} EA
+            </span>
+          </div>
+
+          <svg viewBox="0 0 460 230" class="w-100">
+            <!-- Linhas de grade -->
             <line
-              x1="40"
-              y1="60"
-              x2="430"
-              y2="60"
-              stroke="#eeeeee"
+              x1="35"
+              y1="25"
+              x2="35"
+              y2="200"
+              stroke="#dee2e6"
+              stroke-width="1"
+            />
+            <line
+              x1="35"
+              y1="200"
+              x2="445"
+              y2="200"
+              stroke="#dee2e6"
+              stroke-width="1"
+            />
+            <line
+              x1="35"
+              y1="65"
+              x2="445"
+              y2="65"
+              stroke="#f0f0f0"
               stroke-width="1"
               stroke-dasharray="2,2"
             />
             <line
-              x1="40"
+              x1="35"
               y1="110"
-              x2="430"
+              x2="445"
               y2="110"
-              stroke="#eeeeee"
+              stroke="#f0f0f0"
               stroke-width="1"
               stroke-dasharray="2,2"
             />
             <line
-              x1="40"
-              y1="160"
-              x2="430"
-              y2="160"
-              stroke="#eeeeee"
+              x1="35"
+              y1="155"
+              x2="445"
+              y2="155"
+              stroke="#f0f0f0"
               stroke-width="1"
               stroke-dasharray="2,2"
             />
 
-            <text
-              x="32"
-              y="64"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              {{ tetoBarras() }}
-            </text>
-            <text
-              x="32"
-              y="114"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              {{ metadeTetoBarras() }}
-            </text>
-            <text
-              x="32"
-              y="164"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              {{ quartoTetoBarras() }}
-            </text>
-            <text
-              x="32"
-              y="214"
-              font-size="9"
-              fill="#6c757d"
-              text-anchor="end"
-              font-family="monospace"
-            >
-              0
-            </text>
-
-            @for (b of barrasCategorias(); track b.categoria) {
+            <!-- Barras por categoria -->
+            @for (b of barrasSeveridade(); track b.categoria) {
               <rect
                 [attr.x]="b.x"
                 [attr.y]="b.y"
                 [attr.width]="b.largura"
                 [attr.height]="b.altura"
                 [attr.fill]="b.cor"
+                rx="2"
               />
               <text
                 [attr.x]="b.x + b.largura / 2"
                 [attr.y]="b.y - 5"
                 font-size="9"
                 font-weight="bold"
-                fill="#122b2b"
+                fill="#212529"
                 text-anchor="middle"
                 font-family="monospace"
               >
@@ -484,10 +774,10 @@
               </text>
               <text
                 [attr.x]="b.x + b.largura / 2"
-                y="223"
+                y="213"
                 font-size="9"
                 font-weight="bold"
-                fill="#122b2b"
+                fill="#212529"
                 text-anchor="middle"
                 font-family="monospace"
               >
@@ -495,7 +785,7 @@
               </text>
               <text
                 [attr.x]="b.x + b.largura / 2"
-                y="234"
+                y="224"
                 font-size="8"
                 fill="#6c757d"
                 text-anchor="middle"
@@ -505,46 +795,115 @@
               </text>
             }
           </svg>
-
           <div
-            class="d-flex justify-content-center gap-2 mt-2 fs-xxs font-monospace text-muted"
+            class="d-flex justify-content-center gap-2 mt-2 font-monospace text-secondary"
+            style="font-size: 0.68rem"
           >
-            <span>CAT.E: INTERVENÇÃO</span> |
-            <span>CAT.F: PROLONGAMENTO</span> |
-            <span>CAT.G: PERMANENTE</span>
+            <span>E: Intervenção</span> &bull;
+            <span>F: Prolongamento</span> &bull;
+            <span>G: Permanente</span> &bull;
+            <span>H: Vida (&lt;1h)</span> &bull;
+            <span>I: Óbito</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TABELA DE SEVERIDADE NCC MERP -->
-    <div class="bg-white b-1">
-      <div class="p-2 b-b">
-        <span class="fw-bold text-dark small font-monospace"
-          >NÍVEIS DE GRAVIDADE CLÍNICA (ÍNDICE NCC MERP)</span
+    <!-- DISTRIBUIÇÃO POR MÓDULOS DE TRIGGERS DO IHI -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white mb-3"
+    >
+      <div
+        class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
+      >
+        <div>
+          <span class="fw-bold text-dark small font-monospace d-block">
+            DISTRIBUIÇÃO DE EVENTOS ADVERSOS POR MÓDULO GTT
+          </span>
+          <span class="text-secondary" style="font-size: 0.75rem">
+            Módulos: Cuidados, Medicamentos, Cirúrgico, CTI, Perinatal e
+            Urgência
+          </span>
+        </div>
+        <a
+          routerLink="/indicadores/gatilhos"
+          class="btn btn-outline-secondary btn-sm py-0 px-2 font-monospace rounded-1"
         >
+          VER DETALHES DOS GATILHOS &rarr;
+        </a>
       </div>
-      <table class="table table-hover table-sm m-0">
-        <thead class="bg-light text-secondary small font-monospace b-b">
+
+      <div class="row g-2">
+        @for (mod of modulosGTT(); track mod.codigo) {
+          <div class="col-6 col-md-4 col-lg-2">
+            <div
+              class="p-2 border border-light-subtle rounded-2 bg-light text-center h-100"
+            >
+              <i
+                class="bi {{ mod.icone }} fs-4 text-{{ mod.cor }} d-block mb-1"
+              ></i>
+              <span class="fw-bold d-block h5 m-0 font-monospace text-dark">{{
+                mod.total
+              }}</span>
+              <span
+                class="text-secondary small font-monospace d-block"
+                style="font-size: 0.72rem"
+              >
+                {{ mod.rotulo }}
+              </span>
+              <span
+                class="badge bg-white border border-light-subtle text-secondary font-monospace mt-1 px-1"
+              >
+                {{ mod.porcentagem }}%
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- TABELA EXPLICATIVA DA CLASSIFICAÇÃO NCC MERP -->
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+    >
+      <div class="p-2 border-bottom border-light-subtle bg-light">
+        <span class="fw-bold text-dark small font-monospace">
+          DEFINIÇÕES OPERACIONAIS DE GRAVIDADE (NCC MERP)
+        </span>
+      </div>
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead
+          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+        >
           <tr>
-            <th scope="col" class="p-2">CATEGORIA</th>
-            <th scope="col" class="p-2">NOME</th>
-            <th scope="col" class="p-2">TOTAL</th>
-            <th scope="col" class="p-2">PROPORÇÃO</th>
-            <th scope="col" class="p-2">DEFINIÇÃO OPERACIONAL</th>
+            <th scope="col" class="py-2 px-3">CATEGORIA</th>
+            <th scope="col" class="py-2 px-2">CLASSIFICAÇÃO DO DANO</th>
+            <th scope="col" class="py-2 px-2 text-center">TOTAL</th>
+            <th scope="col" class="py-2 px-2 text-center">PROPORÇÃO</th>
+            <th scope="col" class="py-2 px-3">CRITÉRIO CLÍNICO METODOLÓGICO</th>
           </tr>
         </thead>
-        <tbody class="small font-monospace">
-          @for (s of severidadesLinhas(); track s.categoria) {
-            <tr>
-              <td class="p-2 fw-bold text-dark">{{ s.categoria }}</td>
-              <td class="p-2 font-sans-serif fw-semibold text-dark">
-                {{ s.nome }}
+        <tbody class="small font-monospace bg-white">
+          @for (b of barrasSeveridade(); track b.categoria) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 fw-bold text-dark bg-white">
+                <span class="badge" [style.background-color]="b.cor">{{
+                  b.rotulo
+                }}</span>
               </td>
-              <td class="p-2">{{ s.total }}</td>
-              <td class="p-2 text-primary">{{ s.porcentagem }}</td>
-              <td class="p-2 font-sans-serif text-secondary">
-                {{ s.descricao }}
+              <td
+                class="py-2 px-2 font-sans-serif fw-semibold text-dark bg-white"
+              >
+                {{ b.nome }}
+              </td>
+              <td class="py-2 px-2 text-center fw-bold text-dark bg-white">
+                {{ b.total }}
+              </td>
+              <td class="py-2 px-2 text-center text-primary fw-bold bg-white">
+                {{ b.porcentagem }}%
+              </td>
+              <td class="py-2 px-3 font-sans-serif text-secondary bg-white">
+                {{ b.definicao }}
               </td>
             </tr>
           }
@@ -552,16 +911,17 @@
       </table>
     </div>
 
-    <!-- RODAPÉ INSTITUCIONAL DO RELATÓRIO (GARANTIA DE 1 PÁGINA) -->
+    <!-- RODAPÉ INSTITUCIONAL EXECUTIVO -->
     <div
-      class="d-flex justify-content-between align-items-center text-muted fs-xxs font-monospace px-3 py-2 mt-2 bg-white b-1"
+      class="d-flex justify-content-between align-items-center text-muted px-3 py-2 mt-3 bg-white rounded-2 border border-light-subtle font-monospace"
+      style="font-size: 0.7rem"
     >
       <span
-        >SIGEA-GTT v2.0 • Plataforma de Auditoria Clínica e Gestão de Riscos
-        Assistenciais</span
+        >SIGEA-GTT v2.0 • Plataforma de Gestão de Riscos e Auditoria
+        Clínica</span
       >
       <span>Metodologia: IHI Global Trigger Tool (White Paper 2ª Edição)</span>
-      <span class="fw-bold text-dark">Documento de Página Única</span>
+      <span class="fw-bold text-dark">Relatório Executivo Oficial</span>
     </div>
   </div>
 </div>
