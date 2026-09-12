@@ -1,6 +1,8 @@
 <div>
   <!-- CABEÇALHO DO FORMULÁRIO -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
       <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
       <span class="text-secondary small">{{ subtituloPagina() }}</span>
@@ -17,36 +19,55 @@
 
   <!-- FEEDBACKS -->
   @if (mensagemErro()) {
-    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small">
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <span>{{ mensagemErro() }}</span>
       </div>
-      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   <!-- ESTADO DE CARREGAMENTO -->
   @if (carregando()) {
-    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Carregando...</span>
       </div>
-      <p class="text-secondary small mt-2 mb-0">Carregando dados do caso clínico...</p>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados do caso clínico...
+      </p>
     </div>
   } @else {
     <form (ngSubmit)="salvar()">
       <!-- CARD 1: IDENTIFICAÇÃO DO CASO E METADADOS -->
-      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3">
-        <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+      <div
+        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3"
+      >
+        <div
+          class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+        >
           <span class="fw-bold text-dark small text-uppercase font-monospace">
-            <i class="bi bi-info-circle me-1"></i> 1. Identificação Geral do Caso Clínico
+            <i class="bi bi-info-circle me-1"></i> 1. Identificação Geral do
+            Caso Clínico
           </span>
         </div>
         <div class="card-body p-4">
           <div class="row g-3">
             <div class="col-md-8">
-              <label for="titulo" class="form-label small fw-semibold text-secondary">
+              <label
+                for="titulo"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Título Descritivo do Caso <span class="text-danger">*</span>
               </label>
               <input
@@ -61,7 +82,10 @@
             </div>
 
             <div class="col-md-4">
-              <label for="unidadeHospitalarId" class="form-label small fw-semibold text-secondary">
+              <label
+                for="unidadeHospitalarId"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Unidade Hospitalar (HU) <span class="text-danger">*</span>
               </label>
               <select
@@ -79,7 +103,10 @@
             </div>
 
             <div class="col-md-6">
-              <label for="objetivosAprendizagem" class="form-label small fw-semibold text-secondary">
+              <label
+                for="objetivosAprendizagem"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Objetivos Pedagógicos de Aprendizagem
               </label>
               <textarea
@@ -93,7 +120,10 @@
             </div>
 
             <div class="col-md-6">
-              <label for="descricaoCaso" class="form-label small fw-semibold text-secondary">
+              <label
+                for="descricaoCaso"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Contextualização Clínica
               </label>
               <textarea
@@ -110,17 +140,26 @@
       </div>
 
       <!-- CARD 2: DADOS DO PACIENTE E INTERNAÇÃO -->
-      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3">
-        <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+      <div
+        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3"
+      >
+        <div
+          class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+        >
           <span class="fw-bold text-dark small text-uppercase font-monospace">
-            <i class="bi bi-person-badge me-1"></i> 2. Dados do Paciente e Período de Internação
+            <i class="bi bi-person-badge me-1"></i> 2. Dados do Paciente e
+            Período de Internação
           </span>
         </div>
         <div class="card-body p-4">
           <div class="row g-3">
             <div class="col-md-3">
-              <label for="numeroAtendimento" class="form-label small fw-semibold text-secondary">
-                Nº do Prontuário / Atendimento <span class="text-danger">*</span>
+              <label
+                for="numeroAtendimento"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Nº do Prontuário / Atendimento
+                <span class="text-danger">*</span>
               </label>
               <input
                 id="numeroAtendimento"
@@ -134,7 +173,10 @@
             </div>
 
             <div class="col-md-3">
-              <label for="idadePaciente" class="form-label small fw-semibold text-secondary">
+              <label
+                for="idadePaciente"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Idade do Paciente (anos) <span class="text-danger">*</span>
               </label>
               <input
@@ -150,7 +192,10 @@
             </div>
 
             <div class="col-md-2">
-              <label for="dataAdmissao" class="form-label small fw-semibold text-secondary">
+              <label
+                for="dataAdmissao"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Data Admissão <span class="text-danger">*</span>
               </label>
               <input
@@ -165,7 +210,10 @@
             </div>
 
             <div class="col-md-2">
-              <label for="dataAlta" class="form-label small fw-semibold text-secondary">
+              <label
+                for="dataAlta"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Data Alta / Desfecho <span class="text-danger">*</span>
               </label>
               <input
@@ -180,7 +228,10 @@
             </div>
 
             <div class="col-md-2">
-              <label for="tempoPermanenciaDias" class="form-label small fw-semibold text-secondary">
+              <label
+                for="tempoPermanenciaDias"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Permanência (dias)
               </label>
               <input
@@ -197,17 +248,26 @@
       </div>
 
       <!-- CARD 3: SESSÕES DO PRONTUÁRIO SIMULADO -->
-      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3">
-        <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+      <div
+        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3"
+      >
+        <div
+          class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+        >
           <span class="fw-bold text-dark small text-uppercase font-monospace">
-            <i class="bi bi-file-earmark-medical me-1"></i> 3. Registros Clínicos Simulados do Prontuário
+            <i class="bi bi-file-earmark-medical me-1"></i> 3. Registros
+            Clínicos Simulados do Prontuário
           </span>
         </div>
         <div class="card-body p-4">
           <div class="row g-3">
             <div class="col-12">
-              <label for="sumarioAlta" class="form-label small fw-semibold text-secondary">
-                Sumário de Alta, Anamnese e Diagnósticos <span class="text-danger">*</span>
+              <label
+                for="sumarioAlta"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Sumário de Alta, Anamnese e Diagnósticos
+                <span class="text-danger">*</span>
               </label>
               <textarea
                 id="sumarioAlta"
@@ -221,7 +281,10 @@
             </div>
 
             <div class="col-md-6">
-              <label for="prescricoesMedicas" class="form-label small fw-semibold text-secondary">
+              <label
+                for="prescricoesMedicas"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Prescrições Médicas e Farmacoterapia
               </label>
               <textarea
@@ -235,7 +298,10 @@
             </div>
 
             <div class="col-md-6">
-              <label for="examesLaboratoriais" class="form-label small fw-semibold text-secondary">
+              <label
+                for="examesLaboratoriais"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Resultados de Exames Laboratoriais e Imagem
               </label>
               <textarea
@@ -249,8 +315,12 @@
             </div>
 
             <div class="col-md-6">
-              <label for="evolucoesMultiprofissionais" class="form-label small fw-semibold text-secondary">
-                Evoluções Multiprofissionais (Enfermagem, Farmácia, Médica, etc.)
+              <label
+                for="evolucoesMultiprofissionais"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Evoluções Multiprofissionais (Enfermagem, Farmácia, Médica,
+                etc.)
               </label>
               <textarea
                 id="evolucoesMultiprofissionais"
@@ -263,7 +333,10 @@
             </div>
 
             <div class="col-md-6">
-              <label for="relatorioCirurgico" class="form-label small fw-semibold text-secondary">
+              <label
+                for="relatorioCirurgico"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Relatório Cirúrgico e Anestésico (Opcional)
               </label>
               <textarea
@@ -280,8 +353,14 @@
       </div>
 
       <!-- BOTÕES DE SUBMISSÃO -->
-      <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3 mb-4 d-flex flex-row justify-content-end gap-2">
-        <button type="button" class="btn btn-outline-secondary px-3" (click)="voltarParaListagem()">
+      <div
+        class="card border border-light-subtle rounded-2 shadow-sm bg-white p-3 mb-4 d-flex flex-row justify-content-end gap-2"
+      >
+        <button
+          type="button"
+          class="btn btn-outline-secondary px-3"
+          (click)="voltarParaListagem()"
+        >
           Cancelar
         </button>
         <button
@@ -290,11 +369,17 @@
           [disabled]="salvando()"
         >
           @if (salvando()) {
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
             <span>Salvando...</span>
           } @else {
             <i class="bi bi-check-lg"></i>
-            <span>{{ modoEdicao() ? "Salvar Alterações" : "Cadastrar Caso Clínico" }}</span>
+            <span>{{
+              modoEdicao() ? "Salvar Alterações" : "Cadastrar Caso Clínico"
+            }}</span>
           }
         </button>
       </div>

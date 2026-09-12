@@ -10,12 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(
-    name = "submissoes_atividades",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uq_submissao_aluno_atividade", columnNames = {"atividade_id", "aluno_id"})
-    }
-)
+@Table(name = "submissoes_atividades", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_submissao_aluno_atividade", columnNames = { "atividade_id", "aluno_id" })
+})
 public class SubmissaoAtividade {
 
     @Id
@@ -69,7 +66,8 @@ public class SubmissaoAtividade {
     @OneToOne(mappedBy = "submissao", cascade = CascadeType.ALL, orphanRemoval = true)
     private SubmissaoPdca pdca;
 
-    public SubmissaoAtividade() {}
+    public SubmissaoAtividade() {
+    }
 
     @PrePersist
     public void prePersist() {

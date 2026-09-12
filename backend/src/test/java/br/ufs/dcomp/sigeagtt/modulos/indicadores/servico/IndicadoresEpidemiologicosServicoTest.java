@@ -123,7 +123,8 @@ class IndicadoresEpidemiologicosServicoTest {
         return sub;
     }
 
-    private SubmissaoGatilho criarAchado(Long id, SubmissaoAtividade sub, GatilhoGtt gat, boolean confirmouDano, GravidadeNccMerp gravidade) {
+    private SubmissaoGatilho criarAchado(Long id, SubmissaoAtividade sub, GatilhoGtt gat, boolean confirmouDano,
+            GravidadeNccMerp gravidade) {
         SubmissaoGatilho a = new SubmissaoGatilho();
         a.setId(id);
         a.setSubmissao(sub);
@@ -171,7 +172,8 @@ class IndicadoresEpidemiologicosServicoTest {
         SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
         when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1));
 
-        Map<String, Object> resumo = servico.obterQuadroResumo(null, null, null, null, null, null, null, null, null, null, null, 0, 10);
+        Map<String, Object> resumo = servico.obterQuadroResumo(null, null, null, null, null, null, null, null, null,
+                null, null, 0, 10);
 
         assertNotNull(resumo);
         List<?> conteudo = (List<?>) resumo.get("conteudo");

@@ -35,7 +35,8 @@ public class SubmissaoIshikawa {
     @Column(columnDefinition = "TEXT")
     private String maquina;
 
-    public SubmissaoIshikawa() {}
+    public SubmissaoIshikawa() {
+    }
 
     public Long getId() {
         return id;

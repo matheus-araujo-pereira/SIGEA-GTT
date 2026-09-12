@@ -33,19 +33,25 @@ export class PainelCorrecoesComponent implements OnInit {
         if (!termo) return true;
         return (
           s.alunoNome.toLowerCase().includes(termo) ||
-          (s.alunoMatricula && s.alunoMatricula.toLowerCase().includes(termo)) ||
+          (s.alunoMatricula &&
+            s.alunoMatricula.toLowerCase().includes(termo)) ||
           s.atividadeTitulo.toLowerCase().includes(termo) ||
           s.disciplinaNome.toLowerCase().includes(termo)
         );
       })
-      .sort((a, b) => (b.dataSubmissao || '').localeCompare(a.dataSubmissao || ''));
+      .sort((a, b) =>
+        (b.dataSubmissao || '').localeCompare(a.dataSubmissao || ''),
+      );
   });
 
   readonly totalFiltrados = computed(() => this.pendentesFiltrados().length);
 
   readonly pendentesPaginados = computed<Submissao[]>(() => {
     const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.pendentesFiltrados().slice(inicio, inicio + this.itensPorPagina);
+    return this.pendentesFiltrados().slice(
+      inicio,
+      inicio + this.itensPorPagina,
+    );
   });
 
   ngOnInit(): void {
@@ -60,7 +66,10 @@ export class PainelCorrecoesComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar submissões pendentes: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar submissões pendentes: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });

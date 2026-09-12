@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface SubmissaoGatilhoRepositorio extends JpaRepository<SubmissaoGatilho, Long> {
     List<SubmissaoGatilho> findBySubmissaoId(Long submissaoId);
+
     void deleteBySubmissaoId(Long submissaoId);
 }

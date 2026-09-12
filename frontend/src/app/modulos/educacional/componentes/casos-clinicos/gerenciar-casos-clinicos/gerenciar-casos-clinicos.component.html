@@ -1,10 +1,15 @@
 <div>
   <!-- CABEÇALHO DA LISTAGEM -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Casos Clínicos & Prontuários Simulados</h1>
+      <h1 class="h4 fw-bold text-dark m-0">
+        Casos Clínicos & Prontuários Simulados
+      </h1>
       <span class="text-secondary small">
-        Total cadastrado: {{ totalCasos() }} casos clínicos baseados na metodologia IHI GTT
+        Total cadastrado: {{ totalCasos() }} casos clínicos baseados na
+        metodologia IHI GTT
       </span>
     </div>
     @if (ehDocenteOuAdmin()) {
@@ -21,27 +26,43 @@
 
   <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
-    <div class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+    <div
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
+    >
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-check-circle-fill"></i>
         <span>{{ mensagemSucesso() }}</span>
       </div>
-      <button type="button" class="btn-close btn-sm" (click)="mensagemSucesso.set(null)" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemSucesso.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   @if (mensagemErro()) {
-    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small">
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
+    >
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <span>{{ mensagemErro() }}</span>
       </div>
-      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   <!-- BARRA DE FILTROS E BUSCA -->
-  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3">
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
     <div class="row g-2 align-items-center">
       <div class="col-md-8">
         <div class="input-group input-group-sm">
@@ -56,7 +77,11 @@
             placeholder="Filtrar por título, atendimento, unidade HU ou docente criador..."
           />
           @if (termoBusca()) {
-            <button class="btn btn-outline-secondary" type="button" (click)="atualizarBusca('')">
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="atualizarBusca('')"
+            >
               <i class="bi bi-x"></i>
             </button>
           }
@@ -79,31 +104,53 @@
   </div>
 
   <!-- TABELA DE CASOS CLÍNICOS -->
-  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+  >
     <div class="table-responsive bg-white">
       <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead class="bg-white text-secondary small font-monospace border-bottom border-light-subtle">
+        <thead
+          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+        >
           <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">TÍTULO DO CASO</th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">ATENDIMENTO</th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">UNIDADE HU</th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">PERMANÊNCIA</th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">CRIADOR</th>
-            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">AÇÕES</th>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">
+              TÍTULO DO CASO
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              ATENDIMENTO
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              UNIDADE HU
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              PERMANÊNCIA
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              CRIADOR
+            </th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
+              AÇÕES
+            </th>
           </tr>
         </thead>
         <tbody class="small font-monospace bg-white">
           @for (c of casosPaginados(); track c.id) {
             <tr class="bg-white">
               <td class="py-2 px-3 bg-white">
-                <div class="fw-bold text-dark font-sans-serif">{{ c.titulo }}</div>
-                <div class="text-secondary small font-monospace">Idade: {{ c.idadePaciente }} anos</div>
+                <div class="fw-bold text-dark font-sans-serif">
+                  {{ c.titulo }}
+                </div>
+                <div class="text-secondary small font-monospace">
+                  Idade: {{ c.idadePaciente }} anos
+                </div>
               </td>
               <td class="py-2 px-2 font-monospace text-secondary bg-white">
                 {{ c.numeroAtendimento }}
               </td>
               <td class="py-2 px-2 text-secondary bg-white">
-                <span class="badge bg-light text-dark border">{{ c.unidadeSigla }}</span>
+                <span class="badge bg-light text-dark border">{{
+                  c.unidadeSigla
+                }}</span>
               </td>
               <td class="py-2 px-2 text-secondary bg-white">
                 {{ c.tempoPermanencia }} dia(s)
@@ -165,20 +212,35 @@
 
 <!-- MODAL DE PRONTUÁRIO SIMULADO -->
 @if (casoModal(); as caso) {
-  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+  <div
+    class="modal fade show d-block"
+    tabindex="-1"
+    style="background-color: rgba(0, 0, 0, 0.5)"
+  >
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content rounded-2 shadow">
         <div class="modal-header py-2 px-3 bg-light border-bottom">
           <div>
             <h5 class="modal-title h6 fw-bold text-dark m-0">
               <i class="bi bi-file-earmark-medical text-primary me-2"></i>
-              Prontuário Simulado: {{ caso.numeroAtendimento }} — {{ caso.titulo }}
+              Prontuário Simulado: {{ caso.numeroAtendimento }} —
+              {{ caso.titulo }}
             </h5>
             <span class="text-secondary small">
-              {{ caso.unidadeHospitalarSigla }} | Paciente: {{ caso.idadePaciente }} anos | Internação: {{ caso.dataAdmissao }} a {{ caso.dataAlta }} ({{ caso.tempoPermanenciaDias }} dias)
+              {{ caso.unidadeHospitalarSigla }} | Paciente:
+              {{ caso.idadePaciente }} anos | Internação:
+              {{ caso.dataAdmissao }} a {{ caso.dataAlta }} ({{
+                caso.tempoPermanenciaDias
+              }}
+              dias)
             </span>
           </div>
-          <button type="button" class="btn-close btn-sm" (click)="fecharProntuarioModal()" aria-label="Fechar"></button>
+          <button
+            type="button"
+            class="btn-close btn-sm"
+            (click)="fecharProntuarioModal()"
+            aria-label="Fechar"
+          ></button>
         </div>
 
         <!-- ABAS DO PRONTUÁRIO -->
@@ -217,7 +279,8 @@
                 [class.active]="abaModal() === 'evolucoes'"
                 (click)="abaModal.set('evolucoes')"
               >
-                <i class="bi bi-journal-text me-1"></i>Evoluções Multiprofissionais
+                <i class="bi bi-journal-text me-1"></i>Evoluções
+                Multiprofissionais
               </button>
             </li>
             @if (caso.relatorioCirurgico) {
@@ -236,39 +299,69 @@
 
         <div class="modal-body p-4 bg-light">
           <div class="card border border-light-subtle bg-white p-3 rounded-2">
-            @if (abaModal() === 'sumario') {
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Sumário de Alta e Hipóteses Diagnósticas</h6>
-              <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+            @if (abaModal() === "sumario") {
+              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                Sumário de Alta e Hipóteses Diagnósticas
+              </h6>
+              <div
+                class="text-secondary small font-monospace"
+                style="white-space: pre-wrap; line-height: 1.6"
+              >
                 {{ caso.sumarioAlta }}
               </div>
               @if (caso.objetivosAprendizagem) {
                 <div class="mt-4 pt-3 border-top">
-                  <h6 class="fw-bold text-dark mb-2">Objetivos de Aprendizagem</h6>
-                  <p class="text-muted small mb-0">{{ caso.objetivosAprendizagem }}</p>
+                  <h6 class="fw-bold text-dark mb-2">
+                    Objetivos de Aprendizagem
+                  </h6>
+                  <p class="text-muted small mb-0">
+                    {{ caso.objetivosAprendizagem }}
+                  </p>
                 </div>
               }
             }
-            @if (abaModal() === 'prescricoes') {
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Histórico de Prescrições e Farmacoterapia</h6>
-              <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+            @if (abaModal() === "prescricoes") {
+              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                Histórico de Prescrições e Farmacoterapia
+              </h6>
+              <div
+                class="text-secondary small font-monospace"
+                style="white-space: pre-wrap; line-height: 1.6"
+              >
                 {{ caso.prescricoesMedicas }}
               </div>
             }
-            @if (abaModal() === 'exames') {
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Resultados de Exames Laboratoriais e Imagem</h6>
-              <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+            @if (abaModal() === "exames") {
+              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                Resultados de Exames Laboratoriais e Imagem
+              </h6>
+              <div
+                class="text-secondary small font-monospace"
+                style="white-space: pre-wrap; line-height: 1.6"
+              >
                 {{ caso.examesLaboratoriais }}
               </div>
             }
-            @if (abaModal() === 'evolucoes') {
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Evoluções Multiprofissionais (Médica, Enfermagem, Farmácia, Fisioterapia)</h6>
-              <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+            @if (abaModal() === "evolucoes") {
+              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                Evoluções Multiprofissionais (Médica, Enfermagem, Farmácia,
+                Fisioterapia)
+              </h6>
+              <div
+                class="text-secondary small font-monospace"
+                style="white-space: pre-wrap; line-height: 1.6"
+              >
                 {{ caso.evolucoesMultiprofissionais }}
               </div>
             }
-            @if (abaModal() === 'cirurgico') {
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Descrição do Ato Cirúrgico / Anestésico</h6>
-              <div class="text-secondary small font-monospace" style="white-space: pre-wrap; line-height: 1.6;">
+            @if (abaModal() === "cirurgico") {
+              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                Descrição do Ato Cirúrgico / Anestésico
+              </h6>
+              <div
+                class="text-secondary small font-monospace"
+                style="white-space: pre-wrap; line-height: 1.6"
+              >
                 {{ caso.relatorioCirurgico }}
               </div>
             }
@@ -276,7 +369,11 @@
         </div>
 
         <div class="modal-footer py-2 px-3 bg-light border-top">
-          <button type="button" class="btn btn-secondary btn-sm px-3" (click)="fecharProntuarioModal()">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm px-3"
+            (click)="fecharProntuarioModal()"
+          >
             Fechar Prontuário
           </button>
         </div>

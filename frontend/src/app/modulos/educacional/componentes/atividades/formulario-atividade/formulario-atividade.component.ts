@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EducacionalService } from '../../../servicos/educacional.service';
-import { CasoClinico, SalvarAtividadePayload } from '../../../modelos/educacional.modelos';
+import {
+  CasoClinico,
+  SalvarAtividadePayload,
+} from '../../../modelos/educacional.modelos';
 import { TurmaService } from '../../../../turma/servicos/turma.service';
 import { Turma } from '../../../../turma/modelos/turma.modelos';
 
@@ -30,13 +33,15 @@ export class FormularioAtividadeComponent implements OnInit {
   readonly modoEdicao = computed(() => this.atividadeId() !== null);
 
   readonly tituloPagina = computed(() =>
-    this.modoEdicao() ? 'Editar Atividade de Auditoria' : 'Nova Atividade Educacional'
+    this.modoEdicao()
+      ? 'Editar Atividade de Auditoria'
+      : 'Nova Atividade Educacional',
   );
 
   readonly subtituloPagina = computed(() =>
     this.modoEdicao()
       ? 'Altere prazos, orientações ou caso clínico vinculado a esta turma.'
-      : 'Vincule um caso clínico simulado a uma turma para resolução pelos discentes.'
+      : 'Vincule um caso clínico simulado a uma turma para resolução pelos discentes.',
   );
 
   formulario: SalvarAtividadePayload = {
@@ -45,7 +50,9 @@ export class FormularioAtividadeComponent implements OnInit {
     titulo: '',
     orientacoesPedagogicas: '',
     dataInicio: new Date().toISOString().substring(0, 10),
-    dataFim: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
+    dataFim: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .substring(0, 10),
     tempoLimiteMinutos: 20,
     ativa: true,
   };
@@ -65,7 +72,11 @@ export class FormularioAtividadeComponent implements OnInit {
     this.turmaService.listar().subscribe({
       next: (dados) => {
         this.turmas.set(dados.filter((t) => t.ativa));
-        if (!this.modoEdicao() && dados.length > 0 && this.formulario.turmaId === 0) {
+        if (
+          !this.modoEdicao() &&
+          dados.length > 0 &&
+          this.formulario.turmaId === 0
+        ) {
           this.formulario.turmaId = dados[0].id;
         }
       },
@@ -75,7 +86,11 @@ export class FormularioAtividadeComponent implements OnInit {
     this.educacionalService.listarCasos().subscribe({
       next: (dados) => {
         this.casos.set(dados);
-        if (!this.modoEdicao() && dados.length > 0 && this.formulario.casoClinicoId === 0) {
+        if (
+          !this.modoEdicao() &&
+          dados.length > 0 &&
+          this.formulario.casoClinicoId === 0
+        ) {
           this.formulario.casoClinicoId = dados[0].id;
         }
       },
@@ -100,7 +115,9 @@ export class FormularioAtividadeComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar atividade: ' + (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
@@ -120,7 +137,9 @@ export class FormularioAtividadeComponent implements OnInit {
       return;
     }
     if (this.formulario.tempoLimiteMinutos <= 0) {
-      this.mensagemErro.set('O tempo limite deve ser maior que zero (padrão IHI GTT: 20 min).');
+      this.mensagemErro.set(
+        'O tempo limite deve ser maior que zero (padrão IHI GTT: 20 min).',
+      );
       return;
     }
 
@@ -128,7 +147,10 @@ export class FormularioAtividadeComponent implements OnInit {
     this.mensagemErro.set(null);
 
     const requisicao = this.modoEdicao()
-      ? this.educacionalService.editarAtividade(this.atividadeId()!, this.formulario)
+      ? this.educacionalService.editarAtividade(
+          this.atividadeId()!,
+          this.formulario,
+        )
       : this.educacionalService.salvarAtividade(this.formulario);
 
     requisicao.subscribe({
@@ -137,7 +159,9 @@ export class FormularioAtividadeComponent implements OnInit {
         this.router.navigate(['/atividades']);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao salvar atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao salvar atividade: ' + (err.error?.mensagem || err.message),
+        );
         this.salvando.set(false);
       },
     });

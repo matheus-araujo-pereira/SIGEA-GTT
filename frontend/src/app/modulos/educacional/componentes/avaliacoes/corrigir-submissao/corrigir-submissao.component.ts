@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EducacionalService } from '../../../servicos/educacional.service';
-import { Submissao, AvaliarSubmissaoPayload } from '../../../modelos/educacional.modelos';
+import {
+  Submissao,
+  AvaliarSubmissaoPayload,
+} from '../../../modelos/educacional.modelos';
 
 @Component({
   selector: 'app-corrigir-submissao',
@@ -23,10 +26,14 @@ export class CorrigirSubmissaoComponent implements OnInit {
   readonly mensagemErro = signal<string | null>(null);
 
   // Controle de abas do prontuário
-  readonly abaProntuario = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>('sumario');
+  readonly abaProntuario = signal<
+    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
+  >('sumario');
 
   // Controle de abas da resolução do discente
-  readonly abaResolucao = signal<'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca'>('gatilhos');
+  readonly abaResolucao = signal<
+    'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca'
+  >('gatilhos');
 
   formularioAvaliacao: AvaliarSubmissaoPayload = {
     nota: 10.0,
@@ -45,24 +52,32 @@ export class CorrigirSubmissaoComponent implements OnInit {
     this.educacionalService.buscarSubmissao(id).subscribe({
       next: (dados) => {
         this.submissao.set(dados);
-        this.formularioAvaliacao.nota = dados.nota !== null && dados.nota !== undefined ? dados.nota : 10.0;
+        this.formularioAvaliacao.nota =
+          dados.nota !== null && dados.nota !== undefined ? dados.nota : 10.0;
         this.formularioAvaliacao.parecerDocente = dados.parecerDocente || '';
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar submissão: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar submissão: ' + (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
   }
 
   salvarAvaliacao(): void {
-    if (this.formularioAvaliacao.nota < 0 || this.formularioAvaliacao.nota > 10) {
+    if (
+      this.formularioAvaliacao.nota < 0 ||
+      this.formularioAvaliacao.nota > 10
+    ) {
       this.mensagemErro.set('A nota atribuída deve estar entre 0.0 e 10.0.');
       return;
     }
     if (!this.formularioAvaliacao.parecerDocente.trim()) {
-      this.mensagemErro.set('Por favor, informe um parecer pedagógico formativo para o discente.');
+      this.mensagemErro.set(
+        'Por favor, informe um parecer pedagógico formativo para o discente.',
+      );
       return;
     }
 
@@ -72,17 +87,21 @@ export class CorrigirSubmissaoComponent implements OnInit {
     this.salvando.set(true);
     this.mensagemErro.set(null);
 
-    this.educacionalService.avaliarSubmissao(sub.id, this.formularioAvaliacao).subscribe({
-      next: (atualizada) => {
-        this.submissao.set(atualizada);
-        this.mensagemSucesso.set('Avaliação e nota salvas com sucesso!');
-        this.salvando.set(false);
-      },
-      error: (err) => {
-        this.mensagemErro.set('Erro ao salvar avaliação: ' + (err.error?.mensagem || err.message));
-        this.salvando.set(false);
-      },
-    });
+    this.educacionalService
+      .avaliarSubmissao(sub.id, this.formularioAvaliacao)
+      .subscribe({
+        next: (atualizada) => {
+          this.submissao.set(atualizada);
+          this.mensagemSucesso.set('Avaliação e nota salvas com sucesso!');
+          this.salvando.set(false);
+        },
+        error: (err) => {
+          this.mensagemErro.set(
+            'Erro ao salvar avaliação: ' + (err.error?.mensagem || err.message),
+          );
+          this.salvando.set(false);
+        },
+      });
   }
 
   formatarTempo(segundos?: number): string {

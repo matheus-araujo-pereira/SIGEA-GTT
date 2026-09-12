@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EducacionalService } from '../../../servicos/educacional.service';
-import { PainelAtividade, AlunoProgresso, CasoClinico } from '../../../modelos/educacional.modelos';
+import {
+  PainelAtividade,
+  AlunoProgresso,
+  CasoClinico,
+} from '../../../modelos/educacional.modelos';
 import { PaginacaoComponent } from '../../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 @Component({
@@ -29,7 +33,9 @@ export class PainelAtividadeComponent implements OnInit {
 
   // Modal de visualização do prontuário
   readonly casoModal = signal<CasoClinico | null>(null);
-  readonly abaModal = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>('sumario');
+  readonly abaModal = signal<
+    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
+  >('sumario');
 
   readonly alunosFiltrados = computed<AlunoProgresso[]>(() => {
     const dados = this.painel()?.alunos || [];
@@ -78,7 +84,10 @@ export class PainelAtividadeComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar painel da atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar painel da atividade: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });

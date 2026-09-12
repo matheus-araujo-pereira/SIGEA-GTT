@@ -29,13 +29,15 @@ export class FormularioCasoClinicoComponent implements OnInit {
   readonly modoEdicao = computed(() => this.casoId() !== null);
 
   readonly tituloPagina = computed(() =>
-    this.modoEdicao() ? 'Editar Caso Clínico & Prontuário' : 'Novo Caso Clínico Simulado'
+    this.modoEdicao()
+      ? 'Editar Caso Clínico & Prontuário'
+      : 'Novo Caso Clínico Simulado',
   );
 
   readonly subtituloPagina = computed(() =>
     this.modoEdicao()
       ? 'Atualize os dados e sessões do prontuário simulado para auditoria GTT.'
-      : 'Cadastre um novo caso clínico completo para composição de atividades educacionais.'
+      : 'Cadastre um novo caso clínico completo para composição de atividades educacionais.',
   );
 
   formulario: SalvarCasoClinicoPayload = {
@@ -70,7 +72,11 @@ export class FormularioCasoClinicoComponent implements OnInit {
     this.unidadeService.listar().subscribe({
       next: (dados) => {
         this.unidades.set(dados);
-        if (!this.modoEdicao() && dados.length > 0 && this.formulario.unidadeHospitalarId === 0) {
+        if (
+          !this.modoEdicao() &&
+          dados.length > 0 &&
+          this.formulario.unidadeHospitalarId === 0
+        ) {
           this.formulario.unidadeHospitalarId = dados[0].id;
         }
       },
@@ -101,7 +107,10 @@ export class FormularioCasoClinicoComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar caso clínico: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar caso clínico: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
@@ -129,11 +138,15 @@ export class FormularioCasoClinicoComponent implements OnInit {
       return;
     }
     if (!this.formulario.numeroAtendimento.trim()) {
-      this.mensagemErro.set('O número de atendimento/prontuário é obrigatório.');
+      this.mensagemErro.set(
+        'O número de atendimento/prontuário é obrigatório.',
+      );
       return;
     }
     if (!this.formulario.sumarioAlta.trim()) {
-      this.mensagemErro.set('O sumário de alta / histórico do paciente é obrigatório.');
+      this.mensagemErro.set(
+        'O sumário de alta / histórico do paciente é obrigatório.',
+      );
       return;
     }
 
@@ -150,7 +163,10 @@ export class FormularioCasoClinicoComponent implements OnInit {
         this.router.navigate(['/casos-clinicos']);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao salvar caso clínico: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao salvar caso clínico: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.salvando.set(false);
       },
     });

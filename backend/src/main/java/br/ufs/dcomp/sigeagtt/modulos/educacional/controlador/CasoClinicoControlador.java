@@ -38,9 +38,8 @@ public class CasoClinicoControlador {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<CasoClinicoDTO> criar(
-        @Valid @RequestBody SalvarCasoClinicoDTO dto,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @Valid @RequestBody SalvarCasoClinicoDTO dto,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         CasoClinicoDTO criado = casoServico.salvar(dto, usuarioLogado);
         return ResponseEntity.status(HttpStatus.CREATED).body(criado);
     }
@@ -48,19 +47,17 @@ public class CasoClinicoControlador {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<CasoClinicoDTO> atualizar(
-        @PathVariable Long id,
-        @Valid @RequestBody SalvarCasoClinicoDTO dto,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @PathVariable Long id,
+            @Valid @RequestBody SalvarCasoClinicoDTO dto,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(casoServico.atualizar(id, dto, usuarioLogado));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<Void> excluir(
-        @PathVariable Long id,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         casoServico.excluir(id, usuarioLogado);
         return ResponseEntity.noContent().build();
     }

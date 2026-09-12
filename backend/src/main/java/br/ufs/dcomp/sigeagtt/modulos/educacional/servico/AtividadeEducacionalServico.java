@@ -34,12 +34,11 @@ public class AtividadeEducacionalServico {
     private final SubmissaoAtividadeRepositorio submissaoRepositorio;
 
     public AtividadeEducacionalServico(
-        AtividadeEducacionalRepositorio atividadeRepositorio,
-        TurmaRepositorio turmaRepositorio,
-        TurmaAlunoRepositorio turmaAlunoRepositorio,
-        CasoClinicoRepositorio casoRepositorio,
-        SubmissaoAtividadeRepositorio submissaoRepositorio
-    ) {
+            AtividadeEducacionalRepositorio atividadeRepositorio,
+            TurmaRepositorio turmaRepositorio,
+            TurmaAlunoRepositorio turmaAlunoRepositorio,
+            CasoClinicoRepositorio casoRepositorio,
+            SubmissaoAtividadeRepositorio submissaoRepositorio) {
         this.atividadeRepositorio = atividadeRepositorio;
         this.turmaRepositorio = turmaRepositorio;
         this.turmaAlunoRepositorio = turmaAlunoRepositorio;
@@ -59,7 +58,8 @@ public class AtividadeEducacionalServico {
         return atividades.stream().map(a -> {
             int totalAlunos = (int) turmaAlunoRepositorio.countByTurmaId(a.getTurma().getId());
             List<SubmissaoAtividade> subs = submissaoRepositorio.findByAtividadeId(a.getId());
-            int totalSubmissoes = (int) subs.stream().filter(s -> s.getStatus() != StatusSubmissao.EM_ANDAMENTO).count();
+            int totalSubmissoes = (int) subs.stream().filter(s -> s.getStatus() != StatusSubmissao.EM_ANDAMENTO)
+                    .count();
             int totalAvaliadas = (int) subs.stream().filter(s -> s.getStatus() == StatusSubmissao.AVALIADA).count();
             return AtividadeEducacionalDTO.deEntidade(a, totalAlunos, totalSubmissoes, totalAvaliadas);
         }).toList();
@@ -68,7 +68,8 @@ public class AtividadeEducacionalServico {
     @Transactional(readOnly = true)
     public AtividadeEducacionalDTO buscarPorId(Long id) {
         AtividadeEducacional a = atividadeRepositorio.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Atividade educacional não encontrada (ID: " + id + ")"));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Atividade educacional não encontrada (ID: " + id + ")"));
         int totalAlunos = (int) turmaAlunoRepositorio.countByTurmaId(a.getTurma().getId());
         List<SubmissaoAtividade> subs = submissaoRepositorio.findByAtividadeId(a.getId());
         int totalSubmissoes = (int) subs.stream().filter(s -> s.getStatus() != StatusSubmissao.EM_ANDAMENTO).count();
@@ -79,17 +80,17 @@ public class AtividadeEducacionalServico {
     @Transactional(readOnly = true)
     public PainelAtividadeDTO buscarPainelAtividade(Long atividadeId, Usuario usuarioLogado) {
         AtividadeEducacional a = atividadeRepositorio.findById(atividadeId)
-            .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
 
         if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !a.getTurma().getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
+                !a.getTurma().getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para gerenciar esta atividade.");
         }
 
         List<TurmaAluno> matriculas = turmaAlunoRepositorio.findByTurmaId(a.getTurma().getId());
         List<SubmissaoAtividade> subs = submissaoRepositorio.findByAtividadeId(a.getId());
         Map<Long, SubmissaoAtividade> mapaSubs = subs.stream()
-            .collect(Collectors.toMap(s -> s.getAluno().getId(), s -> s, (s1, s2) -> s1));
+                .collect(Collectors.toMap(s -> s.getAluno().getId(), s -> s, (s1, s2) -> s1));
 
         List<AlunoProgressoDTO> alunos = new ArrayList<>();
         int totalSubmissoes = 0;
@@ -103,9 +104,8 @@ public class AtividadeEducacionalServico {
 
             if (sub == null) {
                 alunos.add(new AlunoProgressoDTO(
-                    aluno.getId(), aluno.getNomeCompleto(), aluno.getEmail(), aluno.getMatriculaSigaa(),
-                    null, null, null, null, null, null, null
-                ));
+                        aluno.getId(), aluno.getNomeCompleto(), aluno.getEmail(), aluno.getMatriculaSigaa(),
+                        null, null, null, null, null, null, null));
             } else {
                 if (sub.getStatus() == StatusSubmissao.SUBMETIDA) {
                     totalSubmissoes++;
@@ -119,44 +119,43 @@ public class AtividadeEducacionalServico {
                 }
 
                 alunos.add(new AlunoProgressoDTO(
-                    aluno.getId(), aluno.getNomeCompleto(), aluno.getEmail(), aluno.getMatriculaSigaa(),
-                    sub.getId(), sub.getStatus(), sub.getTempoGastoSegundos(), sub.getDataSubmissao(),
-                    sub.getNota(), sub.getParecerDocente(), sub.getDataAvaliacao()
-                ));
+                        aluno.getId(), aluno.getNomeCompleto(), aluno.getEmail(), aluno.getMatriculaSigaa(),
+                        sub.getId(), sub.getStatus(), sub.getTempoGastoSegundos(), sub.getDataSubmissao(),
+                        sub.getNota(), sub.getParecerDocente(), sub.getDataAvaliacao()));
             }
         }
 
         BigDecimal mediaNotas = totalAvaliadas > 0
-            ? somaNotas.divide(BigDecimal.valueOf(totalAvaliadas), 2, RoundingMode.HALF_UP)
-            : null;
+                ? somaNotas.divide(BigDecimal.valueOf(totalAvaliadas), 2, RoundingMode.HALF_UP)
+                : null;
 
-        AtividadeEducacionalDTO atvDTO = AtividadeEducacionalDTO.deEntidade(a, matriculas.size(), totalSubmissoes, totalAvaliadas);
+        AtividadeEducacionalDTO atvDTO = AtividadeEducacionalDTO.deEntidade(a, matriculas.size(), totalSubmissoes,
+                totalAvaliadas);
         CasoClinicoDTO casoDTO = CasoClinicoDTO.deEntidade(a.getCasoClinico());
 
         return new PainelAtividadeDTO(
-            atvDTO,
-            casoDTO,
-            matriculas.size(),
-            totalSubmissoes,
-            totalPendentesCorrecao,
-            totalAvaliadas,
-            mediaNotas,
-            alunos
-        );
+                atvDTO,
+                casoDTO,
+                matriculas.size(),
+                totalSubmissoes,
+                totalPendentesCorrecao,
+                totalAvaliadas,
+                mediaNotas,
+                alunos);
     }
 
     @Transactional
     public AtividadeEducacionalDTO salvar(SalvarAtividadeDTO dto, Usuario professorLogado) {
         Turma turma = turmaRepositorio.findById(dto.turmaId())
-            .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
 
         if (professorLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !turma.getProfessorResponsavel().getId().equals(professorLogado.getId())) {
+                !turma.getProfessorResponsavel().getId().equals(professorLogado.getId())) {
             throw new IllegalArgumentException("Você só pode criar atividades para as suas turmas.");
         }
 
         CasoClinico caso = casoRepositorio.findById(dto.casoClinicoId())
-            .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
 
         AtividadeEducacional a = new AtividadeEducacional();
         a.setTurma(turma);
@@ -176,17 +175,17 @@ public class AtividadeEducacionalServico {
     @Transactional
     public AtividadeEducacionalDTO atualizar(Long id, SalvarAtividadeDTO dto, Usuario usuarioLogado) {
         AtividadeEducacional a = atividadeRepositorio.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Atividade educacional não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Atividade educacional não encontrada"));
 
         if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !a.getTurma().getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
+                !a.getTurma().getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para editar esta atividade.");
         }
 
         Turma turma = turmaRepositorio.findById(dto.turmaId())
-            .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
         CasoClinico caso = casoRepositorio.findById(dto.casoClinicoId())
-            .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
 
         a.setTurma(turma);
         a.setCasoClinico(caso);
@@ -210,10 +209,10 @@ public class AtividadeEducacionalServico {
     @Transactional
     public void excluir(Long id, Usuario usuarioLogado) {
         AtividadeEducacional a = atividadeRepositorio.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Atividade educacional não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Atividade educacional não encontrada"));
 
         if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !a.getTurma().getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
+                !a.getTurma().getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para excluir esta atividade.");
         }
 

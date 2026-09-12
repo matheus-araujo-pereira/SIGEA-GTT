@@ -1,6 +1,8 @@
 <div>
   <!-- CABEÇALHO DO FORMULÁRIO -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
       <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
       <span class="text-secondary small">{{ subtituloPagina() }}</span>
@@ -17,28 +19,44 @@
 
   <!-- FEEDBACKS -->
   @if (mensagemErro()) {
-    <div class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small">
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
+    >
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <span>{{ mensagemErro() }}</span>
       </div>
-      <button type="button" class="btn-close btn-sm" (click)="mensagemErro.set(null)" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   <!-- ESTADO DE CARREGAMENTO -->
   @if (carregando()) {
-    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Carregando...</span>
       </div>
-      <p class="text-secondary small mt-2 mb-0">Carregando dados da atividade...</p>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando dados da atividade...
+      </p>
     </div>
   } @else {
-    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden">
-      <div class="card-header bg-white border-bottom border-light-subtle py-3 px-4">
+    <div
+      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+    >
+      <div
+        class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
+      >
         <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-journal-plus me-1"></i> Configurações da Atividade Prática
+          <i class="bi bi-journal-plus me-1"></i> Configurações da Atividade
+          Prática
         </span>
       </div>
 
@@ -47,7 +65,10 @@
           <div class="row g-3">
             <!-- TÍTULO DA ATIVIDADE -->
             <div class="col-12">
-              <label for="titulo" class="form-label small fw-semibold text-secondary">
+              <label
+                for="titulo"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Título da Atividade <span class="text-danger">*</span>
               </label>
               <input
@@ -63,7 +84,10 @@
 
             <!-- TURMA -->
             <div class="col-md-6">
-              <label for="turmaId" class="form-label small fw-semibold text-secondary">
+              <label
+                for="turmaId"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Turma Acadêmica <span class="text-danger">*</span>
               </label>
               <select
@@ -76,7 +100,9 @@
                 <option [ngValue]="0" disabled>Selecione a turma...</option>
                 @for (t of turmas(); track t.id) {
                   <option [ngValue]="t.id">
-                    {{ t.codigoDisciplina }} - {{ t.periodoLetivo }} ({{ t.nomeDisciplina || 'Disciplina' }})
+                    {{ t.codigoDisciplina }} - {{ t.periodoLetivo }} ({{
+                      t.nomeDisciplina || "Disciplina"
+                    }})
                   </option>
                 }
               </select>
@@ -84,7 +110,10 @@
 
             <!-- CASO CLÍNICO -->
             <div class="col-md-6">
-              <label for="casoClinicoId" class="form-label small fw-semibold text-secondary">
+              <label
+                for="casoClinicoId"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Caso Clínico Simulado <span class="text-danger">*</span>
               </label>
               <select
@@ -94,10 +123,14 @@
                 name="casoClinicoId"
                 required
               >
-                <option [ngValue]="0" disabled>Selecione o caso clínico...</option>
+                <option [ngValue]="0" disabled>
+                  Selecione o caso clínico...
+                </option>
                 @for (c of casos(); track c.id) {
                   <option [ngValue]="c.id">
-                    {{ c.numeroAtendimento }} — {{ c.titulo }} ({{ c.unidadeHospitalarSigla }})
+                    {{ c.numeroAtendimento }} — {{ c.titulo }} ({{
+                      c.unidadeHospitalarSigla
+                    }})
                   </option>
                 }
               </select>
@@ -105,7 +138,10 @@
 
             <!-- PRAZOS -->
             <div class="col-md-4">
-              <label for="dataInicio" class="form-label small fw-semibold text-secondary">
+              <label
+                for="dataInicio"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Data de Abertura <span class="text-danger">*</span>
               </label>
               <input
@@ -119,7 +155,10 @@
             </div>
 
             <div class="col-md-4">
-              <label for="dataFim" class="form-label small fw-semibold text-secondary">
+              <label
+                for="dataFim"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Prazo Limite para Envio <span class="text-danger">*</span>
               </label>
               <input
@@ -134,8 +173,12 @@
 
             <!-- TEMPO LIMITE (PADRÃO IHI GTT: 20 MIN) -->
             <div class="col-md-4">
-              <label for="tempoLimiteMinutos" class="form-label small fw-semibold text-secondary">
-                Tempo Limite Cronometrado (minutos) <span class="text-danger">*</span>
+              <label
+                for="tempoLimiteMinutos"
+                class="form-label small fw-semibold text-secondary"
+              >
+                Tempo Limite Cronometrado (minutos)
+                <span class="text-danger">*</span>
               </label>
               <div class="input-group input-group-sm">
                 <input
@@ -148,13 +191,18 @@
                   min="1"
                   max="180"
                 />
-                <span class="input-group-text bg-light text-secondary">min (IHI GTT: 20)</span>
+                <span class="input-group-text bg-light text-secondary"
+                  >min (IHI GTT: 20)</span
+                >
               </div>
             </div>
 
             <!-- ORIENTAÇÕES PEDAGÓGICAS -->
             <div class="col-12">
-              <label for="orientacoesPedagogicas" class="form-label small fw-semibold text-secondary">
+              <label
+                for="orientacoesPedagogicas"
+                class="form-label small fw-semibold text-secondary"
+              >
                 Orientações Pedagógicas para os Alunos
               </label>
               <textarea
@@ -178,7 +226,10 @@
                   [(ngModel)]="formulario.ativa"
                   name="ativa"
                 />
-                <label class="form-check-label small fw-semibold text-dark" for="ativa">
+                <label
+                  class="form-check-label small fw-semibold text-dark"
+                  for="ativa"
+                >
                   Atividade Ativa (visível para os alunos realizarem)
                 </label>
               </div>
@@ -186,8 +237,14 @@
           </div>
 
           <!-- BOTÕES -->
-          <div class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-outline-secondary px-3" (click)="voltarParaListagem()">
+          <div
+            class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+          >
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-3"
+              (click)="voltarParaListagem()"
+            >
               Cancelar
             </button>
             <button
@@ -196,11 +253,17 @@
               [disabled]="salvando()"
             >
               @if (salvando()) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 <span>Salvando...</span>
               } @else {
                 <i class="bi bi-check-lg"></i>
-                <span>{{ modoEdicao() ? "Salvar Alterações" : "Criar Atividade" }}</span>
+                <span>{{
+                  modoEdicao() ? "Salvar Alterações" : "Criar Atividade"
+                }}</span>
               }
             </button>
           </div>

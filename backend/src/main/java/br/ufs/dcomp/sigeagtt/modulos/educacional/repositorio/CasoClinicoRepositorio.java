@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface CasoClinicoRepositorio extends JpaRepository<CasoClinico, Long> {
     List<CasoClinico> findByProfessorCriadorIdOrderByCriadoEmDesc(Long professorCriadorId);
+
     List<CasoClinico> findAllByOrderByCriadoEmDesc();
 }

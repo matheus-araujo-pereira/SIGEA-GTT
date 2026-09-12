@@ -101,7 +101,10 @@ export class GerenciarAtividadesComponent implements OnInit {
 
   readonly atividadesPaginadas = computed<AtividadeLinha[]>(() => {
     const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.atividadesFiltradas().slice(inicio, inicio + this.itensPorPagina);
+    return this.atividadesFiltradas().slice(
+      inicio,
+      inicio + this.itensPorPagina,
+    );
   });
 
   ngOnInit(): void {
@@ -120,7 +123,9 @@ export class GerenciarAtividadesComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao listar atividades: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao listar atividades: ' + (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
@@ -145,17 +150,21 @@ export class GerenciarAtividadesComponent implements OnInit {
 
   excluir(a: AtividadeEducacional): void {
     const conf = confirm(
-      `Confirma a exclusão da atividade "${a.titulo}"? Todas as resoluções e notas associadas serão excluídas.`
+      `Confirma a exclusão da atividade "${a.titulo}"? Todas as resoluções e notas associadas serão excluídas.`,
     );
     if (!conf) return;
 
     this.educacionalService.excluirAtividade(a.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(`Atividade "${a.titulo}" excluída com sucesso.`);
+        this.mensagemSucesso.set(
+          `Atividade "${a.titulo}" excluída com sucesso.`,
+        );
         this.carregarDados();
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao excluir atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao excluir atividade: ' + (err.error?.mensagem || err.message),
+        );
       },
     });
   }

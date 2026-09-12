@@ -39,18 +39,16 @@ public class AtividadeEducacionalControlador {
     @GetMapping("/{id}/painel")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<PainelAtividadeDTO> buscarPainel(
-        @PathVariable Long id,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(atividadeServico.buscarPainelAtividade(id, usuarioLogado));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<AtividadeEducacionalDTO> criar(
-        @Valid @RequestBody SalvarAtividadeDTO dto,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @Valid @RequestBody SalvarAtividadeDTO dto,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         AtividadeEducacionalDTO criada = atividadeServico.salvar(dto, usuarioLogado);
         return ResponseEntity.status(HttpStatus.CREATED).body(criada);
     }
@@ -58,19 +56,17 @@ public class AtividadeEducacionalControlador {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<AtividadeEducacionalDTO> atualizar(
-        @PathVariable Long id,
-        @Valid @RequestBody SalvarAtividadeDTO dto,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @PathVariable Long id,
+            @Valid @RequestBody SalvarAtividadeDTO dto,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(atividadeServico.atualizar(id, dto, usuarioLogado));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<Void> excluir(
-        @PathVariable Long id,
-        @AuthenticationPrincipal Usuario usuarioLogado
-    ) {
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         atividadeServico.excluir(id, usuarioLogado);
         return ResponseEntity.noContent().build();
     }

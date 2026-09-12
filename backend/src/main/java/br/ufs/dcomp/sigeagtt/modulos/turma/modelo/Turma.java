@@ -57,7 +57,9 @@ public class Turma {
 
     @PrePersist
     protected void aoCriar() {
-        if (this.criadaEm == null) this.criadaEm = LocalDateTime.now();
-        if (this.ativa == null) this.ativa = true;
+        if (this.criadaEm == null)
+            this.criadaEm = LocalDateTime.now();
+        if (this.ativa == null)
+            this.ativa = true;
     }
 }

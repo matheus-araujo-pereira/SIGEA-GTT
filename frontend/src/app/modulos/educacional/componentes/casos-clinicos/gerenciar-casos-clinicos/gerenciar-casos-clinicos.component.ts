@@ -46,7 +46,9 @@ export class GerenciarCasosClinicosComponent implements OnInit {
 
   // Modal de visualização rápida do prontuário
   readonly casoModal = signal<CasoClinico | null>(null);
-  readonly abaModal = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>('sumario');
+  readonly abaModal = signal<
+    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
+  >('sumario');
 
   readonly totalCasos = computed(() => this.casos().length);
   readonly ehDocenteOuAdmin = computed(() => {
@@ -101,7 +103,10 @@ export class GerenciarCasosClinicosComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao listar casos clínicos: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao listar casos clínicos: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
@@ -131,17 +136,22 @@ export class GerenciarCasosClinicosComponent implements OnInit {
 
   excluir(c: CasoClinico): void {
     const conf = confirm(
-      `Confirma a exclusão do caso clínico "${c.titulo}"? Todas as atividades vinculadas a este caso podem ser impactadas.`
+      `Confirma a exclusão do caso clínico "${c.titulo}"? Todas as atividades vinculadas a este caso podem ser impactadas.`,
     );
     if (!conf) return;
 
     this.educacionalService.excluirCaso(c.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(`Caso clínico "${c.titulo}" excluído com sucesso.`);
+        this.mensagemSucesso.set(
+          `Caso clínico "${c.titulo}" excluído com sucesso.`,
+        );
         this.carregarDados();
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao excluir caso clínico: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao excluir caso clínico: ' +
+            (err.error?.mensagem || err.message),
+        );
       },
     });
   }

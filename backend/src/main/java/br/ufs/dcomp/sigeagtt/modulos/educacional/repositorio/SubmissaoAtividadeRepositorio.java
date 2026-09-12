@@ -19,7 +19,8 @@ public interface SubmissaoAtividadeRepositorio extends JpaRepository<SubmissaoAt
     List<SubmissaoAtividade> findByAlunoIdOrderByDataInicioDesc(Long alunoId);
 
     @Query("SELECT s FROM SubmissaoAtividade s WHERE s.atividade.turma.professorResponsavel.id = :professorId AND s.status = :status ORDER BY s.dataSubmissao ASC")
-    List<SubmissaoAtividade> findByProfessorAndStatus(@Param("professorId") Long professorId, @Param("status") StatusSubmissao status);
+    List<SubmissaoAtividade> findByProfessorAndStatus(@Param("professorId") Long professorId,
+            @Param("status") StatusSubmissao status);
 
     @Query("SELECT s FROM SubmissaoAtividade s WHERE s.atividade.turma.professorResponsavel.id = :professorId ORDER BY s.dataSubmissao DESC")
     List<SubmissaoAtividade> findByProfessor(@Param("professorId") Long professorId);

@@ -101,19 +101,20 @@ class SubmissaoAtividadeServicoTest {
     @DisplayName("Deve avaliar submissao com sucesso quando o professor responsavel submeter nota e parecer")
     void deveAvaliarSubmissaoComSucesso() {
         when(submissaoRepositorio.findById(400L)).thenReturn(Optional.of(submissao));
-        when(submissaoRepositorio.save(any(SubmissaoAtividade.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(submissaoRepositorio.save(any(SubmissaoAtividade.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         AvaliarSubmissaoDTO dto = new AvaliarSubmissaoDTO(
-            new BigDecimal("9.50"),
-            "Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M."
-        );
+                new BigDecimal("9.50"),
+                "Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.");
 
         SubmissaoDTO resultado = servico.avaliar(400L, dto, professor);
 
         assertNotNull(resultado);
         assertEquals(StatusSubmissao.AVALIADA, resultado.status());
         assertEquals(new BigDecimal("9.50"), resultado.nota());
-        assertEquals("Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.", resultado.parecerDocente());
+        assertEquals("Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.",
+                resultado.parecerDocente());
         assertEquals("Prof. Ana Waleska", resultado.professorCorretorNome());
         verify(submissaoRepositorio, times(1)).save(any(SubmissaoAtividade.class));
     }

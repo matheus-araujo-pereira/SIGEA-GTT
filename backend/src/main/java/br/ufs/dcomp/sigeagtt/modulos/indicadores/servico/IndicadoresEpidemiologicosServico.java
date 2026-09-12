@@ -23,9 +23,8 @@ public class IndicadoresEpidemiologicosServico {
     private final SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio;
 
     public IndicadoresEpidemiologicosServico(
-        SubmissaoAtividadeRepositorio submissaoRepositorio,
-        SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio
-    ) {
+            SubmissaoAtividadeRepositorio submissaoRepositorio,
+            SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio) {
         this.submissaoRepositorio = submissaoRepositorio;
         this.gatilhoAchadoRepositorio = gatilhoAchadoRepositorio;
     }
@@ -347,7 +346,8 @@ public class IndicadoresEpidemiologicosServico {
         resumoGeral.put("taxaDanosPorMilDias",
                 totalDiasGeral == 0 ? 0.0 : Math.round((double) totalEventosGeral / totalDiasGeral * 100000.0) / 100.0);
         resumoGeral.put("frequenciaPorCemAdmissoes",
-                submissoes.isEmpty() ? 0.0 : Math.round((double) totalEventosGeral / submissoes.size() * 10000.0) / 100.0);
+                submissoes.isEmpty() ? 0.0
+                        : Math.round((double) totalEventosGeral / submissoes.size() * 10000.0) / 100.0);
         resumoGeral.put("prevalenciaPercentual",
                 submissoes.isEmpty() ? 0.0
                         : Math.round((double) prontuariosComDanoGeral / submissoes.size() * 10000.0) / 100.0);
@@ -456,13 +456,19 @@ public class IndicadoresEpidemiologicosServico {
             LocalDate dataInicio, LocalDate dataFim) {
         return submissaoRepositorio.findAll().stream()
                 .filter(s -> s.getStatus() == StatusSubmissao.AVALIADA)
-                .filter(s -> turmaId == null || (s.getAtividade() != null && s.getAtividade().getTurma().getId().equals(turmaId)))
+                .filter(s -> turmaId == null
+                        || (s.getAtividade() != null && s.getAtividade().getTurma().getId().equals(turmaId)))
                 .filter(s -> periodoLetivo == null || periodoLetivo.isBlank() || periodoLetivo.equalsIgnoreCase("TODOS")
-                        || (s.getAtividade() != null && s.getAtividade().getTurma().getPeriodoLetivo().equalsIgnoreCase(periodoLetivo)))
-                .filter(s -> cenarioId == null || (s.getAtividade() != null && s.getAtividade().getCasoClinico().getId().equals(cenarioId)))
-                .filter(s -> unidadeId == null || (s.getAtividade() != null && s.getAtividade().getCasoClinico().getUnidadeHospitalar().getId().equals(unidadeId)))
-                .filter(s -> dataInicio == null || (s.getAtividade() != null && !s.getAtividade().getDataInicio().toLocalDate().isBefore(dataInicio)))
-                .filter(s -> dataFim == null || (s.getAtividade() != null && !s.getAtividade().getDataInicio().toLocalDate().isAfter(dataFim)))
+                        || (s.getAtividade() != null
+                                && s.getAtividade().getTurma().getPeriodoLetivo().equalsIgnoreCase(periodoLetivo)))
+                .filter(s -> cenarioId == null
+                        || (s.getAtividade() != null && s.getAtividade().getCasoClinico().getId().equals(cenarioId)))
+                .filter(s -> unidadeId == null || (s.getAtividade() != null
+                        && s.getAtividade().getCasoClinico().getUnidadeHospitalar().getId().equals(unidadeId)))
+                .filter(s -> dataInicio == null || (s.getAtividade() != null
+                        && !s.getAtividade().getDataInicio().toLocalDate().isBefore(dataInicio)))
+                .filter(s -> dataFim == null || (s.getAtividade() != null
+                        && !s.getAtividade().getDataInicio().toLocalDate().isAfter(dataFim)))
                 .toList();
     }
 

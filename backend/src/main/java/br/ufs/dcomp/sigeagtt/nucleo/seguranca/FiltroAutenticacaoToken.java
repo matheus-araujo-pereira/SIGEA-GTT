@@ -40,9 +40,9 @@ public class FiltroAutenticacaoToken extends OncePerRequestFilter {
             TokenServico.DadosToken dados = tokenServico.validarToken(token);
 
             if (dados != null) {
-                Usuario usuario = dados.id() != null 
-                    ? usuarioRepositorio.findById(dados.id()).orElse(null)
-                    : usuarioRepositorio.findByEmail(dados.email()).orElse(null);
+                Usuario usuario = dados.id() != null
+                        ? usuarioRepositorio.findById(dados.id()).orElse(null)
+                        : usuarioRepositorio.findByEmail(dados.email()).orElse(null);
 
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         usuario != null ? usuario : dados.email(),

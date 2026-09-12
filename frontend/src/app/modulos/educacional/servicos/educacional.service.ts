@@ -29,10 +29,15 @@ export class EducacionalService {
   private readonly urlSubmissoes = '/api/submissoes';
 
   // --- CASOS CLÍNICOS ---
-  listarCasos(unidadeId?: number, apenasMeus?: boolean): Observable<CasoClinico[]> {
+  listarCasos(
+    unidadeId?: number,
+    apenasMeus?: boolean,
+  ): Observable<CasoClinico[]> {
     let params = new HttpParams();
-    if (unidadeId) params = params.set('unidadeHospitalarId', unidadeId.toString());
-    if (apenasMeus !== undefined) params = params.set('apenasMeus', apenasMeus.toString());
+    if (unidadeId)
+      params = params.set('unidadeHospitalarId', unidadeId.toString());
+    if (apenasMeus !== undefined)
+      params = params.set('apenasMeus', apenasMeus.toString());
     return this.http.get<CasoClinico[]>(this.urlCasos, { params });
   }
 
@@ -44,7 +49,10 @@ export class EducacionalService {
     return this.http.post<CasoClinico>(this.urlCasos, payload);
   }
 
-  editarCaso(id: number, payload: SalvarCasoClinicoPayload): Observable<CasoClinico> {
+  editarCaso(
+    id: number,
+    payload: SalvarCasoClinicoPayload,
+  ): Observable<CasoClinico> {
     return this.http.put<CasoClinico>(`${this.urlCasos}/${id}`, payload);
   }
 
@@ -56,7 +64,9 @@ export class EducacionalService {
   listarAtividades(turmaId?: number): Observable<AtividadeEducacional[]> {
     let params = new HttpParams();
     if (turmaId) params = params.set('turmaId', turmaId.toString());
-    return this.http.get<AtividadeEducacional[]>(this.urlAtividades, { params });
+    return this.http.get<AtividadeEducacional[]>(this.urlAtividades, {
+      params,
+    });
   }
 
   buscarAtividadePorId(id: number): Observable<AtividadeEducacional> {
@@ -67,12 +77,20 @@ export class EducacionalService {
     return this.http.get<PainelAtividade>(`${this.urlAtividades}/${id}/painel`);
   }
 
-  salvarAtividade(payload: SalvarAtividadePayload): Observable<AtividadeEducacional> {
+  salvarAtividade(
+    payload: SalvarAtividadePayload,
+  ): Observable<AtividadeEducacional> {
     return this.http.post<AtividadeEducacional>(this.urlAtividades, payload);
   }
 
-  editarAtividade(id: number, payload: SalvarAtividadePayload): Observable<AtividadeEducacional> {
-    return this.http.put<AtividadeEducacional>(`${this.urlAtividades}/${id}`, payload);
+  editarAtividade(
+    id: number,
+    payload: SalvarAtividadePayload,
+  ): Observable<AtividadeEducacional> {
+    return this.http.put<AtividadeEducacional>(
+      `${this.urlAtividades}/${id}`,
+      payload,
+    );
   }
 
   excluirAtividade(id: number): Observable<void> {
@@ -85,19 +103,34 @@ export class EducacionalService {
   }
 
   iniciarOuContinuar(atividadeId: number): Observable<Submissao> {
-    return this.http.post<Submissao>(`${this.urlSubmissoes}/iniciar/${atividadeId}`, {});
+    return this.http.post<Submissao>(
+      `${this.urlSubmissoes}/iniciar/${atividadeId}`,
+      {},
+    );
   }
 
   buscarSubmissao(id: number): Observable<Submissao> {
     return this.http.get<Submissao>(`${this.urlSubmissoes}/${id}`);
   }
 
-  salvarProgresso(id: number, payload: SalvarSubmissaoPayload): Observable<Submissao> {
-    return this.http.put<Submissao>(`${this.urlSubmissoes}/${id}/progresso`, payload);
+  salvarProgresso(
+    id: number,
+    payload: SalvarSubmissaoPayload,
+  ): Observable<Submissao> {
+    return this.http.put<Submissao>(
+      `${this.urlSubmissoes}/${id}/progresso`,
+      payload,
+    );
   }
 
-  avaliarSubmissao(id: number, payload: AvaliarSubmissaoPayload): Observable<Submissao> {
-    return this.http.post<Submissao>(`${this.urlSubmissoes}/${id}/avaliar`, payload);
+  avaliarSubmissao(
+    id: number,
+    payload: AvaliarSubmissaoPayload,
+  ): Observable<Submissao> {
+    return this.http.post<Submissao>(
+      `${this.urlSubmissoes}/${id}/avaliar`,
+      payload,
+    );
   }
 
   listarPendentes(): Observable<Submissao[]> {

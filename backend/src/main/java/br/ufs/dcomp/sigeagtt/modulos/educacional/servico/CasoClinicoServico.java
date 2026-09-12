@@ -38,14 +38,14 @@ public class CasoClinicoServico {
     @Transactional(readOnly = true)
     public CasoClinicoDTO buscarPorId(Long id) {
         CasoClinico caso = casoRepositorio.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado (ID: " + id + ")"));
+                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado (ID: " + id + ")"));
         return CasoClinicoDTO.deEntidade(caso);
     }
 
     @Transactional
     public CasoClinicoDTO salvar(SalvarCasoClinicoDTO dto, Usuario professorLogado) {
         UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
-            .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada"));
 
         CasoClinico c = new CasoClinico();
         c.setProfessorCriador(professorLogado);
@@ -59,15 +59,15 @@ public class CasoClinicoServico {
     @Transactional
     public CasoClinicoDTO atualizar(Long id, SalvarCasoClinicoDTO dto, Usuario usuarioLogado) {
         CasoClinico c = casoRepositorio.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado (ID: " + id + ")"));
+                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado (ID: " + id + ")"));
 
         if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
+                !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para editar este caso clínico.");
         }
 
         UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
-            .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada"));
 
         c.setUnidadeHospitalar(unidade);
         aplicarDados(c, dto);
@@ -79,10 +79,10 @@ public class CasoClinicoServico {
     @Transactional
     public void excluir(Long id, Usuario usuarioLogado) {
         CasoClinico c = casoRepositorio.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
 
         if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
+                !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para excluir este caso clínico.");
         }
 

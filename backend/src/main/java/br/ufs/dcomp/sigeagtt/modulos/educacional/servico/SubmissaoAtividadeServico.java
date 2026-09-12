@@ -31,15 +31,14 @@ public class SubmissaoAtividadeServico {
     private final SubmissaoPdcaRepositorio submissaoPdcaRepositorio;
 
     public SubmissaoAtividadeServico(
-        SubmissaoAtividadeRepositorio submissaoRepositorio,
-        AtividadeEducacionalRepositorio atividadeRepositorio,
-        GatilhoGttRepositorio gatilhoRepositorio,
-        CategoriaEventoAdversoRepositorio categoriaRepositorio,
-        SubmissaoGatilhoRepositorio submissaoGatilhoRepositorio,
-        SubmissaoIshikawaRepositorio submissaoIshikawaRepositorio,
-        SubmissaoPlano5w3hRepositorio submissaoPlano5w3hRepositorio,
-        SubmissaoPdcaRepositorio submissaoPdcaRepositorio
-    ) {
+            SubmissaoAtividadeRepositorio submissaoRepositorio,
+            AtividadeEducacionalRepositorio atividadeRepositorio,
+            GatilhoGttRepositorio gatilhoRepositorio,
+            CategoriaEventoAdversoRepositorio categoriaRepositorio,
+            SubmissaoGatilhoRepositorio submissaoGatilhoRepositorio,
+            SubmissaoIshikawaRepositorio submissaoIshikawaRepositorio,
+            SubmissaoPlano5w3hRepositorio submissaoPlano5w3hRepositorio,
+            SubmissaoPdcaRepositorio submissaoPdcaRepositorio) {
         this.submissaoRepositorio = submissaoRepositorio;
         this.atividadeRepositorio = atividadeRepositorio;
         this.gatilhoRepositorio = gatilhoRepositorio;
@@ -53,50 +52,51 @@ public class SubmissaoAtividadeServico {
     @Transactional(readOnly = true)
     public List<MinhaAtividadeItemDTO> listarMinhasAtividades(Usuario alunoLogado) {
         List<AtividadeEducacional> atividades = atividadeRepositorio.findAtividadesParaAluno(alunoLogado.getId());
-        List<SubmissaoAtividade> minhasSubs = submissaoRepositorio.findByAlunoIdOrderByDataInicioDesc(alunoLogado.getId());
+        List<SubmissaoAtividade> minhasSubs = submissaoRepositorio
+                .findByAlunoIdOrderByDataInicioDesc(alunoLogado.getId());
         Map<Long, SubmissaoAtividade> mapaSubs = minhasSubs.stream()
-            .collect(Collectors.toMap(s -> s.getAtividade().getId(), s -> s, (s1, s2) -> s1));
+                .collect(Collectors.toMap(s -> s.getAtividade().getId(), s -> s, (s1, s2) -> s1));
 
         return atividades.stream().map(a -> {
             SubmissaoAtividade sub = mapaSubs.get(a.getId());
             return new MinhaAtividadeItemDTO(
-                a.getId(),
-                a.getTitulo(),
-                a.getTurma().getId(),
-                a.getTurma().getCodigoDisciplina(),
-                a.getTurma().getNomeDisciplina(),
-                a.getTurma().getProfessorResponsavel().getNomeCompleto(),
-                a.getCasoClinico().getId(),
-                a.getCasoClinico().getTitulo(),
-                a.getCasoClinico().getUnidadeHospitalar().getSigla(),
-                a.getDataInicio(),
-                a.getDataFim(),
-                a.getTempoLimiteMinutos(),
-                sub != null ? sub.getId() : null,
-                sub != null ? sub.getStatus() : null,
-                sub != null ? sub.getNota() : null,
-                sub != null ? sub.getTempoGastoSegundos() : 0,
-                sub != null ? sub.getDataSubmissao() : null,
-                sub != null ? sub.getDataAvaliacao() : null
-            );
+                    a.getId(),
+                    a.getTitulo(),
+                    a.getTurma().getId(),
+                    a.getTurma().getCodigoDisciplina(),
+                    a.getTurma().getNomeDisciplina(),
+                    a.getTurma().getProfessorResponsavel().getNomeCompleto(),
+                    a.getCasoClinico().getId(),
+                    a.getCasoClinico().getTitulo(),
+                    a.getCasoClinico().getUnidadeHospitalar().getSigla(),
+                    a.getDataInicio(),
+                    a.getDataFim(),
+                    a.getTempoLimiteMinutos(),
+                    sub != null ? sub.getId() : null,
+                    sub != null ? sub.getStatus() : null,
+                    sub != null ? sub.getNota() : null,
+                    sub != null ? sub.getTempoGastoSegundos() : 0,
+                    sub != null ? sub.getDataSubmissao() : null,
+                    sub != null ? sub.getDataAvaliacao() : null);
         }).toList();
     }
 
     @Transactional
     public SubmissaoDTO iniciarOuContinuar(Long atividadeId, Usuario alunoLogado) {
         AtividadeEducacional atividade = atividadeRepositorio.findById(atividadeId)
-            .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
 
-        SubmissaoAtividade submissao = submissaoRepositorio.findByAtividadeIdAndAlunoId(atividadeId, alunoLogado.getId())
-            .orElseGet(() -> {
-                SubmissaoAtividade nova = new SubmissaoAtividade();
-                nova.setAtividade(atividade);
-                nova.setAluno(alunoLogado);
-                nova.setStatus(StatusSubmissao.EM_ANDAMENTO);
-                nova.setTempoGastoSegundos(0);
-                nova.setDataInicio(LocalDateTime.now());
-                return submissaoRepositorio.save(nova);
-            });
+        SubmissaoAtividade submissao = submissaoRepositorio
+                .findByAtividadeIdAndAlunoId(atividadeId, alunoLogado.getId())
+                .orElseGet(() -> {
+                    SubmissaoAtividade nova = new SubmissaoAtividade();
+                    nova.setAtividade(atividade);
+                    nova.setAluno(alunoLogado);
+                    nova.setStatus(StatusSubmissao.EM_ANDAMENTO);
+                    nova.setTempoGastoSegundos(0);
+                    nova.setDataInicio(LocalDateTime.now());
+                    return submissaoRepositorio.save(nova);
+                });
 
         return converterParaDTO(submissao);
     }
@@ -104,7 +104,7 @@ public class SubmissaoAtividadeServico {
     @Transactional(readOnly = true)
     public SubmissaoDTO buscarSubmissao(Long submissaoId, Usuario usuarioLogado) {
         SubmissaoAtividade sub = submissaoRepositorio.findById(submissaoId)
-            .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada (ID: " + submissaoId + ")"));
+                .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada (ID: " + submissaoId + ")"));
 
         validarAcessoSubmissao(sub, usuarioLogado);
         return converterParaDTO(sub);
@@ -113,14 +113,15 @@ public class SubmissaoAtividadeServico {
     @Transactional
     public SubmissaoDTO salvarProgresso(Long submissaoId, SalvarSubmissaoDTO dto, Usuario alunoLogado) {
         SubmissaoAtividade sub = submissaoRepositorio.findById(submissaoId)
-            .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada"));
 
         if (!sub.getAluno().getId().equals(alunoLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para alterar esta submissão.");
         }
 
         if (sub.getStatus() == StatusSubmissao.AVALIADA) {
-            throw new IllegalArgumentException("Esta atividade já foi avaliada pelo professor e não pode ser modificada.");
+            throw new IllegalArgumentException(
+                    "Esta atividade já foi avaliada pelo professor e não pode ser modificada.");
         }
 
         if (sub.getStatus() == StatusSubmissao.SUBMETIDA && Boolean.FALSE.equals(dto.finalizar())) {
@@ -134,20 +135,25 @@ public class SubmissaoAtividadeServico {
         // Validação estrita se for finalizar
         if (Boolean.TRUE.equals(dto.finalizar())) {
             if (dto.achadosGatilhos() == null || dto.achadosGatilhos().isEmpty()) {
-                throw new IllegalArgumentException("Para finalizar a atividade, é obrigatório apontar os gatilhos investigados no prontuário.");
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório apontar os gatilhos investigados no prontuário.");
             }
-            if (dto.ishikawa() == null || dto.ishikawa().efeitoPrincipal() == null || dto.ishikawa().efeitoPrincipal().trim().isEmpty()) {
-                throw new IllegalArgumentException("Para finalizar a atividade, é obrigatório preencher o Diagrama de Ishikawa (Efeito Principal).");
+            if (dto.ishikawa() == null || dto.ishikawa().efeitoPrincipal() == null
+                    || dto.ishikawa().efeitoPrincipal().trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório preencher o Diagrama de Ishikawa (Efeito Principal).");
             }
             if (dto.planos5w3h() == null || dto.planos5w3h().isEmpty()) {
-                throw new IllegalArgumentException("Para finalizar a atividade, é obrigatório cadastrar pelo menos uma ação no Plano 5W3H.");
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório cadastrar pelo menos uma ação no Plano 5W3H.");
             }
             if (dto.pdca() == null ||
-                dto.pdca().planejar() == null || dto.pdca().planejar().trim().isEmpty() ||
-                dto.pdca().fazer() == null || dto.pdca().fazer().trim().isEmpty() ||
-                dto.pdca().checar() == null || dto.pdca().checar().trim().isEmpty() ||
-                dto.pdca().agir() == null || dto.pdca().agir().trim().isEmpty()) {
-                throw new IllegalArgumentException("Para finalizar a atividade, é obrigatório preencher todas as 4 fases do Ciclo PDCA.");
+                    dto.pdca().planejar() == null || dto.pdca().planejar().trim().isEmpty() ||
+                    dto.pdca().fazer() == null || dto.pdca().fazer().trim().isEmpty() ||
+                    dto.pdca().checar() == null || dto.pdca().checar().trim().isEmpty() ||
+                    dto.pdca().agir() == null || dto.pdca().agir().trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório preencher todas as 4 fases do Ciclo PDCA.");
             }
 
             sub.setStatus(StatusSubmissao.SUBMETIDA);
@@ -161,11 +167,11 @@ public class SubmissaoAtividadeServico {
 
             for (SubmissaoGatilhoDTO aDto : dto.achadosGatilhos()) {
                 GatilhoGtt gat = gatilhoRepositorio.findById(aDto.gatilhoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Gatilho inválido: " + aDto.gatilhoId()));
+                        .orElseThrow(() -> new IllegalArgumentException("Gatilho inválido: " + aDto.gatilhoId()));
 
                 CategoriaEventoAdverso cat = aDto.categoriaEaId() != null
-                    ? categoriaRepositorio.findById(aDto.categoriaEaId()).orElse(null)
-                    : null;
+                        ? categoriaRepositorio.findById(aDto.categoriaEaId()).orElse(null)
+                        : null;
 
                 SubmissaoGatilho g = new SubmissaoGatilho();
                 g.setSubmissao(sub);
@@ -182,11 +188,11 @@ public class SubmissaoAtividadeServico {
         // 2. Salvar Ishikawa
         if (dto.ishikawa() != null) {
             SubmissaoIshikawa ishikawa = submissaoIshikawaRepositorio.findBySubmissaoId(sub.getId())
-                .orElseGet(() -> {
-                    SubmissaoIshikawa novo = new SubmissaoIshikawa();
-                    novo.setSubmissao(sub);
-                    return novo;
-                });
+                    .orElseGet(() -> {
+                        SubmissaoIshikawa novo = new SubmissaoIshikawa();
+                        novo.setSubmissao(sub);
+                        return novo;
+                    });
             ishikawa.setEfeitoPrincipal(dto.ishikawa().efeitoPrincipal());
             ishikawa.setMetodo(dto.ishikawa().metodo());
             ishikawa.setMaoDeObra(dto.ishikawa().maoDeObra());
@@ -221,11 +227,11 @@ public class SubmissaoAtividadeServico {
         // 4. Salvar PDCA
         if (dto.pdca() != null) {
             SubmissaoPdca pdca = submissaoPdcaRepositorio.findBySubmissaoId(sub.getId())
-                .orElseGet(() -> {
-                    SubmissaoPdca novo = new SubmissaoPdca();
-                    novo.setSubmissao(sub);
-                    return novo;
-                });
+                    .orElseGet(() -> {
+                        SubmissaoPdca novo = new SubmissaoPdca();
+                        novo.setSubmissao(sub);
+                        return novo;
+                    });
             pdca.setPlanejar(dto.pdca().planejar());
             pdca.setFazer(dto.pdca().fazer());
             pdca.setChecar(dto.pdca().checar());
@@ -241,10 +247,10 @@ public class SubmissaoAtividadeServico {
     @Transactional
     public SubmissaoDTO avaliar(Long submissaoId, AvaliarSubmissaoDTO dto, Usuario professorLogado) {
         SubmissaoAtividade sub = submissaoRepositorio.findById(submissaoId)
-            .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Submissão não encontrada"));
 
         if (professorLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-            !sub.getAtividade().getTurma().getProfessorResponsavel().getId().equals(professorLogado.getId())) {
+                !sub.getAtividade().getTurma().getProfessorResponsavel().getId().equals(professorLogado.getId())) {
             throw new IllegalArgumentException("Você não tem permissão para avaliar submissões desta turma.");
         }
 
@@ -263,10 +269,11 @@ public class SubmissaoAtividadeServico {
         List<SubmissaoAtividade> pendentes;
         if (professorLogado.getPerfil() == PerfilUsuario.ADMINISTRADOR) {
             pendentes = submissaoRepositorio.findAll().stream()
-                .filter(s -> s.getStatus() == StatusSubmissao.SUBMETIDA)
-                .toList();
+                    .filter(s -> s.getStatus() == StatusSubmissao.SUBMETIDA)
+                    .toList();
         } else {
-            pendentes = submissaoRepositorio.findByProfessorAndStatus(professorLogado.getId(), StatusSubmissao.SUBMETIDA);
+            pendentes = submissaoRepositorio.findByProfessorAndStatus(professorLogado.getId(),
+                    StatusSubmissao.SUBMETIDA);
         }
         return pendentes.stream().map(this::converterParaDTO).toList();
     }
@@ -287,53 +294,53 @@ public class SubmissaoAtividadeServico {
     }
 
     private SubmissaoDTO converterParaDTO(SubmissaoAtividade s) {
-        List<SubmissaoGatilho> gatilhos = s.getAchadosGatilhos() != null ? s.getAchadosGatilhos() : submissaoGatilhoRepositorio.findBySubmissaoId(s.getId());
+        List<SubmissaoGatilho> gatilhos = s.getAchadosGatilhos() != null ? s.getAchadosGatilhos()
+                : submissaoGatilhoRepositorio.findBySubmissaoId(s.getId());
         List<SubmissaoGatilhoDTO> gatilhosDTO = gatilhos.stream().map(g -> new SubmissaoGatilhoDTO(
-            g.getId(),
-            g.getGatilho().getId(),
-            g.getGatilho().getCodigo(),
-            g.getGatilho().getDescricao(),
-            g.getGatilho().getModulo() != null ? g.getGatilho().getModulo().getCodigo() : null,
-            g.getGatilho().getModulo() != null ? g.getGatilho().getModulo().getNome() : null,
-            g.getCategoriaEa() != null ? g.getCategoriaEa().getId() : null,
-            g.getCategoriaEa() != null ? g.getCategoriaEa().getNome() : null,
-            g.getConfirmouDano(),
-            g.getJustificativaDano(),
-            g.getDanoPresenteAdmissao(),
-            g.getGravidade()
-        )).toList();
+                g.getId(),
+                g.getGatilho().getId(),
+                g.getGatilho().getCodigo(),
+                g.getGatilho().getDescricao(),
+                g.getGatilho().getModulo() != null ? g.getGatilho().getModulo().getCodigo() : null,
+                g.getGatilho().getModulo() != null ? g.getGatilho().getModulo().getNome() : null,
+                g.getCategoriaEa() != null ? g.getCategoriaEa().getId() : null,
+                g.getCategoriaEa() != null ? g.getCategoriaEa().getNome() : null,
+                g.getConfirmouDano(),
+                g.getJustificativaDano(),
+                g.getDanoPresenteAdmissao(),
+                g.getGravidade())).toList();
 
-        SubmissaoIshikawa ishikawa = s.getIshikawa() != null ? s.getIshikawa() : submissaoIshikawaRepositorio.findBySubmissaoId(s.getId()).orElse(null);
+        SubmissaoIshikawa ishikawa = s.getIshikawa() != null ? s.getIshikawa()
+                : submissaoIshikawaRepositorio.findBySubmissaoId(s.getId()).orElse(null);
         SubmissaoIshikawaDTO ishikawaDTO = ishikawa != null ? new SubmissaoIshikawaDTO(
-            ishikawa.getEfeitoPrincipal(),
-            ishikawa.getMetodo(),
-            ishikawa.getMaoDeObra(),
-            ishikawa.getMaterial(),
-            ishikawa.getMedida(),
-            ishikawa.getMeioAmbiente(),
-            ishikawa.getMaquina()
-        ) : null;
+                ishikawa.getEfeitoPrincipal(),
+                ishikawa.getMetodo(),
+                ishikawa.getMaoDeObra(),
+                ishikawa.getMaterial(),
+                ishikawa.getMedida(),
+                ishikawa.getMeioAmbiente(),
+                ishikawa.getMaquina()) : null;
 
-        List<SubmissaoPlano5w3h> planos = s.getPlanos5w3h() != null ? s.getPlanos5w3h() : submissaoPlano5w3hRepositorio.findBySubmissaoId(s.getId());
+        List<SubmissaoPlano5w3h> planos = s.getPlanos5w3h() != null ? s.getPlanos5w3h()
+                : submissaoPlano5w3hRepositorio.findBySubmissaoId(s.getId());
         List<SubmissaoPlano5w3hDTO> planosDTO = planos.stream().map(p -> new SubmissaoPlano5w3hDTO(
-            p.getId(),
-            p.getOQue(),
-            p.getPorQue(),
-            p.getQuem(),
-            p.getOnde(),
-            p.getQuando(),
-            p.getComo(),
-            p.getQuantoCusta(),
-            p.getComoMedir()
-        )).toList();
+                p.getId(),
+                p.getOQue(),
+                p.getPorQue(),
+                p.getQuem(),
+                p.getOnde(),
+                p.getQuando(),
+                p.getComo(),
+                p.getQuantoCusta(),
+                p.getComoMedir())).toList();
 
-        SubmissaoPdca pdca = s.getPdca() != null ? s.getPdca() : submissaoPdcaRepositorio.findBySubmissaoId(s.getId()).orElse(null);
+        SubmissaoPdca pdca = s.getPdca() != null ? s.getPdca()
+                : submissaoPdcaRepositorio.findBySubmissaoId(s.getId()).orElse(null);
         SubmissaoPdcaDTO pdcaDTO = pdca != null ? new SubmissaoPdcaDTO(
-            pdca.getPlanejar(),
-            pdca.getFazer(),
-            pdca.getChecar(),
-            pdca.getAgir()
-        ) : null;
+                pdca.getPlanejar(),
+                pdca.getFazer(),
+                pdca.getChecar(),
+                pdca.getAgir()) : null;
 
         return SubmissaoDTO.deEntidade(s, gatilhosDTO, ishikawaDTO, planosDTO, pdcaDTO);
     }

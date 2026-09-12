@@ -1,8 +1,18 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EducacionalService, CategoriaEA } from '../../../servicos/educacional.service';
+import {
+  EducacionalService,
+  CategoriaEA,
+} from '../../../servicos/educacional.service';
 import { GatilhoService } from '../../../../gtt/servicos/gatilho.service';
 import { GatilhoGtt } from '../../../../gtt/modelos/gtt.modelos';
 import {
@@ -37,10 +47,14 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   readonly categoriasEA = signal<CategoriaEA[]>([]);
 
   // Abas do prontuário
-  readonly abaProntuario = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>('sumario');
+  readonly abaProntuario = signal<
+    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
+  >('sumario');
 
   // Abas da resolução
-  readonly abaResolucao = signal<'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca'>('gatilhos');
+  readonly abaResolucao = signal<
+    'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca'
+  >('gatilhos');
 
   // Modal para adicionar gatilho
   readonly modalGatilhoAberto = signal(false);
@@ -73,24 +87,33 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   private intervaloAutoSave: any = null;
 
   readonly tempoRestanteFormatado = computed(() => {
-    const restante = Math.max(0, this.tempoLimiteSegundos - this.tempoGastoSegundos);
+    const restante = Math.max(
+      0,
+      this.tempoLimiteSegundos - this.tempoGastoSegundos,
+    );
     const min = Math.floor(restante / 60);
     const seg = restante % 60;
     return `${min < 10 ? '0' : ''}${min}:${seg < 10 ? '0' : ''}${seg}`;
   });
 
-  readonly tempoEsgotado = computed(() => this.tempoGastoSegundos >= this.tempoLimiteSegundos);
+  readonly tempoEsgotado = computed(
+    () => this.tempoGastoSegundos >= this.tempoLimiteSegundos,
+  );
 
   // Progresso dos 4 pilares
   readonly progressoGatilhos = computed(() => this.achadosGatilhos.length > 0);
-  readonly progressoIshikawa = computed(() => !!this.ishikawa.efeitoPrincipal.trim());
-  readonly progresso5w3h = computed(() => this.planos5w3h.length > 0 && !!this.planos5w3h[0].oQue.trim());
+  readonly progressoIshikawa = computed(
+    () => !!this.ishikawa.efeitoPrincipal.trim(),
+  );
+  readonly progresso5w3h = computed(
+    () => this.planos5w3h.length > 0 && !!this.planos5w3h[0].oQue.trim(),
+  );
   readonly progressoPdca = computed(
     () =>
       !!this.pdca.planejar.trim() &&
       !!this.pdca.fazer.trim() &&
       !!this.pdca.checar.trim() &&
-      !!this.pdca.agir.trim()
+      !!this.pdca.agir.trim(),
   );
 
   readonly totalPilaresCompletos = computed(() => {
@@ -102,7 +125,9 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     return count;
   });
 
-  readonly porcentagemProgresso = computed(() => (this.totalPilaresCompletos() / 4) * 100);
+  readonly porcentagemProgresso = computed(
+    () => (this.totalPilaresCompletos() / 4) * 100,
+  );
 
   // Filtro de gatilhos no modal
   readonly gatilhosFiltrados = computed(() => {
@@ -165,7 +190,9 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
         }
 
         // Preencher dados salvos
-        this.achadosGatilhos = sub.achadosGatilhos ? [...sub.achadosGatilhos] : [];
+        this.achadosGatilhos = sub.achadosGatilhos
+          ? [...sub.achadosGatilhos]
+          : [];
         if (sub.ishikawa) {
           this.ishikawa = { ...sub.ishikawa };
         }
@@ -183,7 +210,9 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar atividade: ' + (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
@@ -296,11 +325,15 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     this.educacionalService.salvarProgresso(sub.id, payload).subscribe({
       next: (res) => {
         this.submissao.set(res);
-        this.mensagemSucesso.set('Rascunho salvo com sucesso! Você pode continuar a qualquer momento.');
+        this.mensagemSucesso.set(
+          'Rascunho salvo com sucesso! Você pode continuar a qualquer momento.',
+        );
         this.salvando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao salvar rascunho: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao salvar rascunho: ' + (err.error?.mensagem || err.message),
+        );
         this.salvando.set(false);
       },
     });
@@ -323,7 +356,9 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     // Validação estrita de 100% de conclusão dos 4 pilares:
     if (this.achadosGatilhos.length === 0) {
       this.abaResolucao.set('gatilhos');
-      this.mensagemErro.set('Pilar 1 incompleto: É obrigatório identificar e registrar ao menos 1 gatilho GTT.');
+      this.mensagemErro.set(
+        'Pilar 1 incompleto: É obrigatório identificar e registrar ao menos 1 gatilho GTT.',
+      );
       return;
     }
 
@@ -332,27 +367,40 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
       if (g.confirmouDano) {
         if (!g.gravidade) {
           this.abaResolucao.set('gatilhos');
-          this.mensagemErro.set(`Gatilho [${g.gatilhoCodigo}]: Selecione a gravidade NCC MERP (E a I).`);
+          this.mensagemErro.set(
+            `Gatilho [${g.gatilhoCodigo}]: Selecione a gravidade NCC MERP (E a I).`,
+          );
           return;
         }
         if (!g.justificativaDano || !g.justificativaDano.trim()) {
           this.abaResolucao.set('gatilhos');
-          this.mensagemErro.set(`Gatilho [${g.gatilhoCodigo}]: Justifique clinicamente o dano ao paciente.`);
+          this.mensagemErro.set(
+            `Gatilho [${g.gatilhoCodigo}]: Justifique clinicamente o dano ao paciente.`,
+          );
           return;
         }
       }
     }
 
-    if (!this.ishikawa.efeitoPrincipal || !this.ishikawa.efeitoPrincipal.trim()) {
+    if (
+      !this.ishikawa.efeitoPrincipal ||
+      !this.ishikawa.efeitoPrincipal.trim()
+    ) {
       this.abaResolucao.set('ishikawa');
-      this.mensagemErro.set('Pilar 2 incompleto: Defina o Efeito Principal no Diagrama de Ishikawa 6M.');
+      this.mensagemErro.set(
+        'Pilar 2 incompleto: Defina o Efeito Principal no Diagrama de Ishikawa 6M.',
+      );
       return;
     }
 
-    const acoesValidas = this.planos5w3h.filter((p) => !!p.oQue.trim() && !!p.porQue.trim() && !!p.quem.trim());
+    const acoesValidas = this.planos5w3h.filter(
+      (p) => !!p.oQue.trim() && !!p.porQue.trim() && !!p.quem.trim(),
+    );
     if (acoesValidas.length === 0) {
       this.abaResolucao.set('plano5w3h');
-      this.mensagemErro.set('Pilar 3 incompleto: Preencha pelo menos 1 ação completa no Plano 5W3H (O Quê, Por Quê e Quem).');
+      this.mensagemErro.set(
+        'Pilar 3 incompleto: Preencha pelo menos 1 ação completa no Plano 5W3H (O Quê, Por Quê e Quem).',
+      );
       return;
     }
 
@@ -363,12 +411,14 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
       !this.pdca.agir.trim()
     ) {
       this.abaResolucao.set('pdca');
-      this.mensagemErro.set('Pilar 4 incompleto: Preencha todas as 4 fases do Ciclo PDCA (Planejar, Fazer, Checar e Agir).');
+      this.mensagemErro.set(
+        'Pilar 4 incompleto: Preencha todas as 4 fases do Ciclo PDCA (Planejar, Fazer, Checar e Agir).',
+      );
       return;
     }
 
     const conf = confirm(
-      'Confirma o envio definitivo da sua auditoria clínica? Após submeter, as respostas não poderão mais ser alteradas até a avaliação do docente.'
+      'Confirma o envio definitivo da sua auditoria clínica? Após submeter, as respostas não poderão mais ser alteradas até a avaliação do docente.',
     );
     if (!conf) return;
 
@@ -382,14 +432,18 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
         this.router.navigate(['/submissoes', res.id, 'resultado']);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao submeter atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao submeter atividade: ' + (err.error?.mensagem || err.message),
+        );
         this.salvando.set(false);
       },
     });
   }
 
   voltar(): void {
-    const conf = confirm('Deseja sair da atividade? As alterações não salvas como rascunho serão perdidas.');
+    const conf = confirm(
+      'Deseja sair da atividade? As alterações não salvas como rascunho serão perdidas.',
+    );
     if (conf) {
       this.router.navigate(['/minhas-atividades']);
     }

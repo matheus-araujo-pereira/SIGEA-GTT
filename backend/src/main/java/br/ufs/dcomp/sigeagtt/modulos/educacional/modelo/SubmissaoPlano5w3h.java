@@ -39,7 +39,8 @@ public class SubmissaoPlano5w3h {
     @Column(name = "como_medir", length = 150)
     private String comoMedir;
 
-    public SubmissaoPlano5w3h() {}
+    public SubmissaoPlano5w3h() {
+    }
 
     public Long getId() {
         return id;

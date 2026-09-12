@@ -1,337 +1,484 @@
 <div>
   @if (carregando()) {
-    <div class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm">
+    <div
+      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+    >
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Carregando resultado...</span>
       </div>
-      <p class="text-secondary small mt-2 mb-0">Carregando avaliação e respostas da atividade...</p>
+      <p class="text-secondary small mt-2 mb-0">
+        Carregando avaliação e respostas da atividade...
+      </p>
     </div>
   } @else {
     @if (submissao(); as sub) {
-    <!-- CABEÇALHO DO RESULTADO -->
-    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle">
-      <div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge" [class.bg-success]="sub.status === 'AVALIADA'" [class.bg-warning]="sub.status === 'SUBMETIDA'" [class.text-white]="sub.status === 'AVALIADA'" [class.text-dark]="sub.status === 'SUBMETIDA'">
-            {{ sub.status === 'AVALIADA' ? 'AVALIAÇÃO CONCLUÍDA' : 'SUBMETIDA - AGUARDANDO NOTA' }}
-          </span>
-          <h1 class="h4 fw-bold text-dark m-0">{{ sub.atividadeTitulo }}</h1>
-        </div>
-        <span class="text-secondary small">
-          {{ sub.disciplinaNome }} • Docente: {{ sub.professorNome }} • Enviada em: {{ sub.dataSubmissao ? (sub.dataSubmissao | date:'dd/MM/yyyy HH:mm') : '-' }} • Tempo Gasto: <strong>{{ formatarTempo(sub.tempoGastoSegundos) }}</strong>
-        </span>
-      </div>
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
-        (click)="voltar()"
+      <!-- CABEÇALHO DO RESULTADO -->
+      <div
+        class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
       >
-        <i class="bi bi-arrow-left"></i>
-        <span>VOLTAR PARA MINHAS ATIVIDADES</span>
-      </button>
-    </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span
+              class="badge"
+              [class.bg-success]="sub.status === 'AVALIADA'"
+              [class.bg-warning]="sub.status === 'SUBMETIDA'"
+              [class.text-white]="sub.status === 'AVALIADA'"
+              [class.text-dark]="sub.status === 'SUBMETIDA'"
+            >
+              {{
+                sub.status === "AVALIADA"
+                  ? "AVALIAÇÃO CONCLUÍDA"
+                  : "SUBMETIDA - AGUARDANDO NOTA"
+              }}
+            </span>
+            <h1 class="h4 fw-bold text-dark m-0">{{ sub.atividadeTitulo }}</h1>
+          </div>
+          <span class="text-secondary small">
+            {{ sub.disciplinaNome }} • Docente: {{ sub.professorNome }} •
+            Enviada em:
+            {{
+              sub.dataSubmissao
+                ? (sub.dataSubmissao | date: "dd/MM/yyyy HH:mm")
+                : "-"
+            }}
+            • Tempo Gasto:
+            <strong>{{ formatarTempo(sub.tempoGastoSegundos) }}</strong>
+          </span>
+        </div>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+          (click)="voltar()"
+        >
+          <i class="bi bi-arrow-left"></i>
+          <span>VOLTAR PARA MINHAS ATIVIDADES</span>
+        </button>
+      </div>
 
-    <!-- CARD PRINCIPAL DE DESEMPENHO E FEEDBACK DOCENTE -->
-    @if (sub.status === 'AVALIADA') {
-      <div class="card border border-success-subtle rounded-2 shadow-sm bg-white p-4 mb-3">
-        <div class="row g-3 align-items-center">
-          <div class="col-md-3 text-center border-end border-light-subtle">
-            <div class="text-secondary small font-monospace text-uppercase">Nota Atribuída</div>
-            <div class="fs-1 fw-bold text-success my-1">
-              {{ sub.nota | number:'1.1-1' }} <span class="fs-5 text-muted">/ 10</span>
+      <!-- CARD PRINCIPAL DE DESEMPENHO E FEEDBACK DOCENTE -->
+      @if (sub.status === "AVALIADA") {
+        <div
+          class="card border border-success-subtle rounded-2 shadow-sm bg-white p-4 mb-3"
+        >
+          <div class="row g-3 align-items-center">
+            <div class="col-md-3 text-center border-end border-light-subtle">
+              <div class="text-secondary small font-monospace text-uppercase">
+                Nota Atribuída
+              </div>
+              <div class="fs-1 fw-bold text-success my-1">
+                {{ sub.nota | number: "1.1-1" }}
+                <span class="fs-5 text-muted">/ 10</span>
+              </div>
+              <span
+                class="badge bg-success-subtle text-success border border-success-subtle"
+              >
+                Avaliada em {{ sub.dataAvaliacao | date: "dd/MM/yyyy" }}
+              </span>
             </div>
-            <span class="badge bg-success-subtle text-success border border-success-subtle">
-              Avaliada em {{ sub.dataAvaliacao | date:'dd/MM/yyyy' }}
+
+            <div class="col-md-9 ps-md-4">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-chat-quote-fill text-primary fs-5"></i>
+                <h6 class="fw-bold text-dark m-0">
+                  Parecer Pedagógico Formativo do Docente
+                </h6>
+              </div>
+              <div
+                class="p-3 bg-light rounded border text-dark font-sans-serif"
+                style="white-space: pre-wrap; line-height: 1.6"
+              >
+                {{
+                  sub.parecerDocente ||
+                    "Nenhum comentário adicional registrado pelo docente."
+                }}
+              </div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div
+          class="alert alert-warning d-flex align-items-center gap-3 p-3 mb-3 rounded-2"
+        >
+          <i class="bi bi-hourglass-split fs-3"></i>
+          <div>
+            <h6 class="fw-bold m-0">Submissão Entregue com Sucesso!</h6>
+            <span class="small">
+              Sua resolução de auditoria clínica foi enviada. O docente
+              responsável avaliará seus 4 pilares e atribuirá a nota com parecer
+              formativo em breve.
             </span>
           </div>
-
-          <div class="col-md-9 ps-md-4">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-chat-quote-fill text-primary fs-5"></i>
-              <h6 class="fw-bold text-dark m-0">Parecer Pedagógico Formativo do Docente</h6>
-            </div>
-            <div class="p-3 bg-light rounded border text-dark font-sans-serif" style="white-space: pre-wrap; line-height: 1.6;">
-              {{ sub.parecerDocente || 'Nenhum comentário adicional registrado pelo docente.' }}
-            </div>
-          </div>
         </div>
-      </div>
-    } @else {
-      <div class="alert alert-warning d-flex align-items-center gap-3 p-3 mb-3 rounded-2">
-        <i class="bi bi-hourglass-split fs-3"></i>
-        <div>
-          <h6 class="fw-bold m-0">Submissão Entregue com Sucesso!</h6>
-          <span class="small">
-            Sua resolução de auditoria clínica foi enviada. O docente responsável avaliará seus 4 pilares e atribuirá a nota com parecer formativo em breve.
+      }
+
+      <!-- CARD DA RESOLUÇÃO ENVIADA (VISUALIZAÇÃO COMPLETA) -->
+      <div
+        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-4"
+      >
+        <div
+          class="card-header bg-white border-bottom border-light-subtle py-2 px-3"
+        >
+          <span class="fw-bold text-dark small text-uppercase font-monospace">
+            <i class="bi bi-eye text-secondary me-1"></i> Resposta Enviada pelo
+            Discente
           </span>
         </div>
-      </div>
-    }
 
-    <!-- CARD DA RESOLUÇÃO ENVIADA (VISUALIZAÇÃO COMPLETA) -->
-    <div class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-4">
-      <div class="card-header bg-white border-bottom border-light-subtle py-2 px-3">
-        <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-eye text-secondary me-1"></i> Resposta Enviada pelo Discente
-        </span>
-      </div>
+        <!-- ABAS DOS 4 PILARES + PRONTUÁRIO -->
+        <div class="border-bottom px-3 pt-2 bg-white">
+          <ul class="nav nav-tabs border-0 small font-monospace">
+            <li class="nav-item">
+              <button
+                class="nav-link py-2"
+                [class.active]="abaResolucao() === 'gatilhos'"
+                (click)="abaResolucao.set('gatilhos')"
+              >
+                <i class="bi bi-flag me-1"></i>1. Gatilhos GTT ({{
+                  sub.achadosGatilhos.length
+                }})
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link py-2"
+                [class.active]="abaResolucao() === 'ishikawa'"
+                (click)="abaResolucao.set('ishikawa')"
+              >
+                <i class="bi bi-diagram-3 me-1"></i>2. Ishikawa 6M
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link py-2"
+                [class.active]="abaResolucao() === 'plano5w3h'"
+                (click)="abaResolucao.set('plano5w3h')"
+              >
+                <i class="bi bi-list-check me-1"></i>3. Plano 5W3H ({{
+                  sub.planos5w3h?.length || 0
+                }})
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link py-2"
+                [class.active]="abaResolucao() === 'pdca'"
+                (click)="abaResolucao.set('pdca')"
+              >
+                <i class="bi bi-arrow-repeat me-1"></i>4. Ciclo PDCA
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                class="nav-link py-2 text-secondary"
+                [class.active]="abaResolucao() === 'prontuario'"
+                (click)="abaResolucao.set('prontuario')"
+              >
+                <i class="bi bi-file-earmark-medical me-1"></i>Prontuário
+                Simulado
+              </button>
+            </li>
+          </ul>
+        </div>
 
-      <!-- ABAS DOS 4 PILARES + PRONTUÁRIO -->
-      <div class="border-bottom px-3 pt-2 bg-white">
-        <ul class="nav nav-tabs border-0 small font-monospace">
-          <li class="nav-item">
-            <button
-              class="nav-link py-2"
-              [class.active]="abaResolucao() === 'gatilhos'"
-              (click)="abaResolucao.set('gatilhos')"
-            >
-              <i class="bi bi-flag me-1"></i>1. Gatilhos GTT ({{ sub.achadosGatilhos.length }})
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link py-2"
-              [class.active]="abaResolucao() === 'ishikawa'"
-              (click)="abaResolucao.set('ishikawa')"
-            >
-              <i class="bi bi-diagram-3 me-1"></i>2. Ishikawa 6M
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link py-2"
-              [class.active]="abaResolucao() === 'plano5w3h'"
-              (click)="abaResolucao.set('plano5w3h')"
-            >
-              <i class="bi bi-list-check me-1"></i>3. Plano 5W3H ({{ sub.planos5w3h?.length || 0 }})
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link py-2"
-              [class.active]="abaResolucao() === 'pdca'"
-              (click)="abaResolucao.set('pdca')"
-            >
-              <i class="bi bi-arrow-repeat me-1"></i>4. Ciclo PDCA
-            </button>
-          </li>
-          <li class="nav-item">
-            <button
-              class="nav-link py-2 text-secondary"
-              [class.active]="abaResolucao() === 'prontuario'"
-              (click)="abaResolucao.set('prontuario')"
-            >
-              <i class="bi bi-file-earmark-medical me-1"></i>Prontuário Simulado
-            </button>
-          </li>
-        </ul>
-      </div>
-
-      <div class="card-body p-4">
-        <!-- 1. GATILHOS -->
-        @if (abaResolucao() === 'gatilhos') {
-          @if (sub.achadosGatilhos.length === 0) {
-            <div class="text-center py-4 text-muted">Nenhum gatilho registrado.</div>
-          } @else {
-            <div class="d-flex flex-column gap-3">
-              @for (g of sub.achadosGatilhos; track g.gatilhoId) {
-                <div class="card border border-light-subtle rounded-2 p-3 bg-light">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                      <span class="badge bg-primary me-2 font-monospace">{{ g.gatilhoCodigo }}</span>
-                      <span class="fw-bold text-dark">{{ g.gatilhoDescricao }}</span>
-                    </div>
-                    <span class="badge bg-light text-secondary border font-monospace">{{ g.moduloNome }}</span>
-                  </div>
-
-                  <div class="row g-2 small mt-1">
-                    <div class="col-md-6">
-                      <strong>Dano Confirmado (EA)?</strong>
-                      <span class="ms-1 badge" [class.bg-danger]="g.confirmouDano" [class.bg-secondary]="!g.confirmouDano">
-                        {{ g.confirmouDano ? 'SIM (Dano Confirmado)' : 'NÃO (Sem Dano)' }}
-                      </span>
-                    </div>
-
-                    <div class="col-md-6">
-                      <strong>Presente na Admissão:</strong>
-                      <span class="ms-1">{{ g.danoPresenteAdmissao ? 'Sim (POA)' : 'Não (Ocorreu na Internação)' }}</span>
+        <div class="card-body p-4">
+          <!-- 1. GATILHOS -->
+          @if (abaResolucao() === "gatilhos") {
+            @if (sub.achadosGatilhos.length === 0) {
+              <div class="text-center py-4 text-muted">
+                Nenhum gatilho registrado.
+              </div>
+            } @else {
+              <div class="d-flex flex-column gap-3">
+                @for (g of sub.achadosGatilhos; track g.gatilhoId) {
+                  <div
+                    class="card border border-light-subtle rounded-2 p-3 bg-light"
+                  >
+                    <div
+                      class="d-flex justify-content-between align-items-start mb-2"
+                    >
+                      <div>
+                        <span class="badge bg-primary me-2 font-monospace">{{
+                          g.gatilhoCodigo
+                        }}</span>
+                        <span class="fw-bold text-dark">{{
+                          g.gatilhoDescricao
+                        }}</span>
+                      </div>
+                      <span
+                        class="badge bg-light text-secondary border font-monospace"
+                        >{{ g.moduloNome }}</span
+                      >
                     </div>
 
-                    @if (g.confirmouDano) {
+                    <div class="row g-2 small mt-1">
                       <div class="col-md-6">
-                        <strong>Gravidade NCC MERP:</strong>
-                        <span class="ms-1 badge bg-dark text-white font-monospace">{{ g.gravidade || '-' }}</span>
+                        <strong>Dano Confirmado (EA)?</strong>
+                        <span
+                          class="ms-1 badge"
+                          [class.bg-danger]="g.confirmouDano"
+                          [class.bg-secondary]="!g.confirmouDano"
+                        >
+                          {{
+                            g.confirmouDano
+                              ? "SIM (Dano Confirmado)"
+                              : "NÃO (Sem Dano)"
+                          }}
+                        </span>
                       </div>
 
                       <div class="col-md-6">
-                        <strong>Categoria do EA:</strong>
-                        <span class="ms-1 text-dark">{{ g.categoriaEaNome || '-' }}</span>
+                        <strong>Presente na Admissão:</strong>
+                        <span class="ms-1">{{
+                          g.danoPresenteAdmissao
+                            ? "Sim (POA)"
+                            : "Não (Ocorreu na Internação)"
+                        }}</span>
                       </div>
 
-                      <div class="col-12 mt-2">
-                        <strong>Justificativa do Dano:</strong>
-                        <div class="p-2 bg-white rounded border small mt-1 font-monospace" style="white-space: pre-wrap;">
-                          {{ g.justificativaDano || 'Não informada.' }}
+                      @if (g.confirmouDano) {
+                        <div class="col-md-6">
+                          <strong>Gravidade NCC MERP:</strong>
+                          <span
+                            class="ms-1 badge bg-dark text-white font-monospace"
+                            >{{ g.gravidade || "-" }}</span
+                          >
                         </div>
-                      </div>
-                    }
+
+                        <div class="col-md-6">
+                          <strong>Categoria do EA:</strong>
+                          <span class="ms-1 text-dark">{{
+                            g.categoriaEaNome || "-"
+                          }}</span>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                          <strong>Justificativa do Dano:</strong>
+                          <div
+                            class="p-2 bg-white rounded border small mt-1 font-monospace"
+                            style="white-space: pre-wrap"
+                          >
+                            {{ g.justificativaDano || "Não informada." }}
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <!-- 2. ISHIKAWA -->
+          @if (abaResolucao() === "ishikawa") {
+            @if (!sub.ishikawa) {
+              <div class="text-center py-4 text-muted">
+                Nenhum diagrama de Ishikawa registrado.
+              </div>
+            } @else {
+              <div class="alert alert-primary py-2 px-3 mb-3 small">
+                <strong>Efeito Principal (Problema Central):</strong>
+                <div class="fw-bold mt-1 fs-6">
+                  {{ sub.ishikawa.efeitoPrincipal }}
+                </div>
+              </div>
+
+              <div class="row g-3 small">
+                <div class="col-md-6">
+                  <div class="card border p-3 bg-light">
+                    <strong class="text-secondary">Método:</strong>
+                    <div class="mt-1 font-monospace">
+                      {{ sub.ishikawa.metodo || "-" }}
+                    </div>
                   </div>
                 </div>
-              }
-            </div>
+                <div class="col-md-6">
+                  <div class="card border p-3 bg-light">
+                    <strong class="text-secondary">Mão de Obra:</strong>
+                    <div class="mt-1 font-monospace">
+                      {{ sub.ishikawa.maoDeObra || "-" }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border p-3 bg-light">
+                    <strong class="text-secondary">Material:</strong>
+                    <div class="mt-1 font-monospace">
+                      {{ sub.ishikawa.material || "-" }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border p-3 bg-light">
+                    <strong class="text-secondary">Medida:</strong>
+                    <div class="mt-1 font-monospace">
+                      {{ sub.ishikawa.medida || "-" }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border p-3 bg-light">
+                    <strong class="text-secondary">Meio Ambiente:</strong>
+                    <div class="mt-1 font-monospace">
+                      {{ sub.ishikawa.meioAmbiente || "-" }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border p-3 bg-light">
+                    <strong class="text-secondary"
+                      >Máquina / Equipamento:</strong
+                    >
+                    <div class="mt-1 font-monospace">
+                      {{ sub.ishikawa.maquina || "-" }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
           }
-        }
 
-        <!-- 2. ISHIKAWA -->
-        @if (abaResolucao() === 'ishikawa') {
-          @if (!sub.ishikawa) {
-            <div class="text-center py-4 text-muted">Nenhum diagrama de Ishikawa registrado.</div>
-          } @else {
-            <div class="alert alert-primary py-2 px-3 mb-3 small">
-              <strong>Efeito Principal (Problema Central):</strong>
-              <div class="fw-bold mt-1 fs-6">{{ sub.ishikawa.efeitoPrincipal }}</div>
-            </div>
-
-            <div class="row g-3 small">
-              <div class="col-md-6">
-                <div class="card border p-3 bg-light">
-                  <strong class="text-secondary">Método:</strong>
-                  <div class="mt-1 font-monospace">{{ sub.ishikawa.metodo || '-' }}</div>
-                </div>
+          <!-- 3. PLANO 5W3H -->
+          @if (abaResolucao() === "plano5w3h") {
+            @if (!sub.planos5w3h || sub.planos5w3h.length === 0) {
+              <div class="text-center py-4 text-muted">
+                Nenhuma ação cadastrada no plano 5W3H.
               </div>
-              <div class="col-md-6">
-                <div class="card border p-3 bg-light">
-                  <strong class="text-secondary">Mão de Obra:</strong>
-                  <div class="mt-1 font-monospace">{{ sub.ishikawa.maoDeObra || '-' }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border p-3 bg-light">
-                  <strong class="text-secondary">Material:</strong>
-                  <div class="mt-1 font-monospace">{{ sub.ishikawa.material || '-' }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border p-3 bg-light">
-                  <strong class="text-secondary">Medida:</strong>
-                  <div class="mt-1 font-monospace">{{ sub.ishikawa.medida || '-' }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border p-3 bg-light">
-                  <strong class="text-secondary">Meio Ambiente:</strong>
-                  <div class="mt-1 font-monospace">{{ sub.ishikawa.meioAmbiente || '-' }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border p-3 bg-light">
-                  <strong class="text-secondary">Máquina / Equipamento:</strong>
-                  <div class="mt-1 font-monospace">{{ sub.ishikawa.maquina || '-' }}</div>
-                </div>
-              </div>
-            </div>
-          }
-        }
-
-        <!-- 3. PLANO 5W3H -->
-        @if (abaResolucao() === 'plano5w3h') {
-          @if (!sub.planos5w3h || sub.planos5w3h.length === 0) {
-            <div class="text-center py-4 text-muted">Nenhuma ação cadastrada no plano 5W3H.</div>
-          } @else {
-            <div class="table-responsive">
-              <table class="table table-bordered table-sm small align-middle">
-                <thead class="table-light text-secondary font-monospace">
-                  <tr>
-                    <th>O Quê (What)</th>
-                    <th>Por Quê (Why)</th>
-                    <th>Quem (Who)</th>
-                    <th>Onde (Where)</th>
-                    <th>Quando (When)</th>
-                    <th>Como (How)</th>
-                    <th>Como Medir (How Measure)</th>
-                  </tr>
-                </thead>
-                <tbody class="font-monospace">
-                  @for (p of sub.planos5w3h; track p.id || p.oQue) {
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-bordered table-sm small align-middle">
+                  <thead class="table-light text-secondary font-monospace">
                     <tr>
-                      <td class="fw-semibold">{{ p.oQue }}</td>
-                      <td>{{ p.porQue }}</td>
-                      <td>{{ p.quem }}</td>
-                      <td>{{ p.onde }}</td>
-                      <td>{{ p.quando }}</td>
-                      <td>{{ p.como }}</td>
-                      <td>{{ p.comoMedir || '-' }}</td>
+                      <th>O Quê (What)</th>
+                      <th>Por Quê (Why)</th>
+                      <th>Quem (Who)</th>
+                      <th>Onde (Where)</th>
+                      <th>Quando (When)</th>
+                      <th>Como (How)</th>
+                      <th>Como Medir (How Measure)</th>
                     </tr>
-                  }
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody class="font-monospace">
+                    @for (p of sub.planos5w3h; track p.id || p.oQue) {
+                      <tr>
+                        <td class="fw-semibold">{{ p.oQue }}</td>
+                        <td>{{ p.porQue }}</td>
+                        <td>{{ p.quem }}</td>
+                        <td>{{ p.onde }}</td>
+                        <td>{{ p.quando }}</td>
+                        <td>{{ p.como }}</td>
+                        <td>{{ p.comoMedir || "-" }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+
+          <!-- 4. PDCA -->
+          @if (abaResolucao() === "pdca") {
+            @if (!sub.pdca) {
+              <div class="text-center py-4 text-muted">
+                Nenhum ciclo PDCA registrado.
+              </div>
+            } @else {
+              <div class="row g-3 small">
+                <div class="col-md-6">
+                  <div class="card border-primary p-3 bg-light">
+                    <div class="fw-bold text-primary mb-1">
+                      <i class="bi bi-calendar-check me-1"></i> P - Plan
+                      (Planejar)
+                    </div>
+                    <div class="font-monospace" style="white-space: pre-wrap">
+                      {{ sub.pdca.planejar }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border-info p-3 bg-light">
+                    <div class="fw-bold text-info-emphasis mb-1">
+                      <i class="bi bi-play-circle me-1"></i> D - Do (Executar)
+                    </div>
+                    <div class="font-monospace" style="white-space: pre-wrap">
+                      {{ sub.pdca.fazer }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border-warning p-3 bg-light">
+                    <div class="fw-bold text-warning-emphasis mb-1">
+                      <i class="bi bi-search me-1"></i> C - Check (Verificar /
+                      Avaliar)
+                    </div>
+                    <div class="font-monospace" style="white-space: pre-wrap">
+                      {{ sub.pdca.checar }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card border-success p-3 bg-light">
+                    <div class="fw-bold text-success mb-1">
+                      <i class="bi bi-arrow-repeat me-1"></i> A - Act (Agir
+                      Corretivamente)
+                    </div>
+                    <div class="font-monospace" style="white-space: pre-wrap">
+                      {{ sub.pdca.agir }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- 5. PRONTUÁRIO -->
+          @if (abaResolucao() === "prontuario") {
+            <div class="p-3 bg-light rounded border">
+              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                {{ sub.casoClinico.numeroAtendimento }} —
+                {{ sub.casoClinico.titulo }} ({{
+                  sub.casoClinico.unidadeHospitalarSigla
+                }})
+              </h6>
+              <h6 class="fw-bold text-secondary small text-uppercase">
+                Sumário de Alta:
+              </h6>
+              <div
+                class="font-monospace small mb-3"
+                style="white-space: pre-wrap"
+              >
+                {{ sub.casoClinico.sumarioAlta }}
+              </div>
+
+              <h6 class="fw-bold text-secondary small text-uppercase">
+                Prescrições:
+              </h6>
+              <div
+                class="font-monospace small mb-3"
+                style="white-space: pre-wrap"
+              >
+                {{ sub.casoClinico.prescricoesMedicas }}
+              </div>
+
+              <h6 class="fw-bold text-secondary small text-uppercase">
+                Exames:
+              </h6>
+              <div
+                class="font-monospace small mb-3"
+                style="white-space: pre-wrap"
+              >
+                {{ sub.casoClinico.examesLaboratoriais }}
+              </div>
+
+              <h6 class="fw-bold text-secondary small text-uppercase">
+                Evoluções:
+              </h6>
+              <div class="font-monospace small" style="white-space: pre-wrap">
+                {{ sub.casoClinico.evolucoesMultiprofissionais }}
+              </div>
             </div>
           }
-        }
-
-        <!-- 4. PDCA -->
-        @if (abaResolucao() === 'pdca') {
-          @if (!sub.pdca) {
-            <div class="text-center py-4 text-muted">Nenhum ciclo PDCA registrado.</div>
-          } @else {
-            <div class="row g-3 small">
-              <div class="col-md-6">
-                <div class="card border-primary p-3 bg-light">
-                  <div class="fw-bold text-primary mb-1">
-                    <i class="bi bi-calendar-check me-1"></i> P - Plan (Planejar)
-                  </div>
-                  <div class="font-monospace" style="white-space: pre-wrap;">{{ sub.pdca.planejar }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border-info p-3 bg-light">
-                  <div class="fw-bold text-info-emphasis mb-1">
-                    <i class="bi bi-play-circle me-1"></i> D - Do (Executar)
-                  </div>
-                  <div class="font-monospace" style="white-space: pre-wrap;">{{ sub.pdca.fazer }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border-warning p-3 bg-light">
-                  <div class="fw-bold text-warning-emphasis mb-1">
-                    <i class="bi bi-search me-1"></i> C - Check (Verificar / Avaliar)
-                  </div>
-                  <div class="font-monospace" style="white-space: pre-wrap;">{{ sub.pdca.checar }}</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card border-success p-3 bg-light">
-                  <div class="fw-bold text-success mb-1">
-                    <i class="bi bi-arrow-repeat me-1"></i> A - Act (Agir Corretivamente)
-                  </div>
-                  <div class="font-monospace" style="white-space: pre-wrap;">{{ sub.pdca.agir }}</div>
-                </div>
-              </div>
-            </div>
-          }
-        }
-
-        <!-- 5. PRONTUÁRIO -->
-        @if (abaResolucao() === 'prontuario') {
-          <div class="p-3 bg-light rounded border">
-            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
-              {{ sub.casoClinico.numeroAtendimento }} — {{ sub.casoClinico.titulo }} ({{ sub.casoClinico.unidadeHospitalarSigla }})
-            </h6>
-            <h6 class="fw-bold text-secondary small text-uppercase">Sumário de Alta:</h6>
-            <div class="font-monospace small mb-3" style="white-space: pre-wrap;">{{ sub.casoClinico.sumarioAlta }}</div>
-
-            <h6 class="fw-bold text-secondary small text-uppercase">Prescrições:</h6>
-            <div class="font-monospace small mb-3" style="white-space: pre-wrap;">{{ sub.casoClinico.prescricoesMedicas }}</div>
-
-            <h6 class="fw-bold text-secondary small text-uppercase">Exames:</h6>
-            <div class="font-monospace small mb-3" style="white-space: pre-wrap;">{{ sub.casoClinico.examesLaboratoriais }}</div>
-
-            <h6 class="fw-bold text-secondary small text-uppercase">Evoluções:</h6>
-            <div class="font-monospace small" style="white-space: pre-wrap;">{{ sub.casoClinico.evolucoesMultiprofissionais }}</div>
-          </div>
-        }
+        </div>
       </div>
-    </div>
     }
   }
 </div>

@@ -8,5 +8,6 @@ import java.util.Optional;
 @Repository
 public interface SubmissaoPdcaRepositorio extends JpaRepository<SubmissaoPdca, Long> {
     Optional<SubmissaoPdca> findBySubmissaoId(Long submissaoId);
+
     void deleteBySubmissaoId(Long submissaoId);
 }

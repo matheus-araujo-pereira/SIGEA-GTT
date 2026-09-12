@@ -27,11 +27,17 @@ export class MinhasAtividadesComponent implements OnInit {
   readonly itensPorPagina = 10;
 
   readonly totalAtividades = computed(() => this.atividades().length);
-  readonly totalAvaliadas = computed(() => this.atividades().filter((a) => a.status === 'AVALIADA').length);
-  readonly totalPendentes = computed(() => this.atividades().filter((a) => a.status !== 'AVALIADA').length);
+  readonly totalAvaliadas = computed(
+    () => this.atividades().filter((a) => a.status === 'AVALIADA').length,
+  );
+  readonly totalPendentes = computed(
+    () => this.atividades().filter((a) => a.status !== 'AVALIADA').length,
+  );
 
   readonly mediaNotas = computed(() => {
-    const avaliadas = this.atividades().filter((a) => a.nota !== null && a.nota !== undefined);
+    const avaliadas = this.atividades().filter(
+      (a) => a.nota !== null && a.nota !== undefined,
+    );
     if (avaliadas.length === 0) return null;
     const soma = avaliadas.reduce((acc, a) => acc + (a.nota || 0), 0);
     return soma / avaliadas.length;
@@ -67,7 +73,10 @@ export class MinhasAtividadesComponent implements OnInit {
 
   readonly atividadesPaginadas = computed<MinhaAtividadeItem[]>(() => {
     const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.atividadesFiltradas().slice(inicio, inicio + this.itensPorPagina);
+    return this.atividadesFiltradas().slice(
+      inicio,
+      inicio + this.itensPorPagina,
+    );
   });
 
   ngOnInit(): void {
@@ -82,7 +91,10 @@ export class MinhasAtividadesComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar atividades: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar atividades: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });

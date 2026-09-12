@@ -19,7 +19,9 @@ export class ResultadoAtividadeComponent implements OnInit {
   readonly submissao = signal<Submissao | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
-  readonly abaResolucao = signal<'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca' | 'prontuario'>('gatilhos');
+  readonly abaResolucao = signal<
+    'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca' | 'prontuario'
+  >('gatilhos');
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -36,7 +38,10 @@ export class ResultadoAtividadeComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar resultado da atividade: ' + (err.error?.mensagem || err.message));
+        this.mensagemErro.set(
+          'Erro ao carregar resultado da atividade: ' +
+            (err.error?.mensagem || err.message),
+        );
         this.carregando.set(false);
       },
     });
