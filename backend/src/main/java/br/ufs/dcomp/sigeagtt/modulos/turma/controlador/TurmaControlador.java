@@ -5,6 +5,10 @@ import br.ufs.dcomp.sigeagtt.modulos.turma.dto.TurmaRespostaDTO;
 import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.Turma;
 import br.ufs.dcomp.sigeagtt.modulos.turma.servico.TurmaServico;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRespostaDTO;
+import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;
+import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,13 +28,27 @@ public class TurmaControlador {
     }
 
     @GetMapping
-    public ResponseEntity<List<TurmaRespostaDTO>> listar(@RequestParam(required = false) Long professorId) {
-        return ResponseEntity.ok(servico.listar(professorId));
+    public ResponseEntity<List<TurmaRespostaDTO>> listar(
+            @RequestParam(required = false) Long professorId,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        Long filtroProfId = professorId;
+        if (usuarioLogado != null && usuarioLogado.getPerfil() == PerfilUsuario.PROFESSOR) {
+            filtroProfId = usuarioLogado.getId();
+        }
+        return ResponseEntity.ok(servico.listar(filtroProfId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TurmaRespostaDTO> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(servico.buscarPorId(id));
+    public ResponseEntity<TurmaRespostaDTO> buscarPorId(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        TurmaRespostaDTO dto = servico.buscarPorId(id);
+        if (usuarioLogado != null && usuarioLogado.getPerfil() == PerfilUsuario.PROFESSOR) {
+            if (dto.professorResponsavelId() != null && !dto.professorResponsavelId().equals(usuarioLogado.getId())) {
+                throw new AccessDeniedException("Acesso não autorizado a esta turma.");
+            }
+        }
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping

@@ -157,6 +157,12 @@ public class AtividadeEducacionalServico {
         CasoClinico caso = casoRepositorio.findById(dto.casoClinicoId())
                 .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
 
+        if (professorLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
+                caso.getProfessorCriador() != null &&
+                !caso.getProfessorCriador().getId().equals(professorLogado.getId())) {
+            throw new IllegalArgumentException("Você só pode vincular casos clínicos criados por você.");
+        }
+
         AtividadeEducacional a = new AtividadeEducacional();
         a.setTurma(turma);
         a.setCasoClinico(caso);
@@ -184,8 +190,20 @@ public class AtividadeEducacionalServico {
 
         Turma turma = turmaRepositorio.findById(dto.turmaId())
                 .orElseThrow(() -> new IllegalArgumentException("Turma não encontrada"));
+
+        if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
+                !turma.getProfessorResponsavel().getId().equals(usuarioLogado.getId())) {
+            throw new IllegalArgumentException("Você só pode vincular a atividade às suas próprias turmas.");
+        }
+
         CasoClinico caso = casoRepositorio.findById(dto.casoClinicoId())
                 .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
+
+        if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
+                caso.getProfessorCriador() != null &&
+                !caso.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
+            throw new IllegalArgumentException("Você só pode vincular casos clínicos criados por você.");
+        }
 
         a.setTurma(turma);
         a.setCasoClinico(caso);

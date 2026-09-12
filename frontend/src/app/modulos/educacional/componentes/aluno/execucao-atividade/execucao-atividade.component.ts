@@ -115,12 +115,19 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
 
   readonly progressoIshikawa = computed(() => {
     this.versaoResolucao();
-    return !!this.ishikawa.efeitoPrincipal && this.ishikawa.efeitoPrincipal.trim().length > 0;
+    return (
+      !!this.ishikawa.efeitoPrincipal &&
+      this.ishikawa.efeitoPrincipal.trim().length > 0
+    );
   });
 
   readonly progresso5w3h = computed(() => {
     this.versaoResolucao();
-    return this.planos5w3h.length > 0 && !!this.planos5w3h[0].oQue && this.planos5w3h[0].oQue.trim().length > 0;
+    return (
+      this.planos5w3h.length > 0 &&
+      !!this.planos5w3h[0].oQue &&
+      this.planos5w3h[0].oQue.trim().length > 0
+    );
   });
 
   readonly progressoPdca = computed(() => {

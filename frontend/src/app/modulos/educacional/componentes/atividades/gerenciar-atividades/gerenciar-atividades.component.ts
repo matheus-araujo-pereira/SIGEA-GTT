@@ -22,6 +22,7 @@ export interface AtividadeLinha {
   totalAlunos: number;
   totalSubmissoes: number;
   totalAvaliadas: number;
+  pendentesCorrecao: number;
   porcentagemEntrega: number;
   original: AtividadeEducacional;
 }
@@ -29,7 +30,7 @@ export interface AtividadeLinha {
 @Component({
   selector: 'app-gerenciar-atividades',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PaginacaoComponent],
+  imports: [CommonModule, FormsModule, PaginacaoComponent],
   templateUrl: './gerenciar-atividades.component.html',
 })
 export class GerenciarAtividadesComponent implements OnInit {
@@ -76,6 +77,8 @@ export class GerenciarAtividadesComponent implements OnInit {
       .map((a) => {
         const total = a.totalAlunosTurma || 0;
         const subs = a.totalSubmissoes || 0;
+        const avaliadas = a.totalAvaliadas || 0;
+        const pendentes = Math.max(0, subs - avaliadas);
         const pct = total > 0 ? Math.round((subs / total) * 100) : 0;
 
         return {
@@ -90,7 +93,8 @@ export class GerenciarAtividadesComponent implements OnInit {
           ativa: a.ativa,
           totalAlunos: total,
           totalSubmissoes: subs,
-          totalAvaliadas: a.totalAvaliadas || 0,
+          totalAvaliadas: avaliadas,
+          pendentesCorrecao: pendentes,
           porcentagemEntrega: pct,
           original: a,
         };
@@ -130,8 +134,19 @@ export class GerenciarAtividadesComponent implements OnInit {
       },
     });
 
-    this.turmaService.listar().subscribe({
-      next: (dados) => this.turmas.set(dados),
+    const profId =
+      this.auth.usuarioLogado()?.perfil === 'PROFESSOR'
+        ? this.auth.usuarioLogado()?.id
+        : undefined;
+
+    this.turmaService.listar(profId).subscribe({
+      next: (dados) => {
+        const turmasFiltradas =
+          this.auth.usuarioLogado()?.perfil === 'PROFESSOR' && profId
+            ? dados.filter((t) => t.professorResponsavelId === profId)
+            : dados;
+        this.turmas.set(turmasFiltradas);
+      },
       error: () => {},
     });
   }

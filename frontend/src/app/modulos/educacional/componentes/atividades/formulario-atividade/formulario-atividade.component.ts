@@ -9,6 +9,7 @@ import {
 } from '../../../modelos/educacional.modelos';
 import { TurmaService } from '../../../../turma/servicos/turma.service';
 import { Turma } from '../../../../turma/modelos/turma.modelos';
+import { AutenticacaoService } from '../../../../autenticacao/servicos/autenticacao.service';
 
 @Component({
   selector: 'app-formulario-atividade',
@@ -19,6 +20,7 @@ import { Turma } from '../../../../turma/modelos/turma.modelos';
 export class FormularioAtividadeComponent implements OnInit {
   private readonly educacionalService = inject(EducacionalService);
   private readonly turmaService = inject(TurmaService);
+  private readonly auth = inject(AutenticacaoService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -69,15 +71,25 @@ export class FormularioAtividadeComponent implements OnInit {
   }
 
   carregarDependencias(): void {
-    this.turmaService.listar().subscribe({
+    const profId =
+      this.auth.usuarioLogado()?.perfil === 'PROFESSOR'
+        ? this.auth.usuarioLogado()?.id
+        : undefined;
+
+    this.turmaService.listar(profId).subscribe({
       next: (dados) => {
-        this.turmas.set(dados.filter((t) => t.ativa));
+        const ativas = dados.filter((t) => t.ativa);
+        const turmasFiltradas =
+          this.auth.usuarioLogado()?.perfil === 'PROFESSOR' && profId
+            ? ativas.filter((t) => t.professorResponsavelId === profId)
+            : ativas;
+        this.turmas.set(turmasFiltradas);
         if (
           !this.modoEdicao() &&
-          dados.length > 0 &&
+          turmasFiltradas.length > 0 &&
           this.formulario.turmaId === 0
         ) {
-          this.formulario.turmaId = dados[0].id;
+          this.formulario.turmaId = turmasFiltradas[0].id;
         }
       },
       error: () => {},
@@ -85,13 +97,17 @@ export class FormularioAtividadeComponent implements OnInit {
 
     this.educacionalService.listarCasos().subscribe({
       next: (dados) => {
-        this.casos.set(dados);
+        const casosFiltrados =
+          this.auth.usuarioLogado()?.perfil === 'PROFESSOR' && profId
+            ? dados.filter((c) => c.professorCriadorId === profId)
+            : dados;
+        this.casos.set(casosFiltrados);
         if (
           !this.modoEdicao() &&
-          dados.length > 0 &&
+          casosFiltrados.length > 0 &&
           this.formulario.casoClinicoId === 0
         ) {
-          this.formulario.casoClinicoId = dados[0].id;
+          this.formulario.casoClinicoId = casosFiltrados[0].id;
         }
       },
       error: () => {},

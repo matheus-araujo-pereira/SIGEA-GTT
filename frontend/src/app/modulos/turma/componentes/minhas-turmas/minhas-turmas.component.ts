@@ -109,8 +109,4 @@ export class MinhasTurmasComponent implements OnInit {
   verAtividades(turmaId: number): void {
     this.router.navigate(['/atividades'], { queryParams: { turmaId } });
   }
-
-  verAvaliacoes(turmaId: number): void {
-    this.router.navigate(['/atividades/correcoes'], { queryParams: { turmaId } });
-  }
 }

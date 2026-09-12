@@ -99,7 +99,12 @@ export class GerenciarCasosClinicosComponent implements OnInit {
     this.carregando.set(true);
     this.educacionalService.listarCasos().subscribe({
       next: (dados) => {
-        this.casos.set(dados);
+        const profId = this.auth.usuarioLogado()?.id;
+        const casosFiltrados =
+          this.auth.usuarioLogado()?.perfil === 'PROFESSOR' && profId
+            ? dados.filter((c) => c.professorCriadorId === profId)
+            : dados;
+        this.casos.set(casosFiltrados);
         this.carregando.set(false);
       },
       error: (err) => {

@@ -51,6 +51,7 @@ DECLARE
   caso3 BIGINT;
   caso4 BIGINT;
   caso5 BIGINT;
+  caso6 BIGINT;
 
   -- Atividades Educacionais
   atv1 BIGINT;
@@ -62,6 +63,11 @@ DECLARE
   -- Submissões
   sub_id BIGINT;
 BEGIN
+  -- ---------------------------------------------------------------------------
+  -- 0. LIMPAR DADOS EDUCACIONAIS PREVIOS (IDEMPOTÊNCIA)
+  -- ---------------------------------------------------------------------------
+  TRUNCATE TABLE submissao_pdca, submissao_planos_5w3h, submissao_ishikawa, submissao_gatilhos, submissoes_atividades, atividades_educacionais, casos_clinicos, turma_alunos, turmas RESTART IDENTITY CASCADE;
+
   -- ---------------------------------------------------------------------------
   -- 1. IDENTIFICAR UNIDADES HOSPITALARES
   -- ---------------------------------------------------------------------------
@@ -377,6 +383,25 @@ BEGIN
     '2026-09-05 08:30:00-03'
   ) RETURNING id INTO caso5;
 
+  -- Caso 6: Terapia Intensiva HU-UFS - PAV e Auditoria IHI-GTT (Profa. Ana Waleska)
+  INSERT INTO casos_clinicos (
+    professor_criador_id, unidade_hospitalar_id, titulo, descricao_caso, objetivos_aprendizagem,
+    numero_atendimento, idade_paciente, data_admissao, data_alta, tempo_permanencia_dias,
+    sumario_alta, prescricoes_medicas, exames_laboratoriais, relatorio_cirurgico, evolucoes_multiprofissionais, criado_em
+  ) VALUES (
+    prof_anawaleska, uh_utia,
+    'Caso 6: Auditoria Retrospectiva GTT em UTI - Pneumonia Associada à Ventilação Mecânica por Pseudomonas',
+    'Paciente em pós-operatório de cirurgia de grande porte admitido na UTI sob ventilação mecânica invasiva. No D8, evoluiu com febre refratária, secreção traqueal purulenta, infiltrado radiológico novo e cultura positiva para Pseudomonas aeruginosa multirresistente.',
+    '1. Identificar triggers de Terapia Intensiva (I1 - Infecção nosocomial/PAV) e Cuidados (C4, C13).\n2. Classificar o nível de dano na Categoria F (prolongamento de internação e terapia antimicrobiana de reserva).\n3. Investigar causas no Ishikawa 6M (falha na elevação da cabeceira e aspiração subglótica).\n4. Estruturar Matriz 5W3H e Ciclo PDCA para auditoria diária do bundle de ventilação mecânica.',
+    'ATD-2026-0305', 61, '2026-02-10', '2026-03-02', 20,
+    'Paciente admitido na UTI Adulto intubado em ventilação mecânica invasiva. Desenvolveu critérios diagnósticos de PAV no 8º dia de ventilação, com necessidade de escalonamento terapêutico para polimixina B e meropenem.',
+    'Meropenem 1g IV 8/8h, Polimixina B 1.000.000 UI IV 12/12h, Fentanil 3 mL/h em BIC, Midazolam 5 mL/h.',
+    'Aspirado Traqueal quantitativo: positivo > 10^6 UFC/mL para Pseudomonas aeruginosa multirresistente. Leucograma: 21.400/mm³ com 14% de bastões.',
+    NULL,
+    'D8 de VM (07:30): Paciente taquipneico, febril (39.1°C), secreção abundante e purulenta pelo tubo orotraqueal. Solicitada radiografia de tórax no leito evidenciando consolidação em lobo inferior direito. Ajustada sedação e coletadas culturas.',
+    '2026-02-12 09:00:00-03'
+  ) RETURNING id INTO caso6;
+
   -- ---------------------------------------------------------------------------
   -- 8. ATIVIDADES PEDAGÓGICAS
   -- ---------------------------------------------------------------------------
@@ -419,7 +444,7 @@ BEGIN
   INSERT INTO atividades_educacionais (
     turma_id, caso_clinico_id, titulo, orientacoes_pedagogicas, data_inicio, data_fim, tempo_limite_minutos, ativa, criada_em
   ) VALUES (
-    t_gtt_26_1, caso3,
+    t_gtt_26_1, caso6,
     'Atividade 5: Metodologia IHI GTT em Terapia Intensiva & Prevenção de PAV',
     'Audite o prontuário do paciente crítico sob ventilação mecânica no HU-UFS. Identifique os gatilhos dos módulos C e M, modele a causa-raiz no Diagrama de Ishikawa 6M e trace ações corretivas no 5W3H e PDCA.',
     '2026-02-15 08:00:00-03', '2026-12-31 23:59:59-03', 20, true, '2026-02-01 10:00:00-03'

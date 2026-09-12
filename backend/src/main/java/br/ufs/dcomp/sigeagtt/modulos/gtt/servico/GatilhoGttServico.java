@@ -39,8 +39,10 @@ public class GatilhoGttServico {
         }
         java.util.List<GatilhoGtt> mutavel = new java.util.ArrayList<>(lista);
         mutavel.sort((g1, g2) -> {
-            String mod1 = (g1.getModulo() != null && g1.getModulo().getCodigo() != null) ? g1.getModulo().getCodigo() : "";
-            String mod2 = (g2.getModulo() != null && g2.getModulo().getCodigo() != null) ? g2.getModulo().getCodigo() : "";
+            String mod1 = (g1.getModulo() != null && g1.getModulo().getCodigo() != null) ? g1.getModulo().getCodigo()
+                    : "";
+            String mod2 = (g2.getModulo() != null && g2.getModulo().getCodigo() != null) ? g2.getModulo().getCodigo()
+                    : "";
             int cmpMod = mod1.compareToIgnoreCase(mod2);
             if (cmpMod != 0) {
                 return cmpMod;
@@ -51,8 +53,10 @@ public class GatilhoGttServico {
     }
 
     private int compararCodigosNaturalmente(String cod1, String cod2) {
-        if (cod1 == null) return cod2 == null ? 0 : -1;
-        if (cod2 == null) return 1;
+        if (cod1 == null)
+            return cod2 == null ? 0 : -1;
+        if (cod2 == null)
+            return 1;
 
         String prefix1 = cod1.replaceAll("\\d", "");
         String prefix2 = cod2.replaceAll("\\d", "");
