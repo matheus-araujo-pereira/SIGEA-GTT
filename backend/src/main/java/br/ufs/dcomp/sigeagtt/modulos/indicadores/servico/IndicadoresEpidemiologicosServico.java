@@ -424,7 +424,7 @@ public class IndicadoresEpidemiologicosServico {
         }
 
         List<Map<String, Object>> listaGatilhos = porGatilho.values().stream()
-                .map(DesempenhoGatilhoAgregador::paraMapa)
+                .map(agg -> agg.paraMapa())
                 .sorted((a, b) -> {
                     int cDano = Integer.compare((Integer) b.get("totalDanos"), (Integer) a.get("totalDanos"));
                     if (cDano != 0)
@@ -434,7 +434,7 @@ public class IndicadoresEpidemiologicosServico {
                 .collect(Collectors.toList());
 
         List<Map<String, Object>> listaModulos = porModulo.values().stream()
-                .map(DesempenhoModuloAgregador::paraMapa)
+                .map(agg -> agg.paraMapa())
                 .sorted((a, b) -> Integer.compare((Integer) b.get("totalDanos"), (Integer) a.get("totalDanos")))
                 .collect(Collectors.toList());
 

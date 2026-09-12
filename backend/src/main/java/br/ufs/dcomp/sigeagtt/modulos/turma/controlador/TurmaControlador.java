@@ -2,7 +2,6 @@ package br.ufs.dcomp.sigeagtt.modulos.turma.controlador;
 
 import br.ufs.dcomp.sigeagtt.modulos.turma.dto.TurmaRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.turma.dto.TurmaRespostaDTO;
-import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.Turma;
 import br.ufs.dcomp.sigeagtt.modulos.turma.servico.TurmaServico;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRespostaDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;

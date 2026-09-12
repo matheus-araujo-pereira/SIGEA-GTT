@@ -1,7 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 import {
   UsuarioService,
@@ -11,7 +10,7 @@ import {
 @Component({
   selector: 'app-meu-perfil',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './meu-perfil.component.html',
 })
 export class MeuPerfilComponent {

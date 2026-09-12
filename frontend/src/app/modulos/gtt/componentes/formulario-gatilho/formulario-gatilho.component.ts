@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   GatilhoService,
   GatilhoRequisicao,
@@ -12,7 +12,7 @@ import { ModuloGtt } from '../../modelos/gtt.modelos';
 @Component({
   selector: 'app-formulario-gatilho',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './formulario-gatilho.component.html',
 })
 export class FormularioGatilhoComponent implements OnInit {

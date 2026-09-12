@@ -1,7 +1,6 @@
 package br.ufs.dcomp.sigeagtt.modulos.educacional.dto;
 
 import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.GravidadeNccMerp;
-import java.math.BigDecimal;
 
 public record SubmissaoGatilhoDTO(
         Long id,

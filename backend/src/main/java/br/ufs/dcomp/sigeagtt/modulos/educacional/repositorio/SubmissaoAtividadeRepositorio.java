@@ -5,11 +5,9 @@ import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.SubmissaoAtividade;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface SubmissaoAtividadeRepositorio extends JpaRepository<SubmissaoAtividade, Long> {
 
     Optional<SubmissaoAtividade> findByAtividadeIdAndAlunoId(Long atividadeId, Long alunoId);

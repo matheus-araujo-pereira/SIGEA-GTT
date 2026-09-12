@@ -4,10 +4,8 @@ import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.AtividadeEducacional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 
-@Repository
 public interface AtividadeEducacionalRepositorio extends JpaRepository<AtividadeEducacional, Long> {
 
     List<AtividadeEducacional> findByTurmaIdOrderByCriadaEmDesc(Long turmaId);
