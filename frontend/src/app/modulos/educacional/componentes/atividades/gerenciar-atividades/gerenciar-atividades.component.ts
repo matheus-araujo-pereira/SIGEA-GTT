@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { AtividadeEducacional } from '../../../modelos/educacional.modelos';
 import { TurmaService } from '../../../../turma/servicos/turma.service';
@@ -29,7 +29,7 @@ export interface AtividadeLinha {
 @Component({
   selector: 'app-gerenciar-atividades',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PaginacaoComponent],
   templateUrl: './gerenciar-atividades.component.html',
 })
 export class GerenciarAtividadesComponent implements OnInit {

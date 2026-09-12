@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
+import br.ufs.dcomp.sigeagtt.modulos.usuario.repositorio.UsuarioRepositorio;
 import java.util.Map;
 
 @RestController
@@ -25,10 +27,15 @@ public class AutenticacaoControlador {
 
     private final AutenticacaoServico servico;
     private final SecurityContextRepository securityContextRepository;
+    private final UsuarioRepositorio usuarioRepositorio;
 
-    public AutenticacaoControlador(AutenticacaoServico servico, SecurityContextRepository securityContextRepository) {
+    public AutenticacaoControlador(
+            AutenticacaoServico servico,
+            SecurityContextRepository securityContextRepository,
+            UsuarioRepositorio usuarioRepositorio) {
         this.servico = servico;
         this.securityContextRepository = securityContextRepository;
+        this.usuarioRepositorio = usuarioRepositorio;
     }
 
     @PostMapping("/entrar")
@@ -57,8 +64,12 @@ public class AutenticacaoControlador {
 
     private void autenticarSessao(LoginRespostaDTO resposta, HttpServletRequest request, HttpServletResponse response) {
         String role = "ROLE_" + resposta.perfil().name();
+        Usuario usuario = resposta.id() != null
+                ? usuarioRepositorio.findById(resposta.id()).orElse(null)
+                : usuarioRepositorio.findByEmail(resposta.email()).orElse(null);
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                resposta.email(),
+                usuario != null ? usuario : resposta.email(),
                 null,
                 List.of(new SimpleGrantedAuthority(role)));
         SecurityContext context = SecurityContextHolder.createEmptyContext();

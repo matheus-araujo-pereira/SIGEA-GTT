@@ -111,6 +111,6 @@ export class MinhasTurmasComponent implements OnInit {
   }
 
   verAvaliacoes(turmaId: number): void {
-    this.router.navigate(['/avaliacoes'], { queryParams: { turmaId } });
+    this.router.navigate(['/atividades/correcoes'], { queryParams: { turmaId } });
   }
 }

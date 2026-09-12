@@ -85,11 +85,6 @@ export class LayoutInternoComponent {
             rotulo: 'Casos Clínicos & Prontuários',
             icone: 'bi-file-earmark-medical',
           },
-          {
-            rota: '/atividades/correcoes',
-            rotulo: 'Painel de Correções',
-            icone: 'bi-clipboard-check',
-          },
         ],
       });
 
@@ -123,11 +118,6 @@ export class LayoutInternoComponent {
             rota: '/minhas-turmas',
             rotulo: 'Minhas Turmas',
             icone: 'bi-mortarboard',
-          },
-          {
-            rota: '/atividades/correcoes',
-            rotulo: 'Painel de Correções',
-            icone: 'bi-clipboard-check',
           },
         ],
       });

@@ -10,16 +10,26 @@
         vinculadas a casos clínicos e turmas
       </span>
     </div>
-    @if (ehDocenteOuAdmin()) {
-      <button
-        type="button"
-        class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
-        (click)="navegarParaNovo()"
-      >
-        <i class="bi bi-plus-circle-fill"></i>
-        <span>NOVA ATIVIDADE</span>
-      </button>
-    }
+    <div class="d-flex align-items-center gap-2">
+      @if (ehDocenteOuAdmin()) {
+        <a
+          routerLink="/atividades/correcoes"
+          class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+          title="Ver fila geral de submissões pendentes de correção docente"
+        >
+          <i class="bi bi-clipboard-check"></i>
+          <span>FILA DE CORREÇÕES</span>
+        </a>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+          (click)="navegarParaNovo()"
+        >
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>NOVA ATIVIDADE</span>
+        </button>
+      }
+    </div>
   </div>
 
   <!-- FEEDBACK -->

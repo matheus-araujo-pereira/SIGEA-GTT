@@ -15,6 +15,7 @@
             <a
               [routerLink]="item.rota"
               routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.rota === '/atividades' }"
               class="nav-link py-2 px-3 d-flex align-items-center gap-2 mb-1"
             >
               <i class="bi" [class]="item.icone"></i>

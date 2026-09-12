@@ -450,6 +450,7 @@
                             <select
                               class="form-select form-select-sm"
                               [(ngModel)]="g.confirmouDano"
+                              (ngModelChange)="notificarMudanca()"
                             >
                               <option [ngValue]="false">
                                 NÃO (Gatilho isolado, sem dano ao paciente)
@@ -470,6 +471,7 @@
                             <select
                               class="form-select form-select-sm"
                               [(ngModel)]="g.danoPresenteAdmissao"
+                              (ngModelChange)="notificarMudanca()"
                             >
                               <option [ngValue]="false">
                                 NÃO (Ocorreu durante a internação)
@@ -492,28 +494,27 @@
                               <select
                                 class="form-select form-select-sm"
                                 [(ngModel)]="g.gravidade"
+                                (ngModelChange)="notificarMudanca()"
                                 required
                               >
                                 <option [ngValue]="null" disabled>
                                   Selecione a categoria...
                                 </option>
                                 <option value="CATEGORIA_E">
-                                  Categoria E - Dano temporário c/ necessidade
-                                  intervenção
+                                  Categoria E: Dano temporário com intervenção
                                 </option>
                                 <option value="CATEGORIA_F">
-                                  Categoria F - Dano temporário c/ prolongamento
-                                  hospitalar
+                                  Categoria F: Dano temporário com internação
+                                  prolongada
                                 </option>
                                 <option value="CATEGORIA_G">
-                                  Categoria G - Dano permanente ao paciente
+                                  Categoria G: Dano permanente
                                 </option>
                                 <option value="CATEGORIA_H">
-                                  Categoria H - Intervenção suporte de vida
-                                  (&lt; 1h)
+                                  Categoria H: Intervenção suporte à vida
                                 </option>
                                 <option value="CATEGORIA_I">
-                                  Categoria I - Óbito com cuidado contribuinte
+                                  Categoria I: Óbito contribuído
                                 </option>
                               </select>
                             </div>
@@ -527,9 +528,10 @@
                               <select
                                 class="form-select form-select-sm"
                                 [(ngModel)]="g.categoriaEaId"
+                                (ngModelChange)="notificarMudanca()"
                               >
                                 <option [ngValue]="null">
-                                  Selecione a categoria do EA...
+                                  Sem categoria específica...
                                 </option>
                                 @for (cat of categoriasEA(); track cat.id) {
                                   <option [ngValue]="cat.id">
@@ -550,6 +552,7 @@
                                 class="form-control form-control-sm font-monospace"
                                 rows="2"
                                 [(ngModel)]="g.justificativaDano"
+                                (ngModelChange)="notificarMudanca()"
                                 placeholder="Descreva a evidência no prontuário que comprova o dano resultante..."
                               ></textarea>
                             </div>
@@ -588,6 +591,7 @@
                     type="text"
                     class="form-control form-control-sm fw-bold"
                     [(ngModel)]="ishikawa.efeitoPrincipal"
+                    (ngModelChange)="notificarMudanca()"
                     placeholder="Ex.: Hemorragia Digestiva Alta secundária a anticoagulação sem monitoramento de RNI"
                     required
                   />
@@ -604,6 +608,7 @@
                       class="form-control form-control-sm font-monospace"
                       rows="3"
                       [(ngModel)]="ishikawa.metodo"
+                      (ngModelChange)="notificarMudanca()"
                       placeholder="Falha na adesão ao protocolo de anticoagulação institucional, ausência de duplo-cheque..."
                     ></textarea>
                   </div>
@@ -617,6 +622,7 @@
                       class="form-control form-control-sm font-monospace"
                       rows="3"
                       [(ngModel)]="ishikawa.maoDeObra"
+                      (ngModelChange)="notificarMudanca()"
                       placeholder="Equipe assistencial sobrecarregada, falha de passagem de plantão, comunicação deficiente..."
                     ></textarea>
                   </div>
@@ -630,6 +636,7 @@
                       class="form-control form-control-sm font-monospace"
                       rows="3"
                       [(ngModel)]="ishikawa.material"
+                      (ngModelChange)="notificarMudanca()"
                       placeholder="Apresentação de ampolas semelhantes (LASA), reagente laboratorial com atraso..."
                     ></textarea>
                   </div>
@@ -643,6 +650,7 @@
                       class="form-control form-control-sm font-monospace"
                       rows="3"
                       [(ngModel)]="ishikawa.medida"
+                      (ngModelChange)="notificarMudanca()"
                       placeholder="Intervalo inadequado entre dosagens de coagulograma, falta de alarme de exames críticos..."
                     ></textarea>
                   </div>
@@ -657,6 +665,7 @@
                       class="form-control form-control-sm font-monospace"
                       rows="3"
                       [(ngModel)]="ishikawa.meioAmbiente"
+                      (ngModelChange)="notificarMudanca()"
                       placeholder="Área de preparo de medicação com excesso de interrupções e barulho..."
                     ></textarea>
                   </div>
@@ -671,6 +680,7 @@
                       class="form-control form-control-sm font-monospace"
                       rows="3"
                       [(ngModel)]="ishikawa.maquina"
+                      (ngModelChange)="notificarMudanca()"
                       placeholder="Bomba de infusão sem dose-guard configurado, sistema eletrônico sem aviso de interação..."
                     ></textarea>
                   </div>
@@ -736,6 +746,7 @@
                             type="text"
                             class="form-control form-control-sm"
                             [(ngModel)]="p.oQue"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Ex.: Implantar protocolo de dupla checagem para anticoagulantes"
                             required
                           />
@@ -752,6 +763,7 @@
                             type="text"
                             class="form-control form-control-sm"
                             [(ngModel)]="p.porQue"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Ex.: Reduzir em 90% os erros de dosagem em pacientes internados"
                             required
                           />
@@ -768,6 +780,7 @@
                             type="text"
                             class="form-control form-control-sm"
                             [(ngModel)]="p.quem"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Ex.: Farmácia Clínica e Chefia de Enfermagem"
                             required
                           />
@@ -782,6 +795,7 @@
                             type="text"
                             class="form-control form-control-sm"
                             [(ngModel)]="p.onde"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Ex.: Todas as enfermarias de internação clínica e UTI"
                           />
                         </div>
@@ -795,6 +809,7 @@
                             type="text"
                             class="form-control form-control-sm"
                             [(ngModel)]="p.quando"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Ex.: Até 30 dias úteis"
                           />
                         </div>
@@ -808,6 +823,7 @@
                             class="form-control form-control-sm font-monospace"
                             rows="2"
                             [(ngModel)]="p.como"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Treinamento com simulação realística e auditoria diária..."
                           ></textarea>
                         </div>
@@ -821,6 +837,7 @@
                             class="form-control form-control-sm font-monospace"
                             rows="2"
                             [(ngModel)]="p.comoMedir"
+                            (ngModelChange)="notificarMudanca()"
                             placeholder="Taxa de adesão ao duplo-cheque via checklist no prontuário..."
                           ></textarea>
                         </div>
@@ -858,6 +875,7 @@
                         class="form-control form-control-sm font-monospace"
                         rows="4"
                         [(ngModel)]="pdca.planejar"
+                        (ngModelChange)="notificarMudanca()"
                         required
                         placeholder="Identificar o problema, estabelecer metas mensuráveis e desenhar o novo fluxo assistencial..."
                       ></textarea>
@@ -879,6 +897,7 @@
                         class="form-control form-control-sm font-monospace"
                         rows="4"
                         [(ngModel)]="pdca.fazer"
+                        (ngModelChange)="notificarMudanca()"
                         required
                         placeholder="Aplicar o teste piloto na unidade HU selecionada, capacitando a equipe assistencial..."
                       ></textarea>
@@ -899,6 +918,7 @@
                         class="form-control form-control-sm font-monospace"
                         rows="4"
                         [(ngModel)]="pdca.checar"
+                        (ngModelChange)="notificarMudanca()"
                         required
                         placeholder="Comparar os dados antes e depois da intervenção com os gatilhos GTT rastreados..."
                       ></textarea>
@@ -920,6 +940,7 @@
                         class="form-control form-control-sm font-monospace"
                         rows="4"
                         [(ngModel)]="pdca.agir"
+                        (ngModelChange)="notificarMudanca()"
                         required
                         placeholder="Adotar a mudança como padrão institucional ou ajustar o plano em novo ciclo PDCA..."
                       ></textarea>

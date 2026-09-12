@@ -100,23 +100,41 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     () => this.tempoGastoSegundos >= this.tempoLimiteSegundos,
   );
 
+  // Controle de versão reativa para cálculo de progresso
+  readonly versaoResolucao = signal(0);
+
+  notificarMudanca(): void {
+    this.versaoResolucao.update((v) => v + 1);
+  }
+
   // Progresso dos 4 pilares
-  readonly progressoGatilhos = computed(() => this.achadosGatilhos.length > 0);
-  readonly progressoIshikawa = computed(
-    () => !!this.ishikawa.efeitoPrincipal.trim(),
-  );
-  readonly progresso5w3h = computed(
-    () => this.planos5w3h.length > 0 && !!this.planos5w3h[0].oQue.trim(),
-  );
-  readonly progressoPdca = computed(
-    () =>
-      !!this.pdca.planejar.trim() &&
-      !!this.pdca.fazer.trim() &&
-      !!this.pdca.checar.trim() &&
-      !!this.pdca.agir.trim(),
-  );
+  readonly progressoGatilhos = computed(() => {
+    this.versaoResolucao();
+    return this.achadosGatilhos.length > 0;
+  });
+
+  readonly progressoIshikawa = computed(() => {
+    this.versaoResolucao();
+    return !!this.ishikawa.efeitoPrincipal && this.ishikawa.efeitoPrincipal.trim().length > 0;
+  });
+
+  readonly progresso5w3h = computed(() => {
+    this.versaoResolucao();
+    return this.planos5w3h.length > 0 && !!this.planos5w3h[0].oQue && this.planos5w3h[0].oQue.trim().length > 0;
+  });
+
+  readonly progressoPdca = computed(() => {
+    this.versaoResolucao();
+    return (
+      !!this.pdca.planejar?.trim() &&
+      !!this.pdca.fazer?.trim() &&
+      !!this.pdca.checar?.trim() &&
+      !!this.pdca.agir?.trim()
+    );
+  });
 
   readonly totalPilaresCompletos = computed(() => {
+    this.versaoResolucao();
     let count = 0;
     if (this.progressoGatilhos()) count++;
     if (this.progressoIshikawa()) count++;
@@ -129,12 +147,12 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     () => (this.totalPilaresCompletos() / 4) * 100,
   );
 
-  // Filtro de gatilhos no modal
+  // Filtro de gatilhos no modal com ordenação natural (C1, C2, ..., C10, C11, ...)
   readonly gatilhosFiltrados = computed(() => {
     const termo = this.termoBuscaGatilho().trim().toLowerCase();
     const moduloId = this.filtroModuloGatilho();
 
-    return this.todosGatilhos().filter((g) => {
+    const filtrados = this.todosGatilhos().filter((g) => {
       const matchModulo = !moduloId || g.modulo?.id === moduloId;
       const matchTermo =
         !termo ||
@@ -143,6 +161,13 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
         (g.modulo?.nome && g.modulo.nome.toLowerCase().includes(termo));
       return matchModulo && matchTermo;
     });
+
+    return filtrados.sort((a, b) =>
+      (a.codigo || '').localeCompare(b.codigo || '', undefined, {
+        numeric: true,
+        sensitivity: 'base',
+      }),
+    );
   });
 
   atualizarFiltroModulo(valor: any): void {
@@ -205,6 +230,7 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
           this.pdca = { ...sub.pdca };
         }
 
+        this.notificarMudanca();
         this.iniciarTemporizador();
         this.iniciarAutoSave();
         this.carregando.set(false);
@@ -263,11 +289,13 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
       categoriaEaId: null,
     });
 
+    this.notificarMudanca();
     this.fecharModalGatilho();
   }
 
   removerGatilho(index: number): void {
     this.achadosGatilhos.splice(index, 1);
+    this.notificarMudanca();
   }
 
   // --- 5W3H ---
@@ -282,6 +310,7 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
       quantoCusta: null,
       comoMedir: '',
     });
+    this.notificarMudanca();
   }
 
   removerAcao5w3h(index: number): void {
@@ -299,6 +328,7 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
         comoMedir: '',
       };
     }
+    this.notificarMudanca();
   }
 
   // --- SALVAMENTO / SUBMISSÃO ---

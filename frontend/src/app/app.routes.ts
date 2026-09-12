@@ -221,6 +221,11 @@ export const routes: Routes = [
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR', 'PROFESSOR'] },
       },
+      {
+        path: 'avaliacoes',
+        redirectTo: 'atividades/correcoes',
+        pathMatch: 'full',
+      },
 
       // Correção e Avaliação Docente
       {

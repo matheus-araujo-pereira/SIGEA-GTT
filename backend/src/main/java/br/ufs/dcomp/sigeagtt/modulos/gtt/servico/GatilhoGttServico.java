@@ -24,10 +24,54 @@ public class GatilhoGttServico {
 
     @Transactional(readOnly = true)
     public List<GatilhoGtt> listar(Long moduloId) {
+        List<GatilhoGtt> lista;
         if (moduloId != null) {
-            return gatilhoRepositorio.findAllByModuloId(moduloId);
+            lista = gatilhoRepositorio.findAllByModuloId(moduloId);
+        } else {
+            lista = gatilhoRepositorio.findAllOrderByCodigo();
         }
-        return gatilhoRepositorio.findAllOrderByCodigo();
+        return ordenarNaturalmente(lista);
+    }
+
+    private List<GatilhoGtt> ordenarNaturalmente(List<GatilhoGtt> lista) {
+        if (lista == null || lista.isEmpty()) {
+            return lista;
+        }
+        java.util.List<GatilhoGtt> mutavel = new java.util.ArrayList<>(lista);
+        mutavel.sort((g1, g2) -> {
+            String mod1 = (g1.getModulo() != null && g1.getModulo().getCodigo() != null) ? g1.getModulo().getCodigo() : "";
+            String mod2 = (g2.getModulo() != null && g2.getModulo().getCodigo() != null) ? g2.getModulo().getCodigo() : "";
+            int cmpMod = mod1.compareToIgnoreCase(mod2);
+            if (cmpMod != 0) {
+                return cmpMod;
+            }
+            return compararCodigosNaturalmente(g1.getCodigo(), g2.getCodigo());
+        });
+        return mutavel;
+    }
+
+    private int compararCodigosNaturalmente(String cod1, String cod2) {
+        if (cod1 == null) return cod2 == null ? 0 : -1;
+        if (cod2 == null) return 1;
+
+        String prefix1 = cod1.replaceAll("\\d", "");
+        String prefix2 = cod2.replaceAll("\\d", "");
+        int cmpPrefix = prefix1.compareToIgnoreCase(prefix2);
+        if (cmpPrefix != 0) {
+            return cmpPrefix;
+        }
+
+        String digits1 = cod1.replaceAll("\\D", "");
+        String digits2 = cod2.replaceAll("\\D", "");
+        if (!digits1.isEmpty() && !digits2.isEmpty()) {
+            try {
+                int n1 = Integer.parseInt(digits1);
+                int n2 = Integer.parseInt(digits2);
+                return Integer.compare(n1, n2);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return cod1.compareToIgnoreCase(cod2);
     }
 
     @Transactional(readOnly = true)

@@ -43,6 +43,7 @@ DECLARE
   t_ccir_26_1 BIGINT;
   t_uti_26_2  BIGINT;
   t_qual_26_2 BIGINT;
+  t_gtt_26_1  BIGINT;
 
   -- Casos Clínicos
   caso1 BIGINT;
@@ -56,6 +57,7 @@ DECLARE
   atv2 BIGINT;
   atv3 BIGINT;
   atv4 BIGINT;
+  atv5 BIGINT;
 
   -- Submissões
   sub_id BIGINT;
@@ -254,19 +256,26 @@ BEGIN
   RETURNING id INTO t_uti_26_2;
 
   INSERT INTO turmas (professor_responsavel_id, codigo_disciplina, nome_disciplina, periodo_letivo, ano_semestre, ativa, criada_em)
-  VALUES (prof_anawaleska, 'ENF-0301', 'Gerenciamento de Riscos e Segurança do Paciente', '2026.2', '2026.2', true, '2026-06-15 08:00:00-03')
+  VALUES (prof_anawaleska, 'ENF-0301', 'Gerenciamento de Riscos e Segurança do Paciente', '2026.1', '2026.1', true, '2026-01-22 08:00:00-03')
   RETURNING id INTO t_qual_26_2;
 
-  -- Matricular Alunos 1 a 10 nas Turmas MED-0101 e MED-0201
+  INSERT INTO turmas (professor_responsavel_id, codigo_disciplina, nome_disciplina, periodo_letivo, ano_semestre, ativa, criada_em)
+  VALUES (prof_anawaleska, 'MED-0305', 'Auditoria Clínica e Metodologia IHI-GTT', '2026.1', '2026.1', true, '2026-01-25 08:00:00-03')
+  RETURNING id INTO t_gtt_26_1;
+
+  -- Matricular Alunos 1 a 10 nas Turmas MED-0101, MED-0201, ENF-0301 e MED-0305
   FOR i IN 1..10 LOOP
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_cmed_26_1, aluno_ids[i]) ON CONFLICT DO NOTHING;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_uti_26_2, aluno_ids[i]) ON CONFLICT DO NOTHING;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_qual_26_2, aluno_ids[i]) ON CONFLICT DO NOTHING;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_gtt_26_1, aluno_ids[i]) ON CONFLICT DO NOTHING;
   END LOOP;
 
-  -- Matricular Alunos 11 a 20 nas Turmas MED-0102 e ENF-0301
+  -- Matricular Alunos 11 a 20 nas Turmas MED-0102, ENF-0301 e MED-0305
   FOR i IN 11..20 LOOP
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_ccir_26_1, aluno_ids[i]) ON CONFLICT DO NOTHING;
     INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_qual_26_2, aluno_ids[i]) ON CONFLICT DO NOTHING;
+    INSERT INTO turma_alunos (turma_id, aluno_id) VALUES (t_gtt_26_1, aluno_ids[i]) ON CONFLICT DO NOTHING;
   END LOOP;
 
   -- ---------------------------------------------------------------------------
@@ -404,8 +413,17 @@ BEGIN
     t_qual_26_2, caso5,
     'Atividade 4: Investigação GTT em Urgência & Barreiras de Segurança Medicamentosa',
     'Audite o prontuário de choque anafilático ATD-2026-0904. Analise a correlação entre gatilhos de urgência e cuidados, a falha das barreiras assistenciais e desenhe as medidas definitivas no ciclo de melhoria contínua.',
-    '2026-08-01 08:00:00-03', '2026-10-31 23:59:59-03', 20, true, '2026-07-28 09:30:00-03'
+    '2026-02-01 08:00:00-03', '2026-12-31 23:59:59-03', 20, true, '2026-01-28 09:30:00-03'
   ) RETURNING id INTO atv4;
+
+  INSERT INTO atividades_educacionais (
+    turma_id, caso_clinico_id, titulo, orientacoes_pedagogicas, data_inicio, data_fim, tempo_limite_minutos, ativa, criada_em
+  ) VALUES (
+    t_gtt_26_1, caso3,
+    'Atividade 5: Metodologia IHI GTT em Terapia Intensiva & Prevenção de PAV',
+    'Audite o prontuário do paciente crítico sob ventilação mecânica no HU-UFS. Identifique os gatilhos dos módulos C e M, modele a causa-raiz no Diagrama de Ishikawa 6M e trace ações corretivas no 5W3H e PDCA.',
+    '2026-02-15 08:00:00-03', '2026-12-31 23:59:59-03', 20, true, '2026-02-01 10:00:00-03'
+  ) RETURNING id INTO atv5;
 
   -- ---------------------------------------------------------------------------
   -- 9. SUBMISSÕES AVALIADAS COM NOTAS E FEEDBACK PEDAGÓGICO
@@ -562,6 +580,154 @@ BEGIN
     'Padronizar o registro do cufômetro no prontuário eletrônico como barreira assistencial'
   );
 
+  -- Submissão 4: Aluno Carlos Santos na Atividade 4 (Nota 9.20 pela Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao,
+    professor_corretor_id, nota, parecer_docente, data_avaliacao
+  ) VALUES (
+    atv4, aluno_ids[5], 'AVALIADA', 1100, '2026-09-06 09:00:00-03', '2026-09-06 09:18:20-03',
+    prof_anawaleska, 9.20,
+    'Excelente identificação do choque anafilático como evento adverso Categoria H do NCC MERP e correlação precisa com os gatilhos C2 e M12. A análise no diagrama de causa e efeito destacou a ausência de pulseira vermelha e o plano de ação 5W3H foi cirúrgico na implantação da dupla checagem.',
+    '2026-09-08 14:30:00-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_c2, cat_ram, true, 'Parada cardiorrespiratória em AESP revertida com suporte avançado após choque anafilático.', false, 'CATEGORIA_H'),
+    (sub_id, gat_m12, cat_ram, true, 'Reação adversa grave e imediata após administração intravenosa de dipirona em paciente com alergia prévia.', false, 'CATEGORIA_H');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'Choque Anafilático e Parada Cardiorrespiratória por Alergia Medicamentosa no Pronto-Socorro',
+    'Administração de medicação injetável sem verificação do campo de alergias na ficha de admissão',
+    'Técnica de enfermagem sob estresse de alta demanda no pronto-socorro e sem confirmação verbal',
+    'Inexistência de pulseira vermelha de identificação de paciente alérgico no momento do atendimento',
+    'Ausência de checagem à beira do leito dos 5 certos da medicação',
+    'Sala de emergência com superlotação e ruídos constantes que induziram à distração',
+    'Prontuário informatizado sem alerta impeditivo para prescrição de dipirona em pacientes alérgicos'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Implantar uso obrigatório de pulseiras vermelhas de alergia e dupla checagem na sala de medicação',
+    'Eliminar 100% dos erros de administração de medicamentos alergênicos conhecidos',
+    'Núcleo de Segurança do Paciente e Coordenação de Enfermagem do Pronto-Socorro',
+    'Serviço de Urgência e Emergência do HU-UFS',
+    'Outubro de 2026',
+    'Colocação imediata da pulseira vermelha no acolhimento com classificação de risco e dupla checagem obrigatória no preparo e administração',
+    450.00,
+    'Percentual de pacientes alérgicos devidamente identificados com pulseira vermelha (> 98%)'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Planejar o fluxo de identificação visual de alergias e parametrização de alertas no sistema hospitalar',
+    'Treinar as equipes de triagem e enfermagem na colocação da pulseira e checagem à beira do leito',
+    'Realizar auditorias semanais surpresa nos postos de medicação do PS',
+    'Instituir a barreira como procedimento operacional padrão (POP) obrigatório em todo o hospital'
+  );
+
+  -- Submissão 5: Aluna Mariana Nogueira na Atividade 4 (Nota 8.80 pela Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao,
+    professor_corretor_id, nota, parecer_docente, data_avaliacao
+  ) VALUES (
+    atv4, aluno_ids[6], 'AVALIADA', 1180, '2026-09-07 11:00:00-03', '2026-09-07 11:19:40-03',
+    prof_anawaleska, 8.80,
+    'Boa contextualização da falha de comunicação entre triagem e administração. O diagrama de Ishikawa pontuou os fatores humanos adequadamente. Como recomendação de aprimoramento, detalhe mais os indicadores de monitoramento no PDCA.',
+    '2026-09-09 16:00:00-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_c2, cat_ram, true, 'PCR em AESP secundária a anafilaxia medicamentosa aguda.', false, 'CATEGORIA_H');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'Anafilaxia Grave por Dipirona na Emergência',
+    'Não conferência das alergias registradas antes da punção venosa',
+    'Falta de comunicação da triagem com o setor de medicação rápida',
+    'Ausência de identificador físico no paciente',
+    'Não realização da dupla checagem independente',
+    'Ambiente tumultuado no pronto atendimento',
+    'Falta de leitor de código de barras nas pulseiras'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Criar comitê de segurança medicamentosa no pronto-socorro',
+    'Reduzir falhas de comunicação e dispensação de fármacos',
+    'Equipe Multiprofissional do Pronto Atendimento',
+    'HU-UFS',
+    'Novembro de 2026',
+    'Reuniões quinzenais de análise de incidentes notificados',
+    0.00,
+    'Número de incidentes de medicação notificados'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Elaborar campanha institucional sobre alergias medicamentosas',
+    'Distribuir cartazes educativos e realizar treinamentos de 15 minutos em passagem de plantão',
+    'Verificar notificações de quase-falhas (near miss) no sistema de farmacovigilância',
+    'Revisar a política institucional de segurança na prescrição médica'
+  );
+
+  -- Submissão 6: Aluno Gabriel Ramos na Atividade 5 (Nota 9.70 pela Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao,
+    professor_corretor_id, nota, parecer_docente, data_avaliacao
+  ) VALUES (
+    atv5, aluno_ids[7], 'AVALIADA', 1050, '2026-09-08 15:00:00-03', '2026-09-08 15:17:30-03',
+    prof_anawaleska, 9.70,
+    'Análise metodológica brilhante! O aluno aplicou os critérios estritos do IHI GTT para identificação da PAV em terapia intensiva, justificou com rigor a gravidade F do dano e propôs melhorias robustas para as 5 intervenções do bundle.',
+    '2026-09-10 10:30:00-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_i1, cat_iras, true, 'Infecção pulmonar nosocomial comprovada após 7 dias de ventilação mecânica na UTI.', false, 'CATEGORIA_F');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'Desenvolvimento de Pneumonia Associada à Ventilação Mecânica na UTI Adulto',
+    'Protocolo de elevação de cabeceira não cumprido no período noturno',
+    'Falta de treinamento periódico dos fisioterapeutas respiratórios e enfermagem',
+    'Ruptura de estoque temporária de clorexidina oral a 0,12%',
+    'Monitorização da pressão do cuff realizada com intervalo superior a 12 horas',
+    'Alta taxa de ocupação da UTI e pacientes colonizados em leitos vizinhos',
+    'Circuitos ventilatórios com condensado acumulado sem drenagem frequente'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Estabelecer ronda multiprofissional diária de auditoria do bundle de ventilação',
+    'Alcançar zero casos de infecção respiratória prevenível por VM',
+    'Médico Rotineiro, Enfermeiro Chefe e Fisioterapeuta da UTI',
+    'Todos os leitos da UTI Adulto',
+    'Outubro de 2026',
+    'Checklist presencial obrigatório todos os dias às 09h00 com registro em painel visual',
+    200.00,
+    'Taxa de conformidade do bundle de PAV e densidade de incidência'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Construir a ferramenta digital de auditoria do bundle para smartphone/tablet da UTI',
+    'Executar o monitoramento diário registrando não conformidades em tempo real',
+    'Comparar as taxas de PAV trimestrais antes e depois da implementação',
+    'Compartilhar os resultados em sessão clínica mensal e premiar o melhor plantão'
+  );
+
   -- ---------------------------------------------------------------------------
   -- 10. SUBMISSÕES PENDENTES DE CORREÇÃO (PARA TESTAR O FLUXO DO PROFESSOR)
   -- ---------------------------------------------------------------------------
@@ -703,10 +869,236 @@ BEGIN
     'Reconhecer as equipes com maior taxa de conformidade e padronizar o método'
   );
 
+  -- Pendente 4: Aluno Lucas Sampaio na Atividade 4 (Aguardando Correção da Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
+  ) VALUES (
+    atv4, aluno_ids[1], 'SUBMETIDA', 1130, '2026-09-12 11:00:00-03', '2026-09-12 11:18:50-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_c2, cat_ram, true, 'Parada cardiorrespiratória por anafilaxia grave após administração de dipirona em paciente com histórico alérgico.', false, 'CATEGORIA_H'),
+    (sub_id, gat_m12, cat_ram, true, 'Reação adversa medicamentosa com comprometimento de vias aéreas e choque circulatório imediato.', false, 'CATEGORIA_H');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'Choque Anafilático e Parada Cardiorrespiratória por Falha de Barreira Medicamentosa',
+    'Inexistência de checagem ativa com o paciente antes da administração venosa',
+    'Equipe de enfermagem executando múltiplas tarefas simultâneas no plantão',
+    'Pulseira de alerta de alergia não fornecida no acolhimento da emergência',
+    'Sem dupla checagem obrigatória no preparo de fármacos de alto risco',
+    'Posto de enfermagem com ruído e conversas paralelas durante a diluição',
+    'Sistema eletrônico sem aviso em tela cheia ao prescrever dipirona para alérgico'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Instituir dupla conferência beira-leito e pulseira vermelha padronizada',
+    'Prevenir a ocorrência de anafilaxia por erro de administração',
+    'Coordenação de Enfermagem e Farmácia Hospitalar',
+    'Pronto-Socorro e Enfermarias do HU-UFS',
+    'Outubro de 2026',
+    'Obrigatório conferir a identificação do paciente, alergias relatadas e prescrição com dois profissionais',
+    350.00,
+    'Taxa de conformidade de identificação de alergias no prontuário e pulseira'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Desenvolver protocolo operacional padrão para triagem de risco alérgico',
+    'Capacitar enfermeiros e técnicos de enfermagem em simulação realística',
+    'Auditar prontuários da emergência quinzenalmente quanto ao preenchimento do campo de alergias',
+    'Adotar a pulseira vermelha em todas as unidades de internação do hospital'
+  );
+
+  -- Pendente 5: Aluna Juliana Campos na Atividade 4 (Aguardando Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
+  ) VALUES (
+    atv4, aluno_ids[2], 'SUBMETIDA', 1190, '2026-09-12 11:10:00-03', '2026-09-12 11:29:50-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_c2, cat_ram, true, 'PCR em AESP decorrente de choque anafilático grave após infusão venosa rápida de dipirona.', false, 'CATEGORIA_H'),
+    (sub_id, gat_m12, cat_ram, true, 'RAM grave desencadeada por administração inadvertida de fármaco contraindicado.', false, 'CATEGORIA_H');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'PCR por Choque Anafilático Medicamentoso',
+    'Falta de protocolo de conferência de alergia na medicação rápida',
+    'Alta rotatividade de plantonistas na sala de emergência',
+    'Falta de identificação visual no leito e no paciente',
+    'Inexistência de duplo-check independente',
+    'Sala de emergência agitada e com pouca ventilação',
+    'Falta de integração entre o sistema de triagem de Manchester e a prescrição'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Implantar tela de bloqueio de alergia na prescrição e prontuário',
+    'Bloquear prescrição de fármacos conhecidos como alergênicos',
+    'Setor de Tecnologia da Informação e Núcleo de Segurança',
+    'Sistema AGHU / Prontuário HU-UFS',
+    'Novembro de 2026',
+    'Alerta vermelho impeditivo exigindo senha de justificativa médica',
+    0.00,
+    'Percentual de bloqueios respeitados pelo corpo clínico'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Mapear todas as substâncias com potencial alergênico prescritas com frequência',
+    'Implementar validação cruzada entre triagem de enfermagem e sistema de prescrição',
+    'Checar a frequência de alertas disparados e acatados pelos médicos',
+    'Consolidar a ferramenta como barreira de segurança obrigatória'
+  );
+
+  -- Pendente 6: Aluna Beatriz Costa na Atividade 4 (Aguardando Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
+  ) VALUES (
+    atv4, aluno_ids[3], 'SUBMETIDA', 1080, '2026-09-12 11:30:00-03', '2026-09-12 11:48:00-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_c2, cat_ram, true, 'Intervenção imediata de reanimação necessária para sustentar a vida por colapso anafilático.', false, 'CATEGORIA_H');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, meio_ambiente)
+  VALUES (
+    sub_id,
+    'Colapso Circulatório e Parada Cardíaca por Anafilaxia no Pronto-Socorro',
+    'Prescrição verbal e administração rápida sem checagem de alergia no histórico do paciente',
+    'Profissionais de enfermagem recém-admitidos sem treinamento de segurança medicamentosa',
+    'Ausência de fita de identificação de alergia no setor de medicação',
+    'Ambiente barulhento do pronto atendimento com interrupções frequentes'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Padronizar protocolo de identificação de alergia e dupla checagem',
+    'Prevenir acidentes anafiláticos na urgência',
+    'Comissão de Farmácia e Enfermagem',
+    'Setor de Urgência HU-UFS',
+    'Outubro de 2026',
+    'Colocação imediata de pulseira vermelha na entrada do paciente',
+    200.00,
+    'Taxa de adesão à identificação de alergia'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Desenvolver diretriz simples e rápida para checagem de alergias no acolhimento',
+    'Treinar todos os técnicos de enfermagem e recepcionistas do pronto atendimento',
+    'Auditar semanalmente prontuários de pacientes medicados no PS',
+    'Instituir premiação para equipes com conformidade máxima nas auditorias'
+  );
+
+  -- Pendente 7: Aluno Rafael Lima na Atividade 5 (Aguardando Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
+  ) VALUES (
+    atv5, aluno_ids[8], 'SUBMETIDA', 1170, '2026-09-12 12:00:00-03', '2026-09-12 12:19:30-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_i1, cat_iras, true, 'Pneumonia hospitalar em paciente intubado por mais de 48 horas.', false, 'CATEGORIA_F');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'PAV em Paciente Crítico na Terapia Intensiva',
+    'Não conformidade na rotina de higiene oral com clorexidina e aspiração subglótica',
+    'Dimensionamento de pessoal de enfermagem inadequado no período noturno',
+    'Tubo orotraqueal sem dispositivo de aspiração de secreção acima do balonete',
+    'Ausência de registro sistemático da pressão do cuff no prontuário',
+    'UTI com leitos muito próximos favorecendo contaminação cruzada',
+    'Filtros de ventilação mecânica sem troca no tempo recomendado'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Adotar tubos endotraqueais com aspiração contínua subglótica em intubados prolongados',
+    'Diminuir a microaspiração de secreções colonizadas para a via aérea inferior',
+    'Serviço de Farmácia e Suprimentos e Coordenação da UTI',
+    'Leitos da UTI Adulto',
+    'Dezembro de 2026',
+    'Padronizar compra e uso prioritário desses dispositivos na UTI',
+    1500.00,
+    'Taxa de incidência de PAV por 1.000 dias de ventilação mecânica'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Elaborar estudo de custo-efetividade demonstrando a economia com redução de diárias de UTI e antibióticos',
+    'Iniciar uso piloto em todos os novos pacientes intubados na UTI',
+    'Monitorar semanalmente as culturas de aspirado traqueal junto à CCIH',
+    'Tornar padrão de compra institucional para toda a terapia intensiva'
+  );
+
+  -- Pendente 8: Aluno Thiago Rocha na Atividade 5 (Aguardando Profa. Ana Waleska)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
+  ) VALUES (
+    atv5, aluno_ids[9], 'SUBMETIDA', 1140, '2026-09-12 12:30:00-03', '2026-09-12 12:49:00-03'
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_i1, cat_iras, true, 'Infecção pulmonar bacteriana com piora gasométrica em paciente crítico após 7 dias de VM.', false, 'CATEGORIA_F');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'Pneumonia Associada à Ventilação Mecânica (PAV)',
+    'Atraso na realização do desmame ventilatório diário',
+    'Equipe de enfermagem sobrecarregada com cuidados de alta complexidade',
+    'Falta de cufômetros digitais na unidade de terapia intensiva',
+    'Inexistência de protocolo formal de higiene oral padronizado por escrito',
+    'Carga bacteriana elevada no ambiente hospitalar da UTI',
+    'Respiradores mecânicos antigos com alarmes pouco sensíveis'
+  );
+
+  INSERT INTO submissao_planos_5w3h (submissao_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (
+    sub_id,
+    'Capacitar 100% da equipe da UTI no bundle de prevenção de PAV da ANVISA',
+    'Eliminar infecções respiratórias preveníveis no serviço de terapia intensiva',
+    'CCIH e Educação Permanente em Saúde do HU-UFS',
+    'Auditório e UTI Adulto do HU-UFS',
+    'Novembro de 2026',
+    'Oficinas práticas de higiene oral e aferição correta da pressão do cuff',
+    300.00,
+    'Índice de conformidade na auditoria do bundle'
+  );
+
+  INSERT INTO submissao_pdca (submissao_id, planejar, fazer, checar, agir)
+  VALUES (
+    sub_id,
+    'Atualizar o guia de práticas assistenciais da UTI para manejo da via aérea artificial',
+    'Realizar simulações em serviço com médicos, fisioterapeutas e técnicos de enfermagem',
+    'Acompanhar mensalmente a densidade de incidência de PAV divulgada pela CCIH',
+    'Revisar anualmente as metas assistenciais do serviço de terapia intensiva'
+  );
+
   -- ---------------------------------------------------------------------------
-  -- 11. SUBMISSÃO EM ANDAMENTO (RASCUNHO DO ALUNO - TESTAR RETOMADA)
+  -- 11. SUBMISSÕES EM ANDAMENTO (RASCUNHOS DOS ALUNOS - TESTAR RETOMADA)
   -- ---------------------------------------------------------------------------
-  -- Aluna Letícia Tavares na Atividade 4 (Em Andamento)
+
+  -- Rascunho 1: Aluna Letícia Tavares na Atividade 4 (Em Andamento)
   INSERT INTO submissoes_atividades (
     atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
   ) VALUES (
@@ -729,7 +1121,28 @@ BEGIN
     'Carrinho de parada cardíaca sem laringoscópio testado previamente'
   );
 
-  -- (Aluna ainda não preencheu 5W3H e PDCA -> Rascunho salvo para continuar!)
+  -- Rascunho 2: Aluno Vinicius Dias na Atividade 5 (Em Andamento)
+  INSERT INTO submissoes_atividades (
+    atividade_id, aluno_id, status, tempo_gasto_segundos, data_inicio, data_submissao
+  ) VALUES (
+    atv5, aluno_ids[18], 'EM_ANDAMENTO', 350, '2026-09-12 10:30:00-03', NULL
+  ) RETURNING id INTO sub_id;
+
+  INSERT INTO submissao_gatilhos (submissao_id, gatilho_id, categoria_ea_id, confirmou_dano, justificativa_dano, dano_presente_admissao, gravidade)
+  VALUES
+    (sub_id, gat_i1, cat_iras, true, 'Pneumonia em paciente ventilado mecanicamente na UTI.', false, 'CATEGORIA_F');
+
+  INSERT INTO submissao_ishikawa (submissao_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (
+    sub_id,
+    'Pneumonia Associada à Ventilação Mecânica na UTI Adulto',
+    'Higiene oral com clorexidina realizada de modo assistemático',
+    'Equipe reduzida no plantão noturno',
+    'Falta de kits de higiene oral na unidade',
+    'Cuff não aferido regularmente',
+    'Leitos com circulação contínua de ar condicionado',
+    'Circuitos de ventilação mecânica reutilizados'
+  );
 
   RAISE NOTICE '✔ [SUCESSO] Carga Educacional HU-UFS 2026 inserida com perfeição!';
 END $$;
