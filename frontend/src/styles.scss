@@ -4,31 +4,31 @@ $color3: #006666;
 $color4: #008584;
 $color5: #cccccc;
 
-$clinica-danger:  #b23b3b;
+$clinica-danger: #b23b3b;
 $clinica-warning: #b87a14;
 $clinica-success: #1b7853;
-$clinica-dark:    #122b2b;
+$clinica-dark: #122b2b;
 
-$primary:   $color3;
+$primary: $color3;
 $secondary: $color4;
-$success:   $clinica-success;
-$info:      $color4;
-$warning:   $clinica-warning;
-$danger:    $clinica-danger;
-$light:     $color1;
-$dark:      $clinica-dark;
+$success: $clinica-success;
+$info: $color4;
+$warning: $clinica-warning;
+$danger: $clinica-danger;
+$light: $color1;
+$dark: $clinica-dark;
 
-$body-bg:    $color1;
+$body-bg: $color1;
 $body-color: $clinica-dark;
 
-$border-radius:    0;
+$border-radius: 0;
 $border-radius-sm: 0;
 $border-radius-lg: 0;
 $border-radius-xl: 0;
 $border-radius-2xl: 0;
 $border-radius-pill: 0;
 
-$box-shadow:    none;
+$box-shadow: none;
 $box-shadow-sm: none;
 $box-shadow-lg: none;
 $box-shadow-inset: none;
@@ -36,32 +36,34 @@ $box-shadow-inset: none;
 $border-color: $color5;
 $border-color-translucent: $color5;
 
-$font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-$font-family-monospace: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+$font-family-base:
+  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+$font-family-monospace:
+  "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 $font-size-base: 0.875rem;
 
 $headings-font-weight: 700;
 $headings-color: $color3;
 
-$input-bg:                 #ffffff;
-$input-border-color:       $color5;
+$input-bg: #ffffff;
+$input-border-color: $color5;
 $input-focus-border-color: $color3;
-$input-focus-box-shadow:   none;
-$input-padding-y:          0.35rem;
-$input-padding-x:          0.6rem;
-$input-group-addon-bg:     $color2;
+$input-focus-box-shadow: none;
+$input-padding-y: 0.35rem;
+$input-padding-x: 0.6rem;
+$input-group-addon-bg: $color2;
 
 $btn-focus-box-shadow: none;
-$btn-padding-y:        0.35rem;
-$btn-padding-x:        0.75rem;
+$btn-padding-y: 0.35rem;
+$btn-padding-x: 0.75rem;
 
-$card-bg:           #ffffff;
+$card-bg: #ffffff;
 $card-border-color: $color5;
 $card-border-width: 1px;
-$card-cap-bg:       $color2;
+$card-cap-bg: $color2;
 
 $table-border-color: $color5;
-$table-hover-bg:     $color2;
+$table-hover-bg: $color2;
 $table-cell-padding-y: 0.4rem;
 $table-cell-padding-x: 0.5rem;
 
@@ -73,7 +75,8 @@ $table-cell-padding-x: 0.5rem;
   box-shadow: none !important;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -104,11 +107,21 @@ html, body {
   padding: 1.25rem 1.75rem;
 }
 
-.b-1 { border: 1px solid $color5; }
-.b-t { border-top: 1px solid $color5; }
-.b-b { border-bottom: 1px solid $color5; }
-.b-l { border-left: 1px solid $color5; }
-.b-r { border-right: 1px solid $color5; }
+.b-1 {
+  border: 1px solid $color5;
+}
+.b-t {
+  border-top: 1px solid $color5;
+}
+.b-b {
+  border-bottom: 1px solid $color5;
+}
+.b-l {
+  border-left: 1px solid $color5;
+}
+.b-r {
+  border-right: 1px solid $color5;
+}
 
 .fs-xxs {
   font-size: 0.7rem !important;
@@ -144,34 +157,12 @@ html, body {
   }
 }
 
-/* OVERLAY GLOBAL DE CARREGAMENTO MINIMALISTA */
+/* OVERLAY GLOBAL DE CARREGAMENTO MINIMALISTA COM BLUR */
 .loading-overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(18, 43, 43, 0.45);
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loading-box {
-  background-color: #ffffff;
-  border: 1px solid #cccccc;
-  padding: 1.5rem 2.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 200px;
-}
-
-/* ATUALIZAÇÃO DO OVERLAY DO LOADING COM BLUR */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(18, 43, 43, 0.45);
-  backdrop-filter: blur(3px); /* Desfoque suave no fundo */
+  backdrop-filter: blur(3px);
   z-index: 99999;
   display: flex;
   align-items: center;

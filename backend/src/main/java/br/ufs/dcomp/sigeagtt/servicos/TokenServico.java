@@ -3,29 +3,31 @@ package br.ufs.dcomp.sigeagtt.servicos;
 import br.ufs.dcomp.sigeagtt.modelos.Usuario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class TokenServico {
 
     private final String segredo;
+    private final ObjectMapper objectMapper;
     private static final long TEMPO_EXPIRACAO_SEGUNDOS = 86400L * 7L; // 7 dias
-
-    private static final Pattern PATTERN_SUB = Pattern.compile("\"sub\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern PATTERN_ID = Pattern.compile("\"id\"\\s*:\\s*(\\d+)");
-    private static final Pattern PATTERN_PERFIL = Pattern.compile("\"perfil\"\\s*:\\s*\"([^\"]+)\"");
-    private static final Pattern PATTERN_EXP = Pattern.compile("\"exp\"\\s*:\\s*(\\d+)");
+    private static final String HEADER_JSON = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
+    private static final String HEADER_BASE64 = Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(HEADER_JSON.getBytes(StandardCharsets.UTF_8));
 
     public TokenServico(
-            @Value("${app.jwt-secret:sigea-gtt-super-secret-key-change-in-production-2026!#*}") String segredo) {
+            @Value("${app.jwt-secret:sigea-gtt-super-secret-key-change-in-production-2026!#*}") String segredo,
+            ObjectMapper objectMapper) {
         this.segredo = segredo;
+        this.objectMapper = objectMapper;
     }
 
     public String gerarToken(Usuario usuario) {
@@ -33,18 +35,16 @@ public class TokenServico {
             long agora = System.currentTimeMillis() / 1000L;
             long expiraEm = agora + TEMPO_EXPIRACAO_SEGUNDOS;
 
-            String headerJson = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
-            String payloadJson = String.format(
-                    "{\"sub\":\"%s\",\"id\":%d,\"perfil\":\"%s\",\"iat\":%d,\"exp\":%d}",
-                    escapeJson(usuario.getEmail()),
-                    usuario.getId(),
-                    usuario.getPerfil().name(),
-                    agora,
-                    expiraEm);
+            ObjectNode payload = objectMapper.createObjectNode();
+            payload.put("sub", usuario.getEmail());
+            payload.put("id", usuario.getId());
+            payload.put("perfil", usuario.getPerfil().name());
+            payload.put("iat", agora);
+            payload.put("exp", expiraEm);
 
-            String headerBase64 = base64UrlEncode(headerJson.getBytes(StandardCharsets.UTF_8));
-            String payloadBase64 = base64UrlEncode(payloadJson.getBytes(StandardCharsets.UTF_8));
-            String conteudo = headerBase64 + "." + payloadBase64;
+            byte[] payloadBytes = objectMapper.writeValueAsBytes(payload);
+            String payloadBase64 = base64UrlEncode(payloadBytes);
+            String conteudo = HEADER_BASE64 + "." + payloadBase64;
             String assinatura = assinarHmacSha256(conteudo);
 
             return conteudo + "." + assinatura;
@@ -66,6 +66,7 @@ public class TokenServico {
             String conteudo = partes[0] + "." + partes[1];
             String assinaturaEsperada = assinarHmacSha256(conteudo);
 
+            // Verificação em tempo constante contra timing attacks
             if (!MessageDigest.isEqual(
                     assinaturaEsperada.getBytes(StandardCharsets.UTF_8),
                     partes[2].getBytes(StandardCharsets.UTF_8))) {
@@ -73,32 +74,24 @@ public class TokenServico {
             }
 
             byte[] payloadBytes = Base64.getUrlDecoder().decode(partes[1]);
-            String payloadJson = new String(payloadBytes, StandardCharsets.UTF_8);
+            JsonNode payload = objectMapper.readTree(payloadBytes);
 
-            Matcher matcherExp = PATTERN_EXP.matcher(payloadJson);
-            if (!matcherExp.find()) {
+            if (!payload.hasNonNull("exp")) {
                 return null;
             }
-            long exp = Long.parseLong(matcherExp.group(1));
+            long exp = payload.get("exp").asLong();
             long agora = System.currentTimeMillis() / 1000L;
             if (agora > exp) {
                 return null; // Token expirado
             }
 
-            Matcher matcherSub = PATTERN_SUB.matcher(payloadJson);
-            if (!matcherSub.find()) {
+            String email = payload.hasNonNull("sub") ? payload.get("sub").asString() : null;
+            String perfil = payload.hasNonNull("perfil") ? payload.get("perfil").asString() : null;
+            Long id = payload.hasNonNull("id") ? payload.get("id").asLong() : null;
+
+            if (email == null || perfil == null) {
                 return null;
             }
-            String email = matcherSub.group(1);
-
-            Matcher matcherPerfil = PATTERN_PERFIL.matcher(payloadJson);
-            if (!matcherPerfil.find()) {
-                return null;
-            }
-            String perfil = matcherPerfil.group(1);
-
-            Matcher matcherId = PATTERN_ID.matcher(payloadJson);
-            Long id = matcherId.find() ? Long.parseLong(matcherId.group(1)) : null;
 
             return new DadosToken(id, email, perfil);
         } catch (Exception e) {
@@ -116,12 +109,6 @@ public class TokenServico {
 
     private String base64UrlEncode(byte[] bytes) {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private String escapeJson(String texto) {
-        if (texto == null)
-            return "";
-        return texto.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     public record DadosToken(Long id, String email, String perfil) {

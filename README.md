@@ -35,9 +35,9 @@ Projeto acadêmico do DCOMP/UFS, com backend em **Spring Boot 4 (Java 21)** e fr
                                                      └──────────────────────┘
 ```
 
-- **Backend**: Spring Boot 4, Spring Data JPA, Spring Security (sessão via cookie), Flyway, PostgreSQL.
-- **Frontend**: Angular 17 standalone, sem NgModules, com `signals` para estado reativo.
-- **Autenticação**: login por e-mail institucional/senha; sessão HTTP persistida em cookie (`JSESSIONID`), reconhecida pelo `SecurityContext` do Spring Security.
+- **Backend**: Spring Boot 4 (Java 21 LTS com Virtual Threads / Project Loom), Spring Data JPA, Spring Security (autenticação JWT via Bearer Token + sessão), Flyway, PostgreSQL.
+- **Frontend**: Angular 17+ standalone, sem NgModules, com `signals` para estado reativo e `provideHttpClient(withFetch())`.
+- **Autenticação**: login por e-mail institucional/senha; autenticação via Bearer Token JWT assinado com HMAC-SHA256 e sessão HTTP com cookie SameSite/Secure.
 - **Autorização**: leituras (`GET /api/**`) são públicas; escritas (`POST`/`PUT`/`PATCH`/`DELETE`) exigem sessão autenticada.
 
 ---

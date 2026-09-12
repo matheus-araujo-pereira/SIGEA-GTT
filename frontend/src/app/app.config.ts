@@ -1,6 +1,10 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptors,
+} from '@angular/common/http';
 import { routes } from './app.routes';
 import { loadingInterceptor } from './nucleo/interceptores/loading.interceptor';
 import { apiUrlInterceptor } from './nucleo/interceptores/api-url.interceptor';
@@ -8,8 +12,9 @@ import { apiUrlInterceptor } from './nucleo/interceptores/api-url.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
+      withFetch(),
       withInterceptors([apiUrlInterceptor, loadingInterceptor]),
     ),
   ],

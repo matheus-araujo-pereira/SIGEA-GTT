@@ -58,8 +58,17 @@ public class SegurancaConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .securityContext(context -> context.securityContextRepository(securityContextRepository))
                 .addFilterBefore(filtroAutenticacaoToken, UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/autenticacao/**", "/actuator/health", "/api/administracao/**")
+                        .requestMatchers(
+                                "/api/autenticacao/**",
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/api/administracao/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())
