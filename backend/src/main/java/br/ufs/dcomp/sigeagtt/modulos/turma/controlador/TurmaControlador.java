@@ -52,39 +52,80 @@ public class TurmaControlador {
     }
 
     @PostMapping
-    public ResponseEntity<TurmaRespostaDTO> cadastrar(@Valid @RequestBody TurmaRequisicaoDTO dto) {
+    public ResponseEntity<TurmaRespostaDTO> cadastrar(
+            @Valid @RequestBody TurmaRequisicaoDTO dto,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
+            throw new AccessDeniedException("Apenas administradores podem cadastrar turmas.");
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(servico.cadastrar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TurmaRespostaDTO> editar(@PathVariable Long id, @Valid @RequestBody TurmaRequisicaoDTO dto) {
+    public ResponseEntity<TurmaRespostaDTO> editar(
+            @PathVariable Long id,
+            @Valid @RequestBody TurmaRequisicaoDTO dto,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
+            throw new AccessDeniedException("Apenas administradores podem editar turmas.");
+        }
         return ResponseEntity.ok(servico.editar(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> excluir(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> excluir(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
+            throw new AccessDeniedException("Apenas administradores podem excluir turmas.");
+        }
         servico.excluir(id);
         return ResponseEntity.ok(Map.of("mensagem", "Turma e matrículas associadas excluídas com sucesso."));
     }
 
     @PatchMapping("/{id}/alternar-status")
-    public ResponseEntity<TurmaRespostaDTO> alternarStatus(@PathVariable Long id) {
+    public ResponseEntity<TurmaRespostaDTO> alternarStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
+            throw new AccessDeniedException("Apenas administradores podem alterar o status da turma.");
+        }
         return ResponseEntity.ok(servico.alternarStatus(id));
     }
 
     @GetMapping("/{id}/alunos")
-    public ResponseEntity<List<UsuarioRespostaDTO>> listarAlunos(@PathVariable Long id) {
+    public ResponseEntity<List<UsuarioRespostaDTO>> listarAlunos(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() == PerfilUsuario.PROFESSOR) {
+            TurmaRespostaDTO turma = servico.buscarPorId(id);
+            if (turma.professorResponsavelId() != null && !turma.professorResponsavelId().equals(usuarioLogado.getId())) {
+                throw new AccessDeniedException("Acesso não autorizado aos alunos desta turma.");
+            }
+        }
         return ResponseEntity.ok(servico.listarAlunosDaTurma(id));
     }
 
     @PostMapping("/{turmaId}/alunos/{alunoId}")
-    public ResponseEntity<Map<String, String>> matricularAluno(@PathVariable Long turmaId, @PathVariable Long alunoId) {
+    public ResponseEntity<Map<String, String>> matricularAluno(
+            @PathVariable Long turmaId,
+            @PathVariable Long alunoId,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
+            throw new AccessDeniedException("Apenas administradores podem matricular alunos em turmas.");
+        }
         servico.matricularAluno(turmaId, alunoId);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("mensagem", "Aluno matriculado com sucesso."));
     }
 
     @DeleteMapping("/{turmaId}/alunos/{alunoId}")
-    public ResponseEntity<Map<String, String>> desmatricularAluno(@PathVariable Long turmaId, @PathVariable Long alunoId) {
+    public ResponseEntity<Map<String, String>> desmatricularAluno(
+            @PathVariable Long turmaId,
+            @PathVariable Long alunoId,
+            @AuthenticationPrincipal Usuario usuarioLogado) {
+        if (usuarioLogado != null && usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR) {
+            throw new AccessDeniedException("Apenas administradores podem desmatricular alunos de turmas.");
+        }
         servico.desmatricularAluno(turmaId, alunoId);
         return ResponseEntity.ok(Map.of("mensagem", "Aluno desmatriculado com sucesso."));
     }

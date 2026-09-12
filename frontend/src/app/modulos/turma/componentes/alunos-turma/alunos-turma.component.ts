@@ -7,6 +7,7 @@ import { UsuarioService } from '../../../usuario/servicos/usuario.service';
 import { Turma } from '../../modelos/turma.modelos';
 import { Usuario } from '../../../usuario/modelos/usuario.modelos';
 import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
+import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 
 export interface AlunoLinha {
   id: number;
@@ -25,8 +26,11 @@ export interface AlunoLinha {
 export class AlunosTurmaComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AutenticacaoService);
   private readonly turmaService = inject(TurmaService);
   private readonly usuarioService = inject(UsuarioService);
+
+  readonly ehAdmin = computed(() => this.auth.usuarioLogado()?.perfil === 'ADMINISTRADOR');
 
   readonly turmaId = signal<number>(0);
   readonly turma = signal<Turma | null>(null);
@@ -97,7 +101,7 @@ export class AlunosTurmaComponent implements OnInit {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id || isNaN(id)) {
-      this.router.navigate(['/turmas']);
+      this.voltarParaTurmas();
       return;
     }
     this.turmaId.set(id);
@@ -119,12 +123,14 @@ export class AlunosTurmaComponent implements OnInit {
       },
     });
 
-    this.usuarioService.listar().subscribe({
-      next: (usuarios) => {
-        this.todosAlunos.set(usuarios.filter((u) => u.perfil === 'ALUNO'));
-      },
-      error: () => {},
-    });
+    if (this.ehAdmin()) {
+      this.usuarioService.listar().subscribe({
+        next: (usuarios) => {
+          this.todosAlunos.set(usuarios.filter((u) => u.perfil === 'ALUNO'));
+        },
+        error: () => {},
+      });
+    }
   }
 
   carregarAlunosMatriculados(turmaId: number): void {
@@ -143,6 +149,8 @@ export class AlunosTurmaComponent implements OnInit {
   }
 
   matricular(): void {
+    if (!this.ehAdmin()) return;
+
     const alunoId = this.alunoSelecionadoId;
     const turmaId = this.turmaId();
     if (!alunoId || !turmaId) return;
@@ -168,6 +176,8 @@ export class AlunosTurmaComponent implements OnInit {
   }
 
   desmatricular(aluno: Usuario): void {
+    if (!this.ehAdmin()) return;
+
     const conf = confirm(
       `Deseja realmente desmatricular o aluno "${aluno.nomeCompleto}" da turma?`,
     );
@@ -201,7 +211,11 @@ export class AlunosTurmaComponent implements OnInit {
   }
 
   voltarParaTurmas(): void {
-    this.router.navigate(['/turmas']);
+    if (this.ehAdmin()) {
+      this.router.navigate(['/turmas']);
+    } else {
+      this.router.navigate(['/minhas-turmas']);
+    }
   }
 
   private limparMensagens(): void {
