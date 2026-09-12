@@ -344,7 +344,7 @@
       </div>
 
       <!-- ETAPA 1: GATILHOS E PRONTUÁRIO -->
-      @if (abaAtividade() === 'GATILHOS') {
+      @if (abaAtividade() === "GATILHOS") {
         <div class="row g-2">
           <!-- COLUNA ESQUERDA: AS 5 SEÇÕES CLÍNICAS (SEM SCROLL HORIZONTAL) -->
           <div class="col-lg-7">
@@ -402,8 +402,10 @@
               <div class="p-3 auditoria-pane">
                 @if (secaoAtiva() === "SUMARIO") {
                   <div>
-                    <span class="text-secondary small font-monospace d-block mb-2"
-                      >1. SUMÁRIO / RELATÓRIO DE ALTA E CÓDIGOS DIAGNÓSTICOS</span
+                    <span
+                      class="text-secondary small font-monospace d-block mb-2"
+                      >1. SUMÁRIO / RELATÓRIO DE ALTA E CÓDIGOS
+                      DIAGNÓSTICOS</span
                     >
                     <pre
                       class="bg-light p-3 b-1 text-dark font-monospace small text-pre-wrap m-0"
@@ -413,7 +415,8 @@
                 }
                 @if (secaoAtiva() === "MEDICACAO") {
                   <div>
-                    <span class="text-secondary small font-monospace d-block mb-2"
+                    <span
+                      class="text-secondary small font-monospace d-block mb-2"
                       >2. PRESCRIÇÕES E APRAZAMENTO DE MEDICAMENTOS</span
                     >
                     <pre
@@ -424,7 +427,8 @@
                 }
                 @if (secaoAtiva() === "LABORATORIO") {
                   <div>
-                    <span class="text-secondary small font-monospace d-block mb-2"
+                    <span
+                      class="text-secondary small font-monospace d-block mb-2"
                       >3. RESULTADOS DE EXAMES LABORATORIAIS</span
                     >
                     <pre
@@ -435,7 +439,8 @@
                 }
                 @if (secaoAtiva() === "CIRURGICO") {
                   <div>
-                    <span class="text-secondary small font-monospace d-block mb-2"
+                    <span
+                      class="text-secondary small font-monospace d-block mb-2"
                       >4. RELATÓRIO CIRÚRGICO E ANESTÉSICO</span
                     >
                     <pre
@@ -446,7 +451,8 @@
                 }
                 @if (secaoAtiva() === "EVOLUCOES") {
                   <div>
-                    <span class="text-secondary small font-monospace d-block mb-2"
+                    <span
+                      class="text-secondary small font-monospace d-block mb-2"
                       >5. NOTAS DE EVOLUÇÃO MULTIPROFISSIONAL E ENFERMAGEM</span
                     >
                     <pre
@@ -594,14 +600,16 @@
       }
 
       <!-- ETAPA 2: DIAGRAMA DE ISHIKAWA (6M) -->
-      @if (abaAtividade() === 'ISHIKAWA') {
+      @if (abaAtividade() === "ISHIKAWA") {
         <div class="bg-white b-1 p-3">
           <div class="mb-3 pb-2 b-b">
             <span class="fw-bold text-dark small font-monospace"
-              >2. DIAGRAMA DE ISHIKAWA (INVESTIGAÇÃO DE CAUSA-RAIZ - 6 M'S)</span
+              >2. DIAGRAMA DE ISHIKAWA (INVESTIGAÇÃO DE CAUSA-RAIZ - 6
+              M'S)</span
             >
             <p class="text-secondary small mb-0 mt-1">
-              Descreva o evento adverso (efeito principal) e investigue suas causas raízes agrupadas nas 6 dimensões.
+              Descreva o evento adverso (efeito principal) e investigue suas
+              causas raízes agrupadas nas 6 dimensões.
             </p>
           </div>
 
@@ -624,7 +632,9 @@
 
           <div class="row g-2">
             <div class="col-md-4">
-              <label for="ishikawaMetodo" class="form-label small text-secondary m-0"
+              <label
+                for="ishikawaMetodo"
+                class="form-label small text-secondary m-0"
                 >Método (Procedimentos, fluxos e rotinas)</label
               >
               <textarea
@@ -670,7 +680,9 @@
               ></textarea>
             </div>
             <div class="col-md-4">
-              <label for="ishikawaMedida" class="form-label small text-secondary m-0"
+              <label
+                for="ishikawaMedida"
+                class="form-label small text-secondary m-0"
                 >Medida (Métricas, checagens e monitoramento)</label
               >
               <textarea
@@ -700,7 +712,9 @@
               ></textarea>
             </div>
             <div class="col-md-4">
-              <label for="ishikawaMaquina" class="form-label small text-secondary m-0"
+              <label
+                for="ishikawaMaquina"
+                class="form-label small text-secondary m-0"
                 >Máquina (Sistemas, equipamentos e prontuário)</label
               >
               <textarea
@@ -718,17 +732,21 @@
       }
 
       <!-- ETAPA 3: PLANO DE AÇÃO 5W3H -->
-      @if (abaAtividade() === '5W3H') {
+      @if (abaAtividade() === "5W3H") {
         <div class="bg-white b-1 p-3">
           <div
             class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b"
           >
             <div>
               <span class="fw-bold text-dark small font-monospace"
-                >3. PLANO DE AÇÃO (METODOLOGIA 5W3H) [{{ planos5w3h().length }} AÇÕES]</span
+                >3. PLANO DE AÇÃO (METODOLOGIA 5W3H) [{{
+                  planos5w3h().length
+                }}
+                AÇÕES]</span
               >
               <p class="text-secondary small mb-0 mt-1">
-                Defina planos de ação estruturados para prevenção e eliminação das causas-raízes investigadas.
+                Defina planos de ação estruturados para prevenção e eliminação
+                das causas-raízes investigadas.
               </p>
             </div>
             @if (!revisaoFinalizada()) {
@@ -763,7 +781,9 @@
 
               <div class="row g-2">
                 <div class="col-md-6">
-                  <label [for]="'what-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'what-' + idx"
+                    class="form-label small text-secondary m-0"
                     >What (O que será feito?) *</label
                   >
                   <input
@@ -777,7 +797,9 @@
                   />
                 </div>
                 <div class="col-md-6">
-                  <label [for]="'why-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'why-' + idx"
+                    class="form-label small text-secondary m-0"
                     >Why (Por que será feito?) *</label
                   >
                   <input
@@ -791,7 +813,9 @@
                   />
                 </div>
                 <div class="col-md-3">
-                  <label [for]="'who-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'who-' + idx"
+                    class="form-label small text-secondary m-0"
                     >Who (Quem fará?) *</label
                   >
                   <input
@@ -805,7 +829,9 @@
                   />
                 </div>
                 <div class="col-md-3">
-                  <label [for]="'where-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'where-' + idx"
+                    class="form-label small text-secondary m-0"
                     >Where (Onde será feito?) *</label
                   >
                   <input
@@ -819,7 +845,9 @@
                   />
                 </div>
                 <div class="col-md-3">
-                  <label [for]="'when-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'when-' + idx"
+                    class="form-label small text-secondary m-0"
                     >When (Quando?) *</label
                   >
                   <input
@@ -833,7 +861,9 @@
                   />
                 </div>
                 <div class="col-md-3">
-                  <label [for]="'how-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'how-' + idx"
+                    class="form-label small text-secondary m-0"
                     >How (Como será feito?) *</label
                   >
                   <input
@@ -847,7 +877,9 @@
                   />
                 </div>
                 <div class="col-md-6">
-                  <label [for]="'howMuch-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'howMuch-' + idx"
+                    class="form-label small text-secondary m-0"
                     >How much (Custo estimado R$)</label
                   >
                   <input
@@ -861,7 +893,9 @@
                   />
                 </div>
                 <div class="col-md-6">
-                  <label [for]="'howToMeasure-' + idx" class="form-label small text-secondary m-0"
+                  <label
+                    [for]="'howToMeasure-' + idx"
+                    class="form-label small text-secondary m-0"
                     >How to measure (Métrica de Sucesso)</label
                   >
                   <input
@@ -878,27 +912,31 @@
             </div>
           } @empty {
             <div class="text-center py-5 text-muted small bg-light b-1">
-              Nenhuma ação cadastrada no plano 5W3H. Clique em "+ ADICIONAR AÇÃO" para cadastrar.
+              Nenhuma ação cadastrada no plano 5W3H. Clique em "+ ADICIONAR
+              AÇÃO" para cadastrar.
             </div>
           }
         </div>
       }
 
       <!-- ETAPA 4: CICLO PDCA -->
-      @if (abaAtividade() === 'PDCA') {
+      @if (abaAtividade() === "PDCA") {
         <div class="bg-white b-1 p-3">
           <div class="mb-3 pb-2 b-b">
             <span class="fw-bold text-dark small font-monospace"
               >4. CICLO PDCA (PLANEJAR, FAZER, CHECAR, AGIR)</span
             >
             <p class="text-secondary small mb-0 mt-1">
-              Estruture o ciclo iterativo de gestão da qualidade para melhoria contínua dos processos assistenciais.
+              Estruture o ciclo iterativo de gestão da qualidade para melhoria
+              contínua dos processos assistenciais.
             </p>
           </div>
 
           <div class="row g-3">
             <div class="col-md-6">
-              <label for="pdcaPlan" class="form-label small fw-bold text-dark m-0"
+              <label
+                for="pdcaPlan"
+                class="form-label small fw-bold text-dark m-0"
                 >P - Plan (Planejar intervenção) *</label
               >
               <textarea
@@ -926,7 +964,9 @@
               ></textarea>
             </div>
             <div class="col-md-6">
-              <label for="pdcaCheck" class="form-label small fw-bold text-dark m-0"
+              <label
+                for="pdcaCheck"
+                class="form-label small fw-bold text-dark m-0"
                 >C - Check (Checar resultados e indicadores) *</label
               >
               <textarea
@@ -940,7 +980,9 @@
               ></textarea>
             </div>
             <div class="col-md-6">
-              <label for="pdcaAct" class="form-label small fw-bold text-dark m-0"
+              <label
+                for="pdcaAct"
+                class="form-label small fw-bold text-dark m-0"
                 >A - Act (Agir corretivamente e padronizar) *</label
               >
               <textarea

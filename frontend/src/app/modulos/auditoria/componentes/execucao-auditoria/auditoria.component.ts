@@ -81,10 +81,17 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   readonly revisaoAtiva = signal<RevisaoIndividual | null>(null);
   readonly achados = signal<AchadoGatilho[]>([]);
 
-  readonly abaAtividade = signal<'GATILHOS' | 'ISHIKAWA' | '5W3H' | 'PDCA'>('GATILHOS');
+  readonly abaAtividade = signal<'GATILHOS' | 'ISHIKAWA' | '5W3H' | 'PDCA'>(
+    'GATILHOS',
+  );
   readonly ishikawa = signal<Ishikawa>({ efeitoPrincipal: '' });
   readonly planos5w3h = signal<Plano5w3h[]>([]);
-  readonly pdca = signal<Pdca>({ planejar: '', fazer: '', checar: '', agir: '' });
+  readonly pdca = signal<Pdca>({
+    planejar: '',
+    fazer: '',
+    checar: '',
+    agir: '',
+  });
 
   readonly revisaoFinalizada = computed(() =>
     Boolean(this.revisaoAtiva()?.finalizada),
@@ -424,9 +431,7 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
       );
     }
     if (!this.planos5w3h().length) {
-      pendencias.push(
-        'Cadastrar pelo menos 1 plano de ação na Matriz 5W3H',
-      );
+      pendencias.push('Cadastrar pelo menos 1 plano de ação na Matriz 5W3H');
     }
     const p = this.pdca();
     if (
@@ -470,11 +475,16 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
           this.revisaoAtiva.set(finalizada);
           this.pararCronometro();
           this.carregando.set(false);
-          alert('Atividade completa finalizada e enviada para avaliação docente com sucesso!');
+          alert(
+            'Atividade completa finalizada e enviada para avaliação docente com sucesso!',
+          );
           this.sairDaRevisao();
         },
         error: (err) => {
-          alert('Erro ao finalizar auditoria: ' + (err.error?.mensagem || err.message));
+          alert(
+            'Erro ao finalizar auditoria: ' +
+              (err.error?.mensagem || err.message),
+          );
           this.carregando.set(false);
         },
       });

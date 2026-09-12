@@ -7,12 +7,11 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record SalvarRevisaoRequisicaoDTO(
-    @NotNull(message = "O tempo gasto em segundos é obrigatório")
-    Integer tempoGastoSegundos,
+        @NotNull(message = "O tempo gasto em segundos é obrigatório") Integer tempoGastoSegundos,
 
-    Boolean finalizar,
-    List<AchadoGatilhoDTO> achados,
-    IshikawaDTO ishikawa,
-    List<Plano5w3hDTO> planos5w3h,
-    PdcaDTO pdca
-) {}
+        Boolean finalizar,
+        List<AchadoGatilhoDTO> achados,
+        IshikawaDTO ishikawa,
+        List<Plano5w3hDTO> planos5w3h,
+        PdcaDTO pdca) {
+}
