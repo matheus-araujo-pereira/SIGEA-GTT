@@ -11,6 +11,7 @@ import { FormularioGatilhoComponent } from './modulos/gtt/componentes/formulario
 import { GerenciarModulosComponent } from './modulos/gtt/componentes/gerenciar-modulos/gerenciar-modulos.component';
 import { FormularioModuloComponent } from './modulos/gtt/componentes/formulario-modulo/formulario-modulo.component';
 import { GerenciarUnidadesComponent } from './modulos/unidade/componentes/gerenciar-unidades/gerenciar-unidades.component';
+import { FormularioUnidadeComponent } from './modulos/unidade/componentes/formulario-unidade/formulario-unidade.component';
 import { AuditoriaComponent } from './modulos/auditoria/componentes/execucao-auditoria/auditoria.component';
 import { MelhoriaQualidadeComponent } from './modulos/qualidade/componentes/melhoria-qualidade/melhoria-qualidade.component';
 import { IndicadoresComponent } from './modulos/indicadores/componentes/dashboard-indicadores/indicadores.component';
@@ -108,6 +109,18 @@ export const routes: Routes = [
       {
         path: 'unidades',
         component: GerenciarUnidadesComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'unidades/novo',
+        component: FormularioUnidadeComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'unidades/:id/editar',
+        component: FormularioUnidadeComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR'] },
       },

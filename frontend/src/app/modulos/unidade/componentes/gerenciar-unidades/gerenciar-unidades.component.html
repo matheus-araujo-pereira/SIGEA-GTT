@@ -1,143 +1,192 @@
 <div>
-  <!-- TOPO -->
-  <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
+  <!-- CABEÇALHO DA LISTAGEM -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
     <div>
-      <h1 class="h5 fw-bold text-dark m-0">Unidades Hospitalares (HU-UFS)</h1>
-      <span class="text-secondary small">Total cadastrado: {{ totalUnidades() }}</span>
+      <h1 class="h4 fw-bold text-dark m-0">Unidades Hospitalares (HU-UFS)</h1>
+      <span class="text-secondary small">
+        Total cadastrado: {{ totalUnidades() }} unidades hospitalares no
+        SIGEA-GTT
+      </span>
     </div>
-    <button type="button" class="btn btn-primary btn-sm" (click)="iniciarNovoCadastro()">
-      {{ exibirFormulario ? 'FECHAR' : 'NOVA UNIDADE' }}
+    <button
+      type="button"
+      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="navegarParaNovo()"
+    >
+      <i class="bi bi-plus-circle-fill"></i>
+      <span>NOVA UNIDADE</span>
     </button>
   </div>
 
   <!-- FEEDBACK -->
   @if (mensagemSucesso()) {
-    <div class="p-2 mb-3 bg-white b-1 border-success text-success small d-flex justify-content-between">
-      <span>{{ mensagemSucesso() }}</span>
-      <button type="button" class="btn btn-sm p-0 text-success" (click)="mensagemSucesso.set(null)">[X]</button>
+    <div
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemSucesso.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
   @if (mensagemErro()) {
-    <div class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between">
-      <span>{{ mensagemErro() }}</span>
-      <button type="button" class="btn btn-sm p-0 text-danger" (click)="mensagemErro.set(null)">[X]</button>
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
     </div>
   }
 
-  <!-- FORMULARIO RETANGULAR COMPACTO -->
-  @if (exibirFormulario) {
-    <div class="p-3 mb-3 bg-white b-1">
-      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 b-b">
-        <span class="fw-bold text-dark small font-monospace">{{ tituloFormulario() }}</span>
-        <button type="button" class="btn btn-sm p-0 text-muted" (click)="fecharFormulario()">[FECHAR]</button>
+  <!-- BARRA DE FILTROS E BUSCA -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  >
+    <div class="row g-2 align-items-center">
+      <div class="col-md-8">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light text-secondary border-end-0">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            [ngModel]="termoBusca()"
+            (ngModelChange)="atualizarBusca($event)"
+            placeholder="Filtrar por nome ou sigla da unidade hospitalar..."
+          />
+          @if (termoBusca()) {
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              (click)="atualizarBusca('')"
+            >
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
       </div>
 
-      <form (ngSubmit)="salvar()">
-        <div class="row g-2">
-          <div class="col-md-3">
-            <label for="siglaSetor" class="form-label small text-secondary m-0">Sigla do Setor</label>
-            <input id="siglaSetor"
-                   type="text"
-                   class="form-control form-control-sm font-monospace text-uppercase"
-                   [(ngModel)]="formulario.sigla"
-                   name="sigla"
-                   required
-                   maxlength="20"
-                   placeholder="Ex.: CINF">
-          </div>
-          <div class="col-md-9">
-            <label for="nomeUnidade" class="form-label small text-secondary m-0">Nome Completo da Unidade</label>
-            <input id="nomeUnidade"
-                   type="text"
-                   class="form-control form-control-sm"
-                   [(ngModel)]="formulario.nome"
-                   name="nome"
-                   required
-                   maxlength="100"
-                   placeholder="Ex.: Clínica de Doenças Infecciosas">
-          </div>
-        </div>
-
-        <div class="mt-3 pt-2 b-t d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fecharFormulario()">Cancelar</button>
-          <button type="submit" class="btn btn-primary btn-sm px-3" [disabled]="carregando()">
-            {{ textoBotaoSubmit() }}
-          </button>
-        </div>
-      </form>
+      <div class="col-md-4">
+        <select
+          class="form-select form-select-sm"
+          [ngModel]="filtroStatus()"
+          (ngModelChange)="atualizarFiltroStatus($event)"
+        >
+          <option value="TODOS">Todos os Status</option>
+          <option value="ATIVAS">Ativas</option>
+          <option value="INATIVAS">Inativas</option>
+        </select>
+      </div>
     </div>
-  }
-
-  <!-- FILTROS COMPACTOS -->
-  <div class="d-flex gap-2 mb-3 bg-white p-2 b-1">
-    <input type="text"
-           class="form-control form-control-sm"
-           [ngModel]="termoBusca()"
-           (ngModelChange)="atualizarBusca($event)"
-           placeholder="Filtrar por nome ou sigla...">
-
-    <select class="form-select form-select-sm w-auto"
-            [ngModel]="filtroStatus()"
-            (ngModelChange)="atualizarFiltroStatus($event)">
-      <option value="TODOS">Todos os Status</option>
-      <option value="ATIVAS">Ativas</option>
-      <option value="INATIVAS">Inativas</option>
-    </select>
-
-    @if (termoBusca()) {
-      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="atualizarBusca('')">LIMPAR</button>
-    }
   </div>
 
-  <!-- TABELA DE ALTO CONTRASTE (SEM COLUNA ID) -->
-  <div class="bg-white b-1">
-    <table class="table table-hover table-sm m-0">
-      <thead class="bg-light text-secondary small font-monospace b-b">
-        <tr>
-          <th scope="col" class="p-2">SIGLA</th>
-          <th scope="col" class="p-2">NOME DA UNIDADE</th>
-          <th scope="col" class="p-2">STATUS</th>
-          <th scope="col" class="p-2 text-end">AÇÕES</th>
-        </tr>
-      </thead>
-      <tbody class="small font-monospace">
-        @for (u of unidadesLinhasPaginadas(); track u.id) {
+  <!-- TABELA DE UNIDADES COM FUNDO BRANCO PURO E SEM BADGES -->
+  <div
+    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+  >
+    <div class="table-responsive bg-white">
+      <table class="table table-hover table-sm m-0 align-middle bg-white">
+        <thead
+          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+        >
           <tr>
-            <td class="p-2 fw-bold text-dark">{{ u.sigla }}</td>
-            <td class="p-2 font-sans-serif fw-semibold text-dark">{{ u.nome }}</td>
-            <td class="p-2" [class.text-success]="u.ativa" [class.text-muted]="!u.ativa">{{ u.status }}</td>
-            <td class="p-2 text-end text-nowrap">
-              <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 me-1" (click)="iniciarEdicao(u.original)">
-                EDITAR
-              </button>
-              <button type="button"
-                      class="btn btn-sm py-0 px-2 me-1"
-                      [class.btn-outline-secondary]="u.ativa"
-                      [class.btn-outline-success]="!u.ativa"
-                      (click)="alternarStatus(u.id)">
-                {{ u.ativa ? 'INATIVAR' : 'ATIVAR' }}
-              </button>
-              <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" (click)="excluir(u.original)">
-                EXCLUIR
-              </button>
-            </td>
+            <th scope="col" class="py-2 px-3 bg-white text-secondary">SIGLA</th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              NOME DA UNIDADE HOSPITALAR
+            </th>
+            <th scope="col" class="py-2 px-2 bg-white text-secondary">
+              STATUS
+            </th>
+            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
+              AÇÕES
+            </th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="4" class="text-center py-4 text-muted">
-              Nenhuma unidade hospitalar encontrada.
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="small font-monospace bg-white">
+          @for (u of unidadesLinhasPaginadas(); track u.id) {
+            <tr class="bg-white">
+              <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
+                {{ u.sigla }}
+              </td>
+              <td
+                class="py-2 px-2 font-sans-serif fw-semibold text-dark bg-white"
+              >
+                {{ u.nome }}
+              </td>
+              <td
+                class="py-2 px-2 fw-semibold bg-white"
+                [class.text-success]="u.ativa"
+                [class.text-muted]="!u.ativa"
+              >
+                {{ u.status }}
+              </td>
+              <td class="py-2 px-3 text-end text-nowrap bg-white">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
+                  (click)="navegarParaEditar(u.original)"
+                  title="Editar Unidade"
+                >
+                  EDITAR
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm py-0 px-2 me-1 rounded-1"
+                  [class.btn-outline-secondary]="u.ativa"
+                  [class.btn-outline-success]="!u.ativa"
+                  (click)="alternarStatus(u.original)"
+                  [title]="u.ativa ? 'Inativar Unidade' : 'Ativar Unidade'"
+                >
+                  {{ u.ativa ? "INATIVAR" : "ATIVAR" }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
+                  (click)="excluir(u.original)"
+                  title="Excluir Unidade"
+                >
+                  EXCLUIR
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="text-center py-5 text-muted bg-white">
+                <i class="bi bi-building fs-2 d-block text-secondary mb-2"></i>
+                Nenhuma unidade hospitalar encontrada com os filtros
+                selecionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
+    <!-- PAGINAÇÃO INTEGRADA -->
     <app-paginacao
       [totalItens]="totalFiltrados()"
       [itensPorPagina]="itensPorPagina"
       [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)">
+      (paginaAlterada)="mudarPagina($event)"
+    >
     </app-paginacao>
   </div>
 </div>

@@ -25,35 +25,18 @@
       </nav>
     </div>
 
-    <!-- RODAPÉ DA SIDEBAR COM INDICAÇÃO DE PERFIL E ÍCONE AO LADO DO BOTÃO SAIR -->
+    <!-- RODAPÉ DA SIDEBAR: APENAS NOME DO USUÁRIO E BOTÕES DE PERFIL E LOGOUT -->
     <div
       class="p-3 b-t d-flex justify-content-between align-items-center bg-light-subtle"
     >
-      <a
-        routerLink="/perfil"
-        class="d-flex align-items-center gap-2 overflow-hidden text-decoration-none flex-grow-1 me-2 link-dark"
-        title="Acessar Meu Perfil"
-      >
-        <div
-          class="rounded-circle bg-white border border-secondary-subtle d-flex align-items-center justify-content-center flex-shrink-0"
-          style="width: 36px; height: 36px"
+      <div class="overflow-hidden me-2">
+        <span
+          class="fw-bold text-truncate small text-dark d-block"
+          [title]="nomeUsuario()"
         >
-          <i class="bi bi-person-circle text-primary fs-5"></i>
-        </div>
-        <div class="overflow-hidden">
-          <div class="fw-bold text-truncate small text-dark lh-sm">
-            {{ nomeUsuario() }}
-          </div>
-          <div
-            class="text-secondary fs-xxs d-flex align-items-center gap-1 font-monospace"
-          >
-            <span>{{ perfilUsuario() }}</span>
-            <span class="text-primary fw-medium font-sans-serif"
-              >• Ver Perfil</span
-            >
-          </div>
-        </div>
-      </a>
+          {{ nomeUsuario() }}
+        </span>
+      </div>
       <div class="d-flex align-items-center gap-1 flex-shrink-0">
         <a
           routerLink="/perfil"

@@ -1,10 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  UnidadeService,
-  UnidadeRequisicao,
-} from '../../servicos/unidade.service';
+import { Router } from '@angular/router';
+import { UnidadeService } from '../../servicos/unidade.service';
 import { UnidadeHospitalar } from '../../modelos/unidade.modelos';
 import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
@@ -25,15 +23,12 @@ export interface UnidadeLinha {
 })
 export class GerenciarUnidadesComponent implements OnInit {
   private readonly unidadeService = inject(UnidadeService);
+  private readonly router = inject(Router);
 
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly carregando = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
-
-  exibirFormulario = false;
-  idEdicao: number | null = null;
-  formulario: UnidadeRequisicao = { nome: '', sigla: '' };
 
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
@@ -42,16 +37,6 @@ export class GerenciarUnidadesComponent implements OnInit {
   readonly itensPorPagina = 10;
 
   readonly totalUnidades = computed(() => this.unidades().length);
-
-  readonly tituloFormulario = computed(() => {
-    return this.idEdicao
-      ? `EDITAR UNIDADE #${this.idEdicao}`
-      : 'NOVA UNIDADE HOSPITALAR';
-  });
-
-  readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao ? 'Editar Unidade' : 'Cadastrar Unidade';
-  });
 
   readonly unidadesLinhasFiltradas = computed<UnidadeLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
@@ -69,11 +54,17 @@ export class GerenciarUnidadesComponent implements OnInit {
 
         return matchTermo && matchStatus;
       })
+      .sort((a, b) =>
+        a.sigla.localeCompare(b.sigla, undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        }),
+      )
       .map((u) => ({
         id: u.id,
-        sigla: `[${u.sigla}]`,
+        sigla: u.sigla,
         nome: u.nome,
-        status: u.ativa ? '[ATIVO]' : '[INATIVO]',
+        status: u.ativa ? 'ATIVO' : 'INATIVO',
         ativa: u.ativa,
         original: u,
       }));
@@ -96,11 +87,28 @@ export class GerenciarUnidadesComponent implements OnInit {
   }
 
   carregarUnidades(): void {
+    this.carregando.set(true);
     this.unidadeService.listar().subscribe({
-      next: (dados) => this.unidades.set(dados),
-      error: (err) =>
-        this.mensagemErro.set('Erro ao listar unidades: ' + err.message),
+      next: (dados) => {
+        this.unidades.set(dados);
+        this.carregando.set(false);
+      },
+      error: (err) => {
+        this.mensagemErro.set(
+          'Erro ao carregar unidades hospitalares: ' +
+            (err.error?.mensagem || err.message),
+        );
+        this.carregando.set(false);
+      },
     });
+  }
+
+  navegarParaNovo(): void {
+    this.router.navigate(['/unidades/novo']);
+  }
+
+  navegarParaEditar(u: UnidadeHospitalar): void {
+    this.router.navigate(['/unidades', u.id, 'editar']);
   }
 
   atualizarBusca(termo: string): void {
@@ -117,71 +125,24 @@ export class GerenciarUnidadesComponent implements OnInit {
     this.paginaAtual.set(novaPagina);
   }
 
-  iniciarNovoCadastro(): void {
-    this.idEdicao = null;
-    this.formulario = { nome: '', sigla: '' };
-    this.exibirFormulario = !this.exibirFormulario;
-    this.limparMensagens();
-  }
-
-  iniciarEdicao(u: UnidadeHospitalar): void {
-    this.idEdicao = u.id;
-    this.formulario = { nome: u.nome, sigla: u.sigla };
-    this.exibirFormulario = true;
-    this.limparMensagens();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  fecharFormulario(): void {
-    this.exibirFormulario = false;
-    this.idEdicao = null;
-    this.formulario = { nome: '', sigla: '' };
-  }
-
-  salvar(): void {
-    this.carregando.set(true);
-    this.limparMensagens();
-
-    if (this.idEdicao) {
-      this.unidadeService.editar(this.idEdicao, this.formulario).subscribe({
-        next: (atualizada) => {
-          this.mensagemSucesso.set(
-            `Unidade ${atualizada.nome} (${atualizada.sigla}) atualizada com sucesso.`,
-          );
-          this.fecharFormulario();
-          this.carregando.set(false);
-          this.carregarUnidades();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar unidade.',
-          );
-          this.carregando.set(false);
-        },
-      });
-    } else {
-      this.unidadeService.cadastrar(this.formulario).subscribe({
-        next: (criada) => {
-          this.mensagemSucesso.set(
-            `Unidade ${criada.nome} (${criada.sigla}) cadastrada com sucesso.`,
-          );
-          this.fecharFormulario();
-          this.carregando.set(false);
-          this.carregarUnidades();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar unidade.',
-          );
-          this.carregando.set(false);
-        },
-      });
-    }
+  alternarStatus(u: UnidadeHospitalar): void {
+    this.unidadeService.alternarStatus(u.id).subscribe({
+      next: () => {
+        this.mensagemSucesso.set(
+          `Unidade "${u.sigla}" ${u.ativa ? 'inativada' : 'ativada'} com sucesso.`,
+        );
+        this.carregarUnidades();
+      },
+      error: (err) =>
+        this.mensagemErro.set(
+          'Erro ao alternar status: ' + (err.error?.mensagem || err.message),
+        ),
+    });
   }
 
   excluir(u: UnidadeHospitalar): void {
     const confirmacao = confirm(
-      `Deseja excluir a unidade "${u.nome}" (${u.sigla})?`,
+      `Deseja realmente excluir a unidade "${u.nome}" (${u.sigla})?`,
     );
     if (!confirmacao) return;
 
@@ -195,18 +156,5 @@ export class GerenciarUnidadesComponent implements OnInit {
           'Erro ao excluir unidade: ' + (err.error?.mensagem || err.message),
         ),
     });
-  }
-
-  alternarStatus(id: number): void {
-    this.unidadeService.alternarStatus(id).subscribe({
-      next: () => this.carregarUnidades(),
-      error: (err) =>
-        this.mensagemErro.set('Erro ao alternar status: ' + err.message),
-    });
-  }
-
-  private limparMensagens(): void {
-    this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
   }
 }
