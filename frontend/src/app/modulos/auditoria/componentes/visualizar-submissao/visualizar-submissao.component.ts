@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RevisaoIndividualService } from '../../servicos/revisao-individual.service';
 import { ProntuarioSimuladoService } from '../../../cenario/servicos/prontuario-simulado.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
@@ -10,7 +10,7 @@ import { ProntuarioSimulado } from '../../../cenario/modelos/cenario.modelos';
 @Component({
   selector: 'app-visualizar-submissao',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './visualizar-submissao.component.html',
 })
 export class VisualizarSubmissaoComponent implements OnInit {

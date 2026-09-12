@@ -2,6 +2,7 @@
 # =============================================================================
 # SIGEA-GTT: Inicialização Completa do Banco (DDL + Seeds Base)
 # Executa: schemas/01_schema_completo.sql e seeds/base/*.sql
+# Suporta psql local, podman exec ou docker exec
 # =============================================================================
 set -e
 
@@ -24,12 +25,31 @@ echo "======================================================================"
 echo " [SIGEA-GTT] Inicializando Banco de Dados: $DB_NAME ($DB_HOST:$DB_PORT)"
 echo "======================================================================"
 
-executar_sql() {
-    local arquivo="$1"
-    local descricao="$2"
-    echo " -> Aplicando: $descricao ($(basename "$arquivo"))..."
-    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -f "$arquivo" > /dev/null
-}
+if command -v psql > /dev/null 2>&1; then
+    executar_sql() {
+        local arquivo="$1"
+        local descricao="$2"
+        echo " -> Aplicando: $descricao ($(basename "$arquivo"))..."
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -f "$arquivo" > /dev/null
+    }
+elif command -v podman > /dev/null 2>&1; then
+    executar_sql() {
+        local arquivo="$1"
+        local descricao="$2"
+        echo " -> Aplicando: $descricao ($(basename "$arquivo")) via Podman..."
+        podman exec -i sigea-postgres psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 < "$arquivo" > /dev/null
+    }
+elif command -v docker > /dev/null 2>&1; then
+    executar_sql() {
+        local arquivo="$1"
+        local descricao="$2"
+        echo " -> Aplicando: $descricao ($(basename "$arquivo")) via Docker..."
+        docker exec -i sigea-postgres psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 < "$arquivo" > /dev/null
+    }
+else
+    echo "✘ [ERRO] psql, podman ou docker não encontrados no PATH."
+    exit 1
+fi
 
 # 1. Aplicar Schema DDL
 executar_sql "$DIR_DB/schemas/01_schema_completo.sql" "Schema DDL Canônico (Tabelas e Índices)"
@@ -43,4 +63,3 @@ executar_sql "$DIR_DB/seeds/base/04_categorias_eventos_adversos.sql" "Categorias
 echo ""
 echo "✔ [SUCESSO] Banco de dados inicializado com sucesso e pronto para uso!"
 echo "======================================================================"
-

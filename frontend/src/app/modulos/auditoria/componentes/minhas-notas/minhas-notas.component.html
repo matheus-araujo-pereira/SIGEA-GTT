@@ -156,6 +156,14 @@
                 >
                   VER
                 </button>
+                <a
+                  [routerLink]="['/melhoria', n.id]"
+                  class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-1 ms-1"
+                  title="Plano de Melhoria da Qualidade (Ishikawa / 5W3H / PDCA)"
+                >
+                  <i class="bi bi-diagram-3"></i>
+                  <span class="d-none d-md-inline ms-1">MELHORIA</span>
+                </a>
               </td>
             </tr>
           } @empty {

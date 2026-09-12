@@ -174,6 +174,14 @@
                 >
                   {{ s.foiCorrigida ? "REVISAR" : "AVALIAR" }}
                 </button>
+                <a
+                  [routerLink]="['/melhoria', s.id]"
+                  class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-1 ms-1"
+                  title="Plano de Melhoria da Qualidade (Ishikawa / 5W3H / PDCA)"
+                >
+                  <i class="bi bi-diagram-3"></i>
+                  <span class="d-none d-md-inline ms-1">MELHORIA</span>
+                </a>
               </td>
             </tr>
           } @empty {

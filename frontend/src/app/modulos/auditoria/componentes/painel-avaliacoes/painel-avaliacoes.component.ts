@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RevisaoIndividualService } from '../../servicos/revisao-individual.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 import { RevisaoIndividual } from '../../modelos/auditoria.modelos';
@@ -25,7 +25,7 @@ export interface AvaliacaoLinha {
 @Component({
   selector: 'app-painel-avaliacoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PaginacaoComponent],
   templateUrl: './painel-avaliacoes.component.html',
 })
 export class PainelAvaliacoesComponent implements OnInit {

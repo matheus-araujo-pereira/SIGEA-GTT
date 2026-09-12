@@ -23,13 +23,30 @@ echo "======================================================================"
 echo " [SIGEA-GTT] ⚠ ATENÇÃO: Resetando Banco de Dados Local: $DB_NAME"
 echo "======================================================================"
 
+if command -v psql > /dev/null 2>&1; then
+    executar_c() {
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "$1" > /dev/null
+    }
+elif command -v podman > /dev/null 2>&1; then
+    executar_c() {
+        podman exec -i sigea-postgres psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "$1" > /dev/null
+    }
+elif command -v docker > /dev/null 2>&1; then
+    executar_c() {
+        docker exec -i sigea-postgres psql -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "$1" > /dev/null
+    }
+else
+    echo "✘ [ERRO] psql, podman ou docker não encontrados no PATH."
+    exit 1
+fi
+
 echo " -> Dropando schema público..."
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -c "
+executar_c "
     DROP SCHEMA public CASCADE;
     CREATE SCHEMA public;
     GRANT ALL ON SCHEMA public TO \"$DB_USER\";
     GRANT ALL ON SCHEMA public TO public;
-" > /dev/null
+"
 
 echo " -> Reaplicando Schema DDL e Seeds Base..."
 "$DIR_ATUAL/init-db.sh"
@@ -37,4 +54,3 @@ echo " -> Reaplicando Schema DDL e Seeds Base..."
 echo ""
 echo "✔ [SUCESSO] Banco de dados resetado e pronto com estrutura limpa!"
 echo "======================================================================"
-

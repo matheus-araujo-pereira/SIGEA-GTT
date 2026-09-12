@@ -10,14 +10,23 @@
         nota final
       </span>
     </div>
-    <button
-      type="button"
-      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      (click)="voltar()"
-    >
-      <i class="bi bi-arrow-left"></i>
-      <span>VOLTAR PARA AVALIAÇÕES</span>
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <a
+        [routerLink]="['/melhoria', revisaoId()]"
+        class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      >
+        <i class="bi bi-diagram-3"></i>
+        <span>PLANO DE MELHORIA (ISHIKAWA / 5W3H / PDCA)</span>
+      </a>
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        (click)="voltar()"
+      >
+        <i class="bi bi-arrow-left"></i>
+        <span>VOLTAR PARA AVALIAÇÕES</span>
+      </button>
+    </div>
   </div>
 
   <!-- FEEDBACKS -->

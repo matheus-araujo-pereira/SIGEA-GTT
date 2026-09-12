@@ -141,17 +141,6 @@ export class LayoutInternoComponent {
           },
         ],
       });
-
-      grupos.push({
-        titulo: 'Epidemiologia',
-        itens: [
-          {
-            rota: '/indicadores',
-            rotulo: 'Indicadores IHI',
-            icone: 'bi-graph-up',
-          },
-        ],
-      });
     }
 
     if (perfil === 'ALUNO') {
@@ -167,17 +156,6 @@ export class LayoutInternoComponent {
             rota: '/minhas-notas',
             rotulo: 'Minhas Notas',
             icone: 'bi-award',
-          },
-        ],
-      });
-
-      grupos.push({
-        titulo: 'Epidemiologia',
-        itens: [
-          {
-            rota: '/indicadores',
-            rotulo: 'Indicadores IHI',
-            icone: 'bi-graph-up',
           },
         ],
       });

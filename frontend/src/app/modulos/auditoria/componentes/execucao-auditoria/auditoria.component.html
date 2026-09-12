@@ -205,6 +205,14 @@
                             : "AUDITAR"
                       }}
                     </button>
+                    <a
+                      *ngIf="p.revisaoId"
+                      [routerLink]="['/melhoria', p.revisaoId]"
+                      class="btn btn-outline-secondary btn-sm py-0 px-2"
+                      title="Plano de Melhoria da Qualidade (Ishikawa / 5W3H / PDCA)"
+                    >
+                      <i class="bi bi-diagram-3"></i>
+                    </a>
                   </td>
                 </tr>
               }

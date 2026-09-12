@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { RevisaoIndividualService } from '../../servicos/revisao-individual.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 import { RevisaoIndividual } from '../../modelos/auditoria.modelos';
@@ -22,7 +22,7 @@ export interface NotaDiscenteLinha {
 @Component({
   selector: 'app-minhas-notas',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [CommonModule, FormsModule, RouterLink, PaginacaoComponent],
   templateUrl: './minhas-notas.component.html',
 })
 export class MinhasNotasComponent implements OnInit {

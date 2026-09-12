@@ -256,6 +256,7 @@ public class RevisaoIndividualServico {
         return new RevisaoIndividualRespostaDTO(
                 r.getId(),
                 r.getAtividade() != null ? r.getAtividade().getId() : null,
+                r.getAtividade() != null ? r.getAtividade().getTitulo() : null,
                 r.getAluno().getId(),
                 r.getAluno().getNomeCompleto(),
                 r.getProntuario().getId(),

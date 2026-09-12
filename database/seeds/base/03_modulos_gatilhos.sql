@@ -12,7 +12,7 @@ INSERT INTO modulos_gtt (codigo, nome, descricao, ativo) VALUES
     ('CIRURGICO', 'Módulo Cirúrgico', 'Rastreadores no perioperatório, bloco cirúrgico e anestesia', true),
     ('TERAPIA_INTENSIVA', 'Módulo Cuidados Intensivos/Terapia Intensiva', 'Rastreadores críticos em unidade de terapia intensiva', true),
     ('PERINATAL', 'Módulo Perinatal', 'Rastreadores obstétricos e materno-fetais', true),
-    ('EMERGENCIA', 'Módulo Serviço de Urgência/Pronto Atendimento', 'Rastreadores de urgência, tempo de permanência e complicações agudas', true)
+    ('URGENCIA', 'Módulo Serviço de Urgência/Pronto Atendimento', 'Rastreadores de urgência, tempo de permanência e complicações agudas', true)
 ON CONFLICT (codigo) DO UPDATE
 SET nome = EXCLUDED.nome,
     descricao = EXCLUDED.descricao,
@@ -110,8 +110,8 @@ SET descricao = EXCLUDED.descricao,
 
 -- MÓDULO SERVIÇO DE URGÊNCIA/PRONTO ATENDIMENTO (E1 e E2)
 INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo) VALUES
-    ('E1', (SELECT id FROM modulos_gtt WHERE codigo = 'EMERGENCIA'), 'Readmissão no serviço de urgência/pronto atendimento nas 48 horas após a alta com necessidade de hospitalização.', 'Retorno ao pronto atendimento em até 48 horas após a alta com internação', true),
-    ('E2', (SELECT id FROM modulos_gtt WHERE codigo = 'EMERGENCIA'), 'Tempo de permanência no serviço de urgência/pronto atendimento superior a 6 horas com desenvolvimento de complicações.', 'Tempo de permanência no pronto atendimento > 6 horas', true)
+    ('E1', (SELECT id FROM modulos_gtt WHERE codigo = 'URGENCIA'), 'Readmissão no serviço de urgência/pronto atendimento nas 48 horas após a alta com necessidade de hospitalização.', 'Retorno ao pronto atendimento em até 48 horas após a alta com internação', true),
+    ('E2', (SELECT id FROM modulos_gtt WHERE codigo = 'URGENCIA'), 'Tempo de permanência no serviço de urgência/pronto atendimento superior a 6 horas com desenvolvimento de complicações.', 'Tempo de permanência no pronto atendimento > 6 horas', true)
 ON CONFLICT (codigo) DO UPDATE
 SET descricao = EXCLUDED.descricao,
     limiar_referencia = EXCLUDED.limiar_referencia,

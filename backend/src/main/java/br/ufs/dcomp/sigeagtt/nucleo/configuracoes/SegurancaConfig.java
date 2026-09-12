@@ -71,6 +71,7 @@ public class SegurancaConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**")
                         .permitAll()
+                        .requestMatchers("/api/indicadores/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { RevisaoIndividualService } from '../../servicos/revisao-individual.service';
 import { ProntuarioSimuladoService } from '../../../cenario/servicos/prontuario-simulado.service';
 import { GatilhoService } from '../../../gtt/servicos/gatilho.service';
@@ -54,7 +54,7 @@ export interface AtividadeAuditoriaCard {
 @Component({
   selector: 'app-auditoria',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './auditoria.component.html',
 })
 export class AuditoriaComponent implements OnInit, OnDestroy {
