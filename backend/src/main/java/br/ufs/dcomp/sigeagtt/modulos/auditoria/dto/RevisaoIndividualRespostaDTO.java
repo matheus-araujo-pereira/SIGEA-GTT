@@ -1,6 +1,9 @@
 package br.ufs.dcomp.sigeagtt.modulos.auditoria.dto;
 
 import br.ufs.dcomp.sigeagtt.modulos.auditoria.modelo.RevisaoIndividual;
+import br.ufs.dcomp.sigeagtt.modulos.qualidade.dto.IshikawaDTO;
+import br.ufs.dcomp.sigeagtt.modulos.qualidade.dto.PdcaDTO;
+import br.ufs.dcomp.sigeagtt.modulos.qualidade.dto.Plano5w3hDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,7 +23,10 @@ public record RevisaoIndividualRespostaDTO(
         List<AchadoGatilhoDTO> achados,
         String parecerDocente,
         BigDecimal nota,
-        Boolean homologada) {
+        Boolean homologada,
+        IshikawaDTO ishikawa,
+        List<Plano5w3hDTO> planos5w3h,
+        PdcaDTO pdca) {
     public static RevisaoIndividualRespostaDTO deEntidade(RevisaoIndividual r, List<AchadoGatilhoDTO> achados) {
         return new RevisaoIndividualRespostaDTO(
                 r.getId(),
@@ -36,6 +42,9 @@ public record RevisaoIndividualRespostaDTO(
                 achados,
                 null,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null);
     }
 }

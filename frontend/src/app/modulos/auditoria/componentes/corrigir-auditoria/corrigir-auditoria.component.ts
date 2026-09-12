@@ -27,6 +27,9 @@ export class CorrigirAuditoriaComponent implements OnInit {
   readonly revisaoId = signal<number>(0);
   readonly revisao = signal<RevisaoIndividual | null>(null);
   readonly prontuario = signal<ProntuarioSimulado | null>(null);
+  readonly abaProntuario = signal<
+    'SUMARIO' | 'PRESCRICOES' | 'EXAMES' | 'EVOLUCOES'
+  >('SUMARIO');
 
   readonly carregando = signal(false);
   readonly salvando = signal(false);

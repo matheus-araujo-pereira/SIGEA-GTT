@@ -13,23 +13,14 @@
         {{ revisao()?.atividadeTitulo || "Auditoria Prática" }}
       </span>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <a
-        [routerLink]="['/melhoria', revisaoId()]"
-        class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      >
-        <i class="bi bi-diagram-3"></i>
-        <span>PLANO DE MELHORIA (ISHIKAWA / 5W3H / PDCA)</span>
-      </a>
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
-        (click)="voltar()"
-      >
-        <i class="bi bi-arrow-left"></i>
-        <span>VOLTAR</span>
-      </button>
-    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltar()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR</span>
+    </button>
   </div>
 
   <!-- FEEDBACKS -->
@@ -231,6 +222,222 @@
                 }
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagrama de Ishikawa 6M Entregue pelo Aluno -->
+      <div class="col-12">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+        >
+          <div
+            class="card-header bg-white border-bottom border-light-subtle py-3 px-4 d-flex justify-content-between align-items-center"
+          >
+            <span class="fw-bold text-dark small text-uppercase font-monospace">
+              <i class="bi bi-diagram-3 me-1"></i> Investigação de Causa-Raiz &bull; Diagrama de Ishikawa (6 M's)
+            </span>
+            <span
+              class="badge bg-light text-dark border border-light-subtle font-monospace"
+            >
+              {{ revisao()?.ishikawa?.efeitoPrincipal ? 'PREENCHIDO' : 'NÃO INFORMADO' }}
+            </span>
+          </div>
+
+          <div class="card-body p-4 bg-white">
+            <div class="mb-3 p-3 bg-light rounded-2 border border-light-subtle">
+              <span class="text-secondary small fw-bold d-block text-uppercase font-monospace mb-1">
+                Efeito Principal (Evento Adverso Rastreado):
+              </span>
+              <strong class="text-dark fs-6 font-monospace">
+                {{ revisao()?.ishikawa?.efeitoPrincipal || "Nenhum efeito principal registrado pelo discente." }}
+              </strong>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <span class="fw-bold text-secondary small d-block font-monospace mb-1">MÉTODO</span>
+                  <p class="small text-dark mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.ishikawa?.metodo || "-" }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <span class="fw-bold text-secondary small d-block font-monospace mb-1">MÃO DE OBRA</span>
+                  <p class="small text-dark mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.ishikawa?.maoDeObra || "-" }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <span class="fw-bold text-secondary small d-block font-monospace mb-1">MATERIAL</span>
+                  <p class="small text-dark mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.ishikawa?.material || "-" }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <span class="fw-bold text-secondary small d-block font-monospace mb-1">MEDIDA</span>
+                  <p class="small text-dark mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.ishikawa?.medida || "-" }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <span class="fw-bold text-secondary small d-block font-monospace mb-1">MEIO AMBIENTE</span>
+                  <p class="small text-dark mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.ishikawa?.meioAmbiente || "-" }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <span class="fw-bold text-secondary small d-block font-monospace mb-1">MÁQUINA</span>
+                  <p class="small text-dark mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.ishikawa?.maquina || "-" }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plano de Ação 5W3H Entregue pelo Aluno -->
+      <div class="col-12">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+        >
+          <div
+            class="card-header bg-white border-bottom border-light-subtle py-3 px-4 d-flex justify-content-between align-items-center"
+          >
+            <span class="fw-bold text-dark small text-uppercase font-monospace">
+              <i class="bi bi-list-check me-1"></i> Plano de Ação &bull; Metodologia 5W3H
+            </span>
+            <span class="text-secondary small font-monospace">
+              ({{ revisao()?.planos5w3h?.length || 0 }} ações propostas)
+            </span>
+          </div>
+
+          <div class="table-responsive bg-white">
+            <table class="table table-hover table-sm m-0 align-middle bg-white">
+              <thead
+                class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+              >
+                <tr>
+                  <th scope="col" class="py-2 px-3 bg-white text-secondary">#</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">WHAT (O QUE?)</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">WHY (POR QUE?)</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">WHO (QUEM?)</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">WHERE (ONDE?)</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">WHEN (QUANDO?)</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">HOW (COMO?)</th>
+                  <th scope="col" class="py-2 px-2 bg-white text-secondary">HOW MUCH</th>
+                  <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">MÉTRICA</th>
+                </tr>
+              </thead>
+              <tbody class="small font-monospace bg-white">
+                @for (p of revisao()?.planos5w3h; track idx; let idx = $index) {
+                  <tr class="bg-white">
+                    <td class="py-2 px-3 fw-bold text-dark bg-white">{{ idx + 1 }}</td>
+                    <td class="py-2 px-2 font-sans-serif text-dark fw-semibold bg-white">{{ p.oQue }}</td>
+                    <td class="py-2 px-2 font-sans-serif text-secondary bg-white">{{ p.porQue }}</td>
+                    <td class="py-2 px-2 text-dark bg-white">{{ p.quem }}</td>
+                    <td class="py-2 px-2 text-secondary bg-white">{{ p.onde }}</td>
+                    <td class="py-2 px-2 text-secondary bg-white">{{ p.quando }}</td>
+                    <td class="py-2 px-2 font-sans-serif text-secondary bg-white">{{ p.como }}</td>
+                    <td class="py-2 px-2 text-dark bg-white">
+                      {{ p.quantoCusta !== undefined && p.quantoCusta !== null ? 'R$ ' + p.quantoCusta : '-' }}
+                    </td>
+                    <td class="py-2 px-3 text-end text-secondary bg-white">{{ p.comoMedir || '-' }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="9" class="text-center py-4 text-muted bg-white">
+                      Nenhuma ação cadastrada na Matriz 5W3H pelo discente.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ciclo PDCA Entregue pelo Aluno -->
+      <div class="col-12">
+        <div
+          class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+        >
+          <div
+            class="card-header bg-white border-bottom border-light-subtle py-3 px-4 d-flex justify-content-between align-items-center"
+          >
+            <span class="fw-bold text-dark small text-uppercase font-monospace">
+              <i class="bi bi-arrow-repeat me-1"></i> Ciclo de Melhoria Contínua &bull; Ciclo PDCA
+            </span>
+            <span
+              class="badge bg-light text-dark border border-light-subtle font-monospace"
+            >
+              {{
+                revisao()?.pdca?.planejar && revisao()?.pdca?.fazer && revisao()?.pdca?.checar && revisao()?.pdca?.agir
+                  ? 'COMPLETO (4/4 FASES)'
+                  : 'INCOMPLETO'
+              }}
+            </span>
+          </div>
+
+          <div class="card-body p-4 bg-white">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary font-monospace">P</span>
+                    <strong class="text-dark small font-monospace">PLAN (Planejar Intervenção)</strong>
+                  </div>
+                  <p class="small text-secondary mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.pdca?.planejar || "Nenhum planejamento registrado." }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success font-monospace">D</span>
+                    <strong class="text-dark small font-monospace">DO (Executar Medidas)</strong>
+                  </div>
+                  <p class="small text-secondary mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.pdca?.fazer || "Nenhuma execução registrada." }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-warning text-dark font-monospace">C</span>
+                    <strong class="text-dark small font-monospace">CHECK (Checar Resultados)</strong>
+                  </div>
+                  <p class="small text-secondary mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.pdca?.checar || "Nenhuma checagem registrada." }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-2 border border-light-subtle h-100">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-info text-dark font-monospace">A</span>
+                    <strong class="text-dark small font-monospace">ACT (Agir Corretivamente e Padronizar)</strong>
+                  </div>
+                  <p class="small text-secondary mb-0 font-monospace text-pre-wrap">
+                    {{ revisao()?.pdca?.agir || "Nenhuma ação corretiva registrada." }}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

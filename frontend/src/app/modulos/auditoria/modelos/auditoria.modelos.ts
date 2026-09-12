@@ -1,3 +1,9 @@
+import {
+  Ishikawa,
+  Plano5w3h,
+  Pdca,
+} from '../../qualidade/modelos/qualidade.modelos';
+
 export type GravidadeNccMerp =
   | 'CATEGORIA_E'
   | 'CATEGORIA_F'
@@ -56,6 +62,9 @@ export interface RevisaoIndividual {
   homologada?: boolean | null;
   nota?: number | null;
   achados: AchadoGatilho[];
+  ishikawa?: Ishikawa | null;
+  planos5w3h?: Plano5w3h[] | null;
+  pdca?: Pdca | null;
 }
 
 export interface ProntuarioItemAuditoria {
@@ -118,4 +127,7 @@ export interface SalvarRevisaoPayload {
   tempoGastoSegundos: number;
   finalizar: boolean;
   achados: AchadoGatilho[];
+  ishikawa?: Ishikawa | null;
+  planos5w3h?: Plano5w3h[] | null;
+  pdca?: Pdca | null;
 }

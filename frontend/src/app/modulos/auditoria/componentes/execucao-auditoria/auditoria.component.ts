@@ -21,6 +21,11 @@ import {
 } from '../../modelos/auditoria.modelos';
 import { ProntuarioSimulado } from '../../../cenario/modelos/cenario.modelos';
 import { GatilhoGtt } from '../../../gtt/modelos/gtt.modelos';
+import {
+  Ishikawa,
+  Plano5w3h,
+  Pdca,
+} from '../../../qualidade/modelos/qualidade.modelos';
 
 export interface ProntuarioAuditoriaLinha {
   prontuarioId: number;
@@ -75,6 +80,11 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
   readonly prontuarioAtivo = signal<ProntuarioSimulado | null>(null);
   readonly revisaoAtiva = signal<RevisaoIndividual | null>(null);
   readonly achados = signal<AchadoGatilho[]>([]);
+
+  readonly abaAtividade = signal<'GATILHOS' | 'ISHIKAWA' | '5W3H' | 'PDCA'>('GATILHOS');
+  readonly ishikawa = signal<Ishikawa>({ efeitoPrincipal: '' });
+  readonly planos5w3h = signal<Plano5w3h[]>([]);
+  readonly pdca = signal<Pdca>({ planejar: '', fazer: '', checar: '', agir: '' });
 
   readonly revisaoFinalizada = computed(() =>
     Boolean(this.revisaoAtiva()?.finalizada),
@@ -266,9 +276,15 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
             next: (rev) => {
               this.revisaoAtiva.set(rev);
               this.achados.set(rev.achados || []);
+              this.ishikawa.set(rev.ishikawa || { efeitoPrincipal: '' });
+              this.planos5w3h.set(rev.planos5w3h ? [...rev.planos5w3h] : []);
+              this.pdca.set(
+                rev.pdca || { planejar: '', fazer: '', checar: '', agir: '' },
+              );
               this.cronometroSegundos.set(rev.tempoGastoSegundos || 0);
 
               this.modoRevisaoAtiva.set(true);
+              this.abaAtividade.set('GATILHOS');
               this.secaoAtiva.set('SUMARIO');
               this.carregando.set(false);
 
@@ -334,6 +350,26 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
     this.achados.update((lista) => lista.filter((_, i) => i !== index));
   }
 
+  adicionarPlano5w3h(): void {
+    this.planos5w3h.update((lista) => [
+      ...lista,
+      {
+        oQue: '',
+        porQue: '',
+        quem: '',
+        onde: '',
+        quando: '',
+        como: '',
+        quantoCusta: undefined,
+        comoMedir: '',
+      },
+    ]);
+  }
+
+  removerPlano5w3h(index: number): void {
+    this.planos5w3h.update((lista) => lista.filter((_, i) => i !== index));
+  }
+
   salvarRascunho(exibirAlerta = true): void {
     const rev = this.revisaoAtiva();
     if (!rev || rev.finalizada) return;
@@ -345,18 +381,30 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         tempoGastoSegundos: this.cronometroSegundos(),
         finalizar: false,
         achados: this.achados(),
+        ishikawa: this.ishikawa(),
+        planos5w3h: this.planos5w3h(),
+        pdca: this.pdca(),
       })
       .subscribe({
         next: (atualizada) => {
           this.revisaoAtiva.set(atualizada);
+          this.achados.set(atualizada.achados || []);
+          if (atualizada.ishikawa) this.ishikawa.set(atualizada.ishikawa);
+          if (atualizada.planos5w3h)
+            this.planos5w3h.set([...atualizada.planos5w3h]);
+          if (atualizada.pdca) this.pdca.set(atualizada.pdca);
           this.carregando.set(false);
           if (exibirAlerta) {
-            this.mensagemSucesso.set('Rascunho da auditoria salvo.');
-            setTimeout(() => this.mensagemSucesso.set(null), 3000);
+            this.mensagemSucesso.set(
+              'Rascunho completo da atividade salvo com sucesso!',
+            );
+            setTimeout(() => this.mensagemSucesso.set(null), 3500);
           }
         },
         error: (err) => {
-          alert('Erro ao salvar rascunho: ' + err.message);
+          alert(
+            'Erro ao salvar rascunho: ' + (err.error?.mensagem || err.message),
+          );
           this.carregando.set(false);
         },
       });
@@ -364,10 +412,45 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
 
   finalizarAuditoria(): void {
     const rev = this.revisaoAtiva();
-    if (!rev) return;
+    if (!rev || rev.finalizada) return;
+
+    const pendencias: string[] = [];
+    if (!this.achados().length) {
+      pendencias.push('Apontar pelo menos 1 gatilho investigado no prontuário');
+    }
+    if (!this.ishikawa().efeitoPrincipal?.trim()) {
+      pendencias.push(
+        'Preencher o Efeito Principal no Diagrama de Ishikawa 6M',
+      );
+    }
+    if (!this.planos5w3h().length) {
+      pendencias.push(
+        'Cadastrar pelo menos 1 plano de ação na Matriz 5W3H',
+      );
+    }
+    const p = this.pdca();
+    if (
+      !p.planejar?.trim() ||
+      !p.fazer?.trim() ||
+      !p.checar?.trim() ||
+      !p.agir?.trim()
+    ) {
+      pendencias.push(
+        'Preencher todas as 4 etapas do Ciclo PDCA (Planejar, Fazer, Checar e Agir)',
+      );
+    }
+
+    if (pendencias.length > 0) {
+      alert(
+        'A atividade não pode ser finalizada ainda. Todos os seguintes itens são obrigatórios e compõem 100% da avaliação:\n\n• ' +
+          pendencias.join('\n• ') +
+          '\n\nPor favor, complete as etapas indicadas para submeter a atividade.',
+      );
+      return;
+    }
 
     const confirmacao = confirm(
-      'Ao finalizar a revisão individual, as anotações serão congeladas para correção docente. Submeter agora?',
+      'Atenção: Ao finalizar, a atividade completa (Gatilhos, Diagrama de Ishikawa, Plano 5W3H e Ciclo PDCA) será congelada e submetida para correção docente. Deseja submeter agora?',
     );
     if (!confirmacao) return;
 
@@ -378,16 +461,20 @@ export class AuditoriaComponent implements OnInit, OnDestroy {
         tempoGastoSegundos: this.cronometroSegundos(),
         finalizar: true,
         achados: this.achados(),
+        ishikawa: this.ishikawa(),
+        planos5w3h: this.planos5w3h(),
+        pdca: this.pdca(),
       })
       .subscribe({
         next: (finalizada) => {
           this.revisaoAtiva.set(finalizada);
           this.pararCronometro();
           this.carregando.set(false);
+          alert('Atividade completa finalizada e enviada para avaliação docente com sucesso!');
           this.sairDaRevisao();
         },
         error: (err) => {
-          alert('Erro ao finalizar revisão: ' + err.message);
+          alert('Erro ao finalizar auditoria: ' + (err.error?.mensagem || err.message));
           this.carregando.set(false);
         },
       });

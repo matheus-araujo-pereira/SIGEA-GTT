@@ -25,6 +25,10 @@ import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.repositorio.UsuarioRepositorio;
 
+import br.ufs.dcomp.sigeagtt.modulos.qualidade.dto.MelhoriaQualidadeRespostaDTO;
+import br.ufs.dcomp.sigeagtt.modulos.qualidade.dto.SalvarMelhoriaQualidadeDTO;
+import br.ufs.dcomp.sigeagtt.modulos.qualidade.servico.MelhoriaQualidadeServico;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -44,6 +48,7 @@ public class RevisaoIndividualServico {
     private final AtividadeAuditoriaRepositorio atividadeRepositorio;
     private final TurmaAlunoRepositorio turmaAlunoRepositorio;
     private final ValidacaoDocenteRepositorio validacaoRepositorio;
+    private final MelhoriaQualidadeServico melhoriaServico;
 
     public RevisaoIndividualServico(RevisaoIndividualRepositorio revisaoRepositorio,
             AchadoGatilhoRepositorio achadoRepositorio,
@@ -52,7 +57,8 @@ public class RevisaoIndividualServico {
             GatilhoGttRepositorio gatilhoRepositorio,
             AtividadeAuditoriaRepositorio atividadeRepositorio,
             TurmaAlunoRepositorio turmaAlunoRepositorio,
-            ValidacaoDocenteRepositorio validacaoRepositorio) {
+            ValidacaoDocenteRepositorio validacaoRepositorio,
+            MelhoriaQualidadeServico melhoriaServico) {
         this.revisaoRepositorio = revisaoRepositorio;
         this.achadoRepositorio = achadoRepositorio;
         this.usuarioRepositorio = usuarioRepositorio;
@@ -61,6 +67,7 @@ public class RevisaoIndividualServico {
         this.atividadeRepositorio = atividadeRepositorio;
         this.turmaAlunoRepositorio = turmaAlunoRepositorio;
         this.validacaoRepositorio = validacaoRepositorio;
+        this.melhoriaServico = melhoriaServico;
     }
 
     @Transactional(readOnly = true)
@@ -212,6 +219,27 @@ public class RevisaoIndividualServico {
         revisao.setTempoGastoSegundos(dto.tempoGastoSegundos());
 
         if (Boolean.TRUE.equals(dto.finalizar())) {
+            if (dto.achados() == null || dto.achados().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório apontar os gatilhos investigados no prontuário.");
+            }
+            if (dto.ishikawa() == null || dto.ishikawa().efeitoPrincipal() == null
+                    || dto.ishikawa().efeitoPrincipal().trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório preencher a investigação de causa-raiz no Diagrama de Ishikawa (Efeito Principal).");
+            }
+            if (dto.planos5w3h() == null || dto.planos5w3h().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório cadastrar pelo menos uma ação no Plano de Ação 5W3H.");
+            }
+            if (dto.pdca() == null
+                    || dto.pdca().planejar() == null || dto.pdca().planejar().trim().isEmpty()
+                    || dto.pdca().fazer() == null || dto.pdca().fazer().trim().isEmpty()
+                    || dto.pdca().checar() == null || dto.pdca().checar().trim().isEmpty()
+                    || dto.pdca().agir() == null || dto.pdca().agir().trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Para finalizar a atividade, é obrigatório preencher as 4 etapas do Ciclo PDCA (Planejar, Fazer, Checar e Agir).");
+            }
             revisao.setFinalizada(true);
             revisao.setDataSubmissao(LocalDateTime.now());
         }
@@ -235,6 +263,14 @@ public class RevisaoIndividualServico {
             }
         }
 
+        if (dto.ishikawa() != null || dto.planos5w3h() != null || dto.pdca() != null) {
+            SalvarMelhoriaQualidadeDTO melhoriaDTO = new SalvarMelhoriaQualidadeDTO(
+                    dto.ishikawa(),
+                    dto.planos5w3h(),
+                    dto.pdca());
+            melhoriaServico.salvar(revisao.getId(), melhoriaDTO);
+        }
+
         RevisaoIndividual atualizada = revisaoRepositorio.save(revisao);
         return converterParaDTO(atualizada);
     }
@@ -253,6 +289,8 @@ public class RevisaoIndividualServico {
                 a.getGravidade())).toList();
 
         ValidacaoDocente validacao = validacaoRepositorio.findByRevisaoIndividualId(r.getId()).orElse(null);
+        MelhoriaQualidadeRespostaDTO melhoria = melhoriaServico.buscar(r.getId());
+
         return new RevisaoIndividualRespostaDTO(
                 r.getId(),
                 r.getAtividade() != null ? r.getAtividade().getId() : null,
@@ -267,7 +305,10 @@ public class RevisaoIndividualServico {
                 achadosDTO,
                 validacao != null ? validacao.getParecerFormativo() : null,
                 validacao != null ? validacao.getNota() : null,
-                validacao != null && Boolean.TRUE.equals(validacao.getHomologado()));
+                validacao != null && Boolean.TRUE.equals(validacao.getHomologado()),
+                melhoria != null ? melhoria.ishikawa() : null,
+                melhoria != null ? melhoria.planos5w3h() : null,
+                melhoria != null ? melhoria.pdca() : null);
     }
 
     @Transactional(readOnly = true)

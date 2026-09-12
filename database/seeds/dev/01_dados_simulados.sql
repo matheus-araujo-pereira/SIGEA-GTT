@@ -714,12 +714,15 @@ BEGIN
   INSERT INTO validacoes_docentes (revisao_individual_id, professor_validador_id, parecer_formativo, nota, homologado, data_validacao)
   VALUES (v_rev_id, prof_roberto, 'Excelente identificação dos gatilhos M4 e M5. Análise de nexo causal e classificação nas categorias E e F perfeitamente adequadas ao manual do IHI.', 9.50, true, '2026-02-18 10:15:00-03');
 
-  -- Ishikawa e 5W3H
+  -- Ishikawa, 5W3H e Ciclo PDCA
   INSERT INTO analises_ishikawa (revisao_individual_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
   VALUES (v_rev_id, 'Lesão Renal Aguda e Hipoglicemia Medicamentosa', 'Ausência de protocolo de ajuste renal', 'Sobrecarga de trabalho na prescrição', 'Falta de alerta eletrônico no prontuário', 'Monitoramento laboratorial espaçado', 'Enfermaria com alta rotatividade', 'Computadores lentos para checagem');
 
   INSERT INTO planos_acao_5w3h (revisao_individual_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
   VALUES (v_rev_id, 'Implantar alerta eletrônico de nefrotoxicidade', 'Reduzir IRA medicamentosa em 80%', 'Comissão de Farmácia e T.I.', 'Prescrição Eletrônica HU-UFS', 'Março/2026', 'Bloqueio de aminoglicosídeo sem creatinina prévia', 0.00, 'Taxa de ocorrência do trigger M5');
+
+  INSERT INTO ciclos_pdca (revisao_individual_id, planejar, fazer, checar, agir)
+  VALUES (v_rev_id, 'Planejar protocolo de alerta eletrônico na prescrição de vancomicina e aminoglicosídeos', 'Executar piloto na enfermaria de Clínica Médica com apoio da Farmácia Clínica', 'Monitorar taxa de ocorrência de elevação da creatinina > 2x e gatilho M5 mensalmente', 'Padronizar protocolo em todo o hospital universitário e atualizar formulário terapêutico');
 
 
   -- Revisão 2: Aluna Juliana Campos auditando ATD-2026-0102 (Cirúrgico S1, C1, C6 - Cat. F)
@@ -740,6 +743,15 @@ BEGIN
   INSERT INTO validacoes_docentes (revisao_individual_id, professor_validador_id, parecer_formativo, nota, homologado, data_validacao)
   VALUES (v_rev_id, prof_marina, 'Desempenho impecável. Demonstrou domínio da associação entre gatilhos de cuidados e módulo cirúrgico, fundamentando com rigor técnico.', 10.00, true, '2026-03-08 14:20:00-03');
 
+  INSERT INTO analises_ishikawa (revisao_individual_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (v_rev_id, 'Hemorragia intra-abdominal pós-operatória com reintervenção', 'Checklist de cirurgia segura incompleto na etapa Sign-out', 'Equipe cirúrgica sob pressão de horário', 'Fios cirúrgicos de lote com falha de tração', 'Monitoramento hemodinâmico tardio na RPA', 'Sala cirúrgica com iluminação deficiente', 'Eletrocautério com calibragem defasada');
+
+  INSERT INTO planos_acao_5w3h (revisao_individual_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (v_rev_id, 'Auditoria diária de 100% dos checklists cirúrgicos', 'Garantir hemostasia rigorosa antes do fechamento', 'Núcleo de Segurança do Paciente', 'Centro Cirúrgico HU-UFS', 'Abril/2026', 'Acompanhamento presencial no sign-out', 0.00, 'Taxa de conformidade do checklist');
+
+  INSERT INTO ciclos_pdca (revisao_individual_id, planejar, fazer, checar, agir)
+  VALUES (v_rev_id, 'Planejar revisão das rotinas de hemostasia e checklist cirúrgico', 'Executar treinamento de toda a equipe do Centro Cirúrgico', 'Checar adesão ao checklist através de auditorias semanais', 'Padronizar a checagem obrigatória da cavidade antes da síntese parietal');
+
 
   -- Revisão 3: Aluna Beatriz Costa auditando ATD-2026-0103 (Cuidados C8 - Cat. E)
   INSERT INTO revisoes_individuais (atividade_id, aluno_id, prontuario_id, tempo_gasto_segundos, finalizada, data_submissao)
@@ -752,6 +764,15 @@ BEGIN
   -- Validação Docente com Nota 8.50
   INSERT INTO validacoes_docentes (revisao_individual_id, professor_validador_id, parecer_formativo, nota, homologado, data_validacao)
   VALUES (v_rev_id, prof_roberto, 'Boa identificação da lesão por pressão como evento adverso intrahospitalar evitável. Sentiu falta de explorar o nexo temporal da admissão.', 8.50, true, '2026-02-25 09:30:00-03');
+
+  INSERT INTO analises_ishikawa (revisao_individual_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (v_rev_id, 'Lesão por pressão estágio II adquirida em internação', 'Rotina de mudança de decúbito irregular', 'Equipe de enfermagem reduzida no plantão noturno', 'Colchões piramidais desgastados', 'Escala de Braden não reavaliada a cada 48h', 'Leitos com grades rígidas sem proteção', 'Ausência de relógio de mudança de decúbito no leito');
+
+  INSERT INTO planos_acao_5w3h (revisao_individual_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (v_rev_id, 'Substituir colchões por pneumáticos e implantar relógio de decúbito', 'Prevenir novas lesões em pacientes de alto risco', 'Comissão de Pele e Direção Administrativa', 'Enfermarias de Clínica Médica', 'Março/2026', 'Aquisição de 20 colchões pneumáticos', 8500.00, 'Incidência de LPP por 1.000 pacientes-dia');
+
+  INSERT INTO ciclos_pdca (revisao_individual_id, planejar, fazer, checar, agir)
+  VALUES (v_rev_id, 'Planejar protocolo institucional de prevenção de lesões por pressão', 'Distribuir relógios de decúbito e treinar técnicos de enfermagem', 'Checar pontuação de Braden e inspecionar integridade cutânea diariamente', 'Instituir selo de leito seguro e padronizar rotina no manual assistencial');
 
 
   -- Revisão 4: Aluno Carlos Santos auditando ATD-2026-0201 (CTI I1, C4 - PAV em UTI Cat. F)
@@ -768,6 +789,15 @@ BEGIN
   -- Validação Docente com Nota 9.00
   INSERT INTO validacoes_docentes (revisao_individual_id, professor_validador_id, parecer_formativo, nota, homologado, data_validacao)
   VALUES (v_rev_id, prof_fernando, 'Muito bom raciocínio clínico ao registrar o trigger de hemocultura como negativo para dano e o I1 como positivo. Demonstra rigor estatístico.', 9.00, true, '2026-07-14 11:00:00-03');
+
+  INSERT INTO analises_ishikawa (revisao_individual_id, efeito_principal, metodo, mao_de_obra, material, medida, meio_ambiente, maquina)
+  VALUES (v_rev_id, 'Pneumonia associada à ventilação mecânica (PAV) em UTI', 'Higiene oral com clorexidina 0,12% fora do aprazamento', 'Alta demanda de pacientes críticos por enfermeiro', 'Filtros de circuito ventilatório sem troca no prazo', 'Pressão de cuff não mensurada a cada 6h', 'Unidade de Terapia Intensiva com alto índice de colonização', 'Ventiladores mecânicos sem aspiração subglótica contínua');
+
+  INSERT INTO planos_acao_5w3h (revisao_individual_id, o_que, por_que, quem, onde, quando, como, quanto_custa, como_medir)
+  VALUES (v_rev_id, 'Implantar bundle de prevenção de PAV com checagem eletrônica', 'Reduzir taxa de PAV em 50% na UTI geral', 'CCIH e Coordenação Médica da UTI', 'UTI Geral HU-UFS', 'Agosto/2026', 'Auditoria à beira-leito dos 5 itens do bundle', 1200.00, 'Densidade de incidência de PAV por 1.000 dias de VM');
+
+  INSERT INTO ciclos_pdca (revisao_individual_id, planejar, fazer, checar, agir)
+  VALUES (v_rev_id, 'Planejar protocolo de bundle de ventilação mecânica da AMIB/IHI', 'Capacitar médicos, fisioterapeutas e enfermeiros da UTI', 'Checar adesão diária à cabeceira elevada 30-45° e pressão do cuff', 'Padronizar a checagem em prontuário eletrônico como barreira assistencial');
 
 
   -- Revisão 5: Aluna Mariana Nogueira auditando ATD-2026-0202 (Cirúrgico S1, S10, S11 - Cat. F)
