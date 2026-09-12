@@ -5,7 +5,11 @@
   >
     <div>
       <h1 class="h4 fw-bold text-dark m-0">
-        {{ ehAdmin() ? 'Gestão de Alunos da Turma' : 'Alunos Matriculados na Turma' }}
+        {{
+          ehAdmin()
+            ? "Gestão de Alunos da Turma"
+            : "Alunos Matriculados na Turma"
+        }}
       </h1>
       <span class="text-secondary small" *ngIf="turma()">
         Turma: <strong>{{ turma()?.codigoDisciplina }}</strong> (Período:
@@ -93,7 +97,8 @@
               }}
             </option>
             <option *ngFor="let a of alunosDisponiveis()" [ngValue]="a.id">
-              {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || "S/M" }}) -
+              {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || "S/M" }})
+              -
               {{ a.email }}
             </option>
           </select>
@@ -106,7 +111,10 @@
             (click)="matricular()"
           >
             @if (matriculando()) {
-              <span class="spinner-border spinner-border-sm" role="status"></span>
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+              ></span>
               <span>MATRICULANDO...</span>
             } @else {
               <i class="bi bi-person-check-fill"></i>
@@ -172,7 +180,10 @@
               E-MAIL INSTITUCIONAL
             </th>
             @if (ehAdmin()) {
-              <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
+              <th
+                scope="col"
+                class="py-2 px-3 text-end bg-white text-secondary"
+              >
                 AÇÕES
               </th>
             }
@@ -207,7 +218,10 @@
             </tr>
           } @empty {
             <tr>
-              <td [attr.colspan]="ehAdmin() ? 4 : 3" class="text-center py-5 text-muted bg-white">
+              <td
+                [attr.colspan]="ehAdmin() ? 4 : 3"
+                class="text-center py-5 text-muted bg-white"
+              >
                 <i class="bi bi-people fs-2 d-block text-secondary mb-2"></i>
                 Nenhum aluno matriculado encontrado nesta turma.
               </td>

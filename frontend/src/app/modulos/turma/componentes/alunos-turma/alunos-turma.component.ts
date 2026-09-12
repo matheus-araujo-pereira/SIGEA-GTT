@@ -30,7 +30,9 @@ export class AlunosTurmaComponent implements OnInit {
   private readonly turmaService = inject(TurmaService);
   private readonly usuarioService = inject(UsuarioService);
 
-  readonly ehAdmin = computed(() => this.auth.usuarioLogado()?.perfil === 'ADMINISTRADOR');
+  readonly ehAdmin = computed(
+    () => this.auth.usuarioLogado()?.perfil === 'ADMINISTRADOR',
+  );
 
   readonly turmaId = signal<number>(0);
   readonly turma = signal<Turma | null>(null);

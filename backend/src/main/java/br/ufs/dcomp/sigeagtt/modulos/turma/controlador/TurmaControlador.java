@@ -99,7 +99,8 @@ public class TurmaControlador {
             @AuthenticationPrincipal Usuario usuarioLogado) {
         if (usuarioLogado != null && usuarioLogado.getPerfil() == PerfilUsuario.PROFESSOR) {
             TurmaRespostaDTO turma = servico.buscarPorId(id);
-            if (turma.professorResponsavelId() != null && !turma.professorResponsavelId().equals(usuarioLogado.getId())) {
+            if (turma.professorResponsavelId() != null
+                    && !turma.professorResponsavelId().equals(usuarioLogado.getId())) {
                 throw new AccessDeniedException("Acesso não autorizado aos alunos desta turma.");
             }
         }
