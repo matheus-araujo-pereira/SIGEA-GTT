@@ -6,7 +6,7 @@ import {
   RouterLink,
   RouterLinkActive,
 } from '@angular/router';
-import { AutenticacaoService } from '../../../nucleo/servicos/autenticacao.service';
+import { AutenticacaoService } from '../../../modulos/autenticacao/servicos/autenticacao.service';
 
 export interface ItemMenu {
   rota: string;

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot, UrlTree } from '@angular/router';
-import { AutenticacaoService } from '../servicos/autenticacao.service';
+import { AutenticacaoService } from '../../modulos/autenticacao/servicos/autenticacao.service';
 import { PerfilUsuario } from '../../compartilhado/modelos/dominio.modelos';
 
 export const perfilGuard: CanActivateFn = (route: ActivatedRouteSnapshot): boolean | UrlTree => {

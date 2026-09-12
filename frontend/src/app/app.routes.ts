@@ -1,20 +1,20 @@
 import { Routes, CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { LoginComponent } from './modulos/autenticacao/login/login.component';
-import { PrimeiroAcessoComponent } from './modulos/autenticacao/primeiro-acesso/primeiro-acesso.component';
+import { LoginComponent } from './modulos/autenticacao/componentes/login/login.component';
+import { PrimeiroAcessoComponent } from './modulos/autenticacao/componentes/primeiro-acesso/primeiro-acesso.component';
 import { LayoutInternoComponent } from './compartilhado/componentes/layout-interno/layout-interno.component';
-import { GerenciarUsuariosComponent } from './modulos/administracao/usuarios/gerenciar-usuarios/gerenciar-usuarios.component';
-import { GerenciarGatilhosComponent } from './modulos/administracao/gatilhos/gerenciar-gatilhos.component';
-import { GerenciarUnidadesComponent } from './modulos/administracao/unidades/gerenciar-unidades.component';
-import { AuditoriaComponent } from './modulos/auditoria/auditoria.component';
-import { MelhoriaQualidadeComponent } from './modulos/auditoria/melhoria/melhoria-qualidade.component';
-import { IndicadoresComponent } from './modulos/indicadores/indicadores.component';
-import { TurmasComponent } from './modulos/docente/turmas/turmas.component';
-import { GerenciarCenariosComponent } from './modulos/docente/cenarios/gerenciar-cenarios.component';
-import { GerenciarProntuariosComponent } from './modulos/docente/prontuarios/gerenciar-prontuarios.component';
+import { GerenciarUsuariosComponent } from './modulos/usuario/componentes/gerenciar-usuarios/gerenciar-usuarios.component';
+import { GerenciarGatilhosComponent } from './modulos/gtt/componentes/gerenciar-gatilhos/gerenciar-gatilhos.component';
+import { GerenciarUnidadesComponent } from './modulos/unidade/componentes/gerenciar-unidades/gerenciar-unidades.component';
+import { AuditoriaComponent } from './modulos/auditoria/componentes/execucao-auditoria/auditoria.component';
+import { MelhoriaQualidadeComponent } from './modulos/qualidade/componentes/melhoria-qualidade/melhoria-qualidade.component';
+import { IndicadoresComponent } from './modulos/indicadores/componentes/dashboard-indicadores/indicadores.component';
+import { TurmasComponent } from './modulos/turma/componentes/gerenciar-turmas/turmas.component';
+import { GerenciarCenariosComponent } from './modulos/cenario/componentes/gerenciar-cenarios/gerenciar-cenarios.component';
+import { GerenciarProntuariosComponent } from './modulos/cenario/componentes/gerenciar-prontuarios/gerenciar-prontuarios.component';
 import { autenticacaoGuard } from './nucleo/guardas/autenticacao.guard';
 import { perfilGuard } from './nucleo/guardas/perfil.guard';
-import { AutenticacaoService } from './nucleo/servicos/autenticacao.service';
+import { AutenticacaoService } from './modulos/autenticacao/servicos/autenticacao.service';
 
 const redirecionamentoInicialGuard: CanActivateFn = () => {
   const auth = inject(AutenticacaoService);
