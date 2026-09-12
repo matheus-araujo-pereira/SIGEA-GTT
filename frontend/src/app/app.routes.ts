@@ -4,7 +4,12 @@ import { LoginComponent } from './modulos/autenticacao/componentes/login/login.c
 import { PrimeiroAcessoComponent } from './modulos/autenticacao/componentes/primeiro-acesso/primeiro-acesso.component';
 import { LayoutInternoComponent } from './compartilhado/componentes/layout-interno/layout-interno.component';
 import { GerenciarUsuariosComponent } from './modulos/usuario/componentes/gerenciar-usuarios/gerenciar-usuarios.component';
+import { FormularioUsuarioComponent } from './modulos/usuario/componentes/formulario-usuario/formulario-usuario.component';
+import { MeuPerfilComponent } from './modulos/usuario/componentes/meu-perfil/meu-perfil.component';
 import { GerenciarGatilhosComponent } from './modulos/gtt/componentes/gerenciar-gatilhos/gerenciar-gatilhos.component';
+import { FormularioGatilhoComponent } from './modulos/gtt/componentes/formulario-gatilho/formulario-gatilho.component';
+import { GerenciarModulosComponent } from './modulos/gtt/componentes/gerenciar-modulos/gerenciar-modulos.component';
+import { FormularioModuloComponent } from './modulos/gtt/componentes/formulario-modulo/formulario-modulo.component';
 import { GerenciarUnidadesComponent } from './modulos/unidade/componentes/gerenciar-unidades/gerenciar-unidades.component';
 import { AuditoriaComponent } from './modulos/auditoria/componentes/execucao-auditoria/auditoria.component';
 import { MelhoriaQualidadeComponent } from './modulos/qualidade/componentes/melhoria-qualidade/melhoria-qualidade.component';
@@ -33,7 +38,7 @@ export const routes: Routes = [
     children: [
       { path: '', canActivate: [redirecionamentoInicialGuard], children: [] },
 
-      // Administração
+      // Administração de Usuários
       {
         path: 'usuarios',
         component: GerenciarUsuariosComponent,
@@ -41,11 +46,65 @@ export const routes: Routes = [
         data: { perfis: ['ADMINISTRADOR'] },
       },
       {
+        path: 'usuarios/novo',
+        component: FormularioUsuarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'usuarios/:id/editar',
+        component: FormularioUsuarioComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+
+      // Meu Perfil (acessível por qualquer perfil autenticado)
+      {
+        path: 'perfil',
+        component: MeuPerfilComponent,
+      },
+
+      // Gatilhos GTT
+      {
         path: 'gatilhos',
         component: GerenciarGatilhosComponent,
         canActivate: [perfilGuard],
         data: { perfis: ['ADMINISTRADOR'] },
       },
+      {
+        path: 'gatilhos/novo',
+        component: FormularioGatilhoComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'gatilhos/:id/editar',
+        component: FormularioGatilhoComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+
+      // Módulos GTT
+      {
+        path: 'modulos',
+        component: GerenciarModulosComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'modulos/novo',
+        component: FormularioModuloComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+      {
+        path: 'modulos/:id/editar',
+        component: FormularioModuloComponent,
+        canActivate: [perfilGuard],
+        data: { perfis: ['ADMINISTRADOR'] },
+      },
+
+      // Unidades HU
       {
         path: 'unidades',
         component: GerenciarUnidadesComponent,

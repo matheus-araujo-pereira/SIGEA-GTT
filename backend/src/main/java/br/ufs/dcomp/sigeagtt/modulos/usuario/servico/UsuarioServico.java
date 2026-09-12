@@ -1,5 +1,6 @@
 package br.ufs.dcomp.sigeagtt.modulos.usuario.servico;
 
+import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.AlterarSenhaDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioEdicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRespostaDTO;
@@ -50,8 +51,9 @@ public class UsuarioServico {
             matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
                     ? dto.matriculaSigaa().trim()
                     : null;
-            if (matriculaLimpa == null) {
-                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para discentes.");
+            if (matriculaLimpa == null || !matriculaLimpa.matches("^\\d{12}$")) {
+                throw new IllegalArgumentException(
+                        "A Matrícula do SIGAA é obrigatória para discentes e deve conter exatamente 12 dígitos numéricos.");
             }
             if (repositorio.findByMatriculaSigaa(matriculaLimpa).isPresent()) {
                 throw new IllegalArgumentException("Já existe um aluno cadastrado com esta Matrícula do SIGAA.");
@@ -87,8 +89,9 @@ public class UsuarioServico {
             matriculaLimpa = (dto.matriculaSigaa() != null && !dto.matriculaSigaa().isBlank())
                     ? dto.matriculaSigaa().trim()
                     : null;
-            if (matriculaLimpa == null) {
-                throw new IllegalArgumentException("A Matrícula do SIGAA é obrigatória para discentes.");
+            if (matriculaLimpa == null || !matriculaLimpa.matches("^\\d{12}$")) {
+                throw new IllegalArgumentException(
+                        "A Matrícula do SIGAA é obrigatória para discentes e deve conter exatamente 12 dígitos numéricos.");
             }
             if (repositorio.findByMatriculaSigaaAndIdNot(matriculaLimpa, id).isPresent()) {
                 throw new IllegalArgumentException("Esta Matrícula do SIGAA já pertence a outro discente.");
@@ -98,7 +101,8 @@ public class UsuarioServico {
         if (usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR && dto.perfil() != PerfilUsuario.ADMINISTRADOR) {
             long totalAdmins = repositorio.countByPerfilAndAtivoTrue(PerfilUsuario.ADMINISTRADOR);
             if (totalAdmins <= 1) {
-                throw new IllegalArgumentException("Operação cancelada: o sistema precisa manter ao menos um Administrador ativo.");
+                throw new IllegalArgumentException(
+                        "Operação cancelada: o sistema precisa manter ao menos um Administrador ativo.");
             }
         }
 
@@ -144,12 +148,34 @@ public class UsuarioServico {
         return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
     }
 
+    @Transactional
+    public UsuarioRespostaDTO alterarSenha(Long id, AlterarSenhaDTO dto) {
+        Usuario usuario = repositorio.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + id));
+
+        if (!passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha())) {
+            throw new IllegalArgumentException("A senha atual informada está incorreta.");
+        }
+
+        if (!dto.novaSenha().equals(dto.confirmacaoNovaSenha())) {
+            throw new IllegalArgumentException("A confirmação da nova senha não confere.");
+        }
+
+        if (passwordEncoder.matches(dto.novaSenha(), usuario.getSenha())) {
+            throw new IllegalArgumentException("A nova senha deve ser diferente da senha atual.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));
+        usuario.setPrimeiroAcesso(false);
+        return UsuarioRespostaDTO.deEntidade(repositorio.save(usuario));
+    }
+
     private void validarDominioEmail(String email) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("O e-mail institucional é obrigatório.");
         }
         String emailLower = email.trim().toLowerCase();
-        if (!emailLower.endsWith("@academico.ufs.br")) {
+        if (!emailLower.matches("^[a-z0-9._%+-]+@academico\\.ufs\\.br$")) {
             throw new IllegalArgumentException("O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br");
         }
     }

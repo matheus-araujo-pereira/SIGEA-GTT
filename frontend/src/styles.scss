@@ -62,6 +62,7 @@ $card-border-color: $color5;
 $card-border-width: 1px;
 $card-cap-bg: $color2;
 
+$table-bg: #ffffff;
 $table-border-color: $color5;
 $table-hover-bg: $color2;
 $table-cell-padding-y: 0.4rem;
@@ -69,6 +70,25 @@ $table-cell-padding-x: 0.5rem;
 
 @import "bootstrap/scss/bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+
+.table {
+  --bs-table-bg: #ffffff !important;
+  --bs-table-striped-bg: #ffffff !important;
+  background-color: #ffffff !important;
+
+  > :not(caption) > * > * {
+    background-color: #ffffff !important;
+  }
+}
+
+.table thead th {
+  background-color: #ffffff !important;
+}
+
+.table-hover > tbody > tr:hover > * {
+  --bs-table-hover-bg: #f5f5f5 !important;
+  background-color: #f5f5f5 !important;
+}
 
 * {
   border-radius: 0 !important;

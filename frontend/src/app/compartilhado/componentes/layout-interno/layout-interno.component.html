@@ -8,11 +8,15 @@
 
       <nav class="p-2">
         @for (grupo of gruposMenu(); track grupo.titulo) {
-          <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">{{ grupo.titulo }}</div>
+          <div class="text-uppercase text-muted fw-bold px-2 mt-3 mb-1 fs-xxs">
+            {{ grupo.titulo }}
+          </div>
           @for (item of grupo.itens; track item.rota) {
-            <a [routerLink]="item.rota"
-               routerLinkActive="active"
-               class="nav-link py-2 px-3 d-flex align-items-center gap-2 mb-1">
+            <a
+              [routerLink]="item.rota"
+              routerLinkActive="active"
+              class="nav-link py-2 px-3 d-flex align-items-center gap-2 mb-1"
+            >
               <i class="bi" [class]="item.icone"></i>
               <span>{{ item.rotulo }}</span>
             </a>
@@ -21,20 +25,52 @@
       </nav>
     </div>
 
-    <div class="p-3 b-t d-flex justify-content-between align-items-center">
-      <div class="overflow-hidden me-2"
-           role="button"
-           tabindex="0"
-           (click)="abrirPerfil()"
-           (keyup.enter)="abrirPerfil()"
-           style="cursor: pointer;"
-           title="Clique para ver seu perfil">
-        <div class="fw-bold text-truncate small text-dark">{{ nomeUsuario() }}</div>
-        <span class="font-monospace text-muted fs-xxs">{{ perfilUsuario() }}</span>
+    <!-- RODAPÉ DA SIDEBAR COM INDICAÇÃO DE PERFIL E ÍCONE AO LADO DO BOTÃO SAIR -->
+    <div
+      class="p-3 b-t d-flex justify-content-between align-items-center bg-light-subtle"
+    >
+      <a
+        routerLink="/perfil"
+        class="d-flex align-items-center gap-2 overflow-hidden text-decoration-none flex-grow-1 me-2 link-dark"
+        title="Acessar Meu Perfil"
+      >
+        <div
+          class="rounded-circle bg-white border border-secondary-subtle d-flex align-items-center justify-content-center flex-shrink-0"
+          style="width: 36px; height: 36px"
+        >
+          <i class="bi bi-person-circle text-primary fs-5"></i>
+        </div>
+        <div class="overflow-hidden">
+          <div class="fw-bold text-truncate small text-dark lh-sm">
+            {{ nomeUsuario() }}
+          </div>
+          <div
+            class="text-secondary fs-xxs d-flex align-items-center gap-1 font-monospace"
+          >
+            <span>{{ perfilUsuario() }}</span>
+            <span class="text-primary fw-medium font-sans-serif"
+              >• Ver Perfil</span
+            >
+          </div>
+        </div>
+      </a>
+      <div class="d-flex align-items-center gap-1 flex-shrink-0">
+        <a
+          routerLink="/perfil"
+          class="btn btn-outline-primary btn-sm"
+          title="Ver Meu Perfil"
+        >
+          <i class="bi bi-person"></i>
+        </a>
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          (click)="sair()"
+          title="Encerrar Sessão"
+        >
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
       </div>
-      <button type="button" class="btn btn-outline-danger btn-sm" (click)="sair()" title="Encerrar Sessão">
-        <i class="bi bi-box-arrow-right"></i>
-      </button>
     </div>
   </aside>
 
@@ -42,50 +78,3 @@
     <router-outlet></router-outlet>
   </main>
 </div>
-
-<!-- MODAL DE PERFIL DO USUÁRIO -->
-@if (exibirModalPerfil()) {
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal d-block" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bg-white b-1">
-        <div class="p-3 b-b d-flex justify-content-between align-items-center">
-          <span class="fw-bold text-dark font-monospace small">MEU PERFIL</span>
-          <button type="button" class="btn btn-sm p-0 text-muted" (click)="fecharPerfil()">[FECHAR]</button>
-        </div>
-        <div class="p-3 font-monospace small">
-          <div class="mb-2 pb-2 b-b">
-            <span class="text-secondary d-block fs-xxs">NOME COMPLETO:</span>
-            <span class="fw-bold text-dark font-sans-serif">{{ nomeUsuario() }}</span>
-          </div>
-
-          <div class="mb-2 pb-2 b-b">
-            <span class="text-secondary d-block fs-xxs">E-MAIL INSTITUCIONAL:</span>
-            <span class="text-dark">{{ usuario()?.email || '-' }}</span>
-          </div>
-
-          <div class="mb-2 pb-2 b-b">
-            <span class="text-secondary d-block fs-xxs">PERFIL DE ACESSO:</span>
-            <span class="text-primary fw-bold">{{ perfilUsuario() }}</span>
-          </div>
-
-          <div class="mb-2 pb-2 b-b">
-            <span class="text-secondary d-block fs-xxs">MATRÍCULA SIGAA:</span>
-            <span class="text-dark">{{ usuario()?.matriculaSigaa || '-' }}</span>
-          </div>
-
-          <div class="mb-3">
-            <span class="text-secondary d-block fs-xxs">STATUS DA CONTA:</span>
-            <span class="text-success fw-bold">[ATIVO NO SISTEMA]</span>
-          </div>
-
-          <div class="text-end pt-2 b-t">
-            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="fecharPerfil()">
-              FECHAR
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-}

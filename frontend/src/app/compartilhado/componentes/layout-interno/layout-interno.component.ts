@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Router,
@@ -36,8 +36,6 @@ export class LayoutInternoComponent {
     this.usuario()?.perfil ? `[${this.usuario()?.perfil}]` : '',
   );
 
-  readonly exibirModalPerfil = signal(false);
-
   readonly gruposMenu = computed<GrupoMenu[]>(() => {
     const perfil = this.usuario()?.perfil;
     if (!perfil) return [];
@@ -49,16 +47,25 @@ export class LayoutInternoComponent {
         titulo: 'Administração',
         itens: [
           {
+            rota: '/gatilhos',
+            rotulo: 'Gatilhos GTT',
+            icone: 'bi-sliders',
+          },
+          {
+            rota: '/modulos',
+            rotulo: 'Módulos GTT',
+            icone: 'bi-collection',
+          },
+          {
+            rota: '/unidades',
+            rotulo: 'Unidades HU',
+            icone: 'bi-building',
+          },
+          {
             rota: '/usuarios',
             rotulo: 'Usuários & Perfis',
             icone: 'bi-people',
           },
-          {
-            rota: '/gatilhos',
-            rotulo: 'Gatilhos & Módulos',
-            icone: 'bi-sliders',
-          },
-          { rota: '/unidades', rotulo: 'Unidades HU', icone: 'bi-building' },
         ],
       });
     }
@@ -79,14 +86,14 @@ export class LayoutInternoComponent {
         titulo: 'Gestão Acadêmica',
         itens: [
           {
-            rota: '/turmas',
-            rotulo: 'Turmas & Alunos',
-            icone: 'bi-mortarboard',
-          },
-          {
             rota: '/cenarios',
             rotulo: 'Cenários Clínicos',
             icone: 'bi-file-earmark-medical',
+          },
+          {
+            rota: '/turmas',
+            rotulo: 'Turmas & Alunos',
+            icone: 'bi-mortarboard',
           },
         ],
       });
@@ -105,16 +112,20 @@ export class LayoutInternoComponent {
       });
     }
 
-    return grupos;
+    // Ordenar de dentro para fora:
+    // 1. Ordena os itens de cada grupo em ordem alfabética pelo rótulo
+    // 2. Ordena os próprios grupos em ordem alfabética pelo título
+    return grupos
+      .map((g) => ({
+        ...g,
+        itens: [...g.itens].sort((a, b) =>
+          a.rotulo.localeCompare(b.rotulo, 'pt-BR', { sensitivity: 'base' }),
+        ),
+      }))
+      .sort((a, b) =>
+        a.titulo.localeCompare(b.titulo, 'pt-BR', { sensitivity: 'base' }),
+      );
   });
-
-  abrirPerfil(): void {
-    this.exibirModalPerfil.set(true);
-  }
-
-  fecharPerfil(): void {
-    this.exibirModalPerfil.set(false);
-  }
 
   sair(): void {
     this.authService.sair();

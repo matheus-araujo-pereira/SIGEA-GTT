@@ -10,6 +10,12 @@ export interface UsuarioRequisicao {
   perfil: PerfilUsuario;
 }
 
+export interface AlterarSenhaPayload {
+  senhaAtual: string;
+  novaSenha: string;
+  confirmacaoNovaSenha: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -43,5 +49,9 @@ export class UsuarioService {
 
   reativar(id: number): Observable<Usuario> {
     return this.http.patch<Usuario>(`${this.url}/${id}/reativar`, {});
+  }
+
+  alterarSenha(id: number, payload: AlterarSenhaPayload): Observable<Usuario> {
+    return this.http.patch<Usuario>(`${this.url}/${id}/alterar-senha`, payload);
   }
 }

@@ -4,9 +4,9 @@
     class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Gatilhos GTT</h1>
+      <h1 class="h4 fw-bold text-dark m-0">Módulos GTT</h1>
       <span class="text-secondary small">
-        Total cadastrado: {{ totalGatilhos() }} gatilhos clínicos no SIGEA-GTT
+        Total cadastrado: {{ totalModulos() }} módulos clínicos no SIGEA-GTT
       </span>
     </div>
     <button
@@ -15,7 +15,7 @@
       (click)="navegarParaNovo()"
     >
       <i class="bi bi-plus-circle-fill"></i>
-      <span>NOVO GATILHO</span>
+      <span>NOVO MÓDULO</span>
     </button>
   </div>
 
@@ -59,7 +59,7 @@
     class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
   >
     <div class="row g-2 align-items-center">
-      <div class="col-md-5">
+      <div class="col-md-8">
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-light text-secondary border-end-0">
             <i class="bi bi-search"></i>
@@ -69,7 +69,7 @@
             class="form-control border-start-0"
             [ngModel]="termoBusca()"
             (ngModelChange)="atualizarBusca($event)"
-            placeholder="Filtrar por código, descrição ou limiar de referência..."
+            placeholder="Filtrar por código, nome do módulo ou escopo clínico..."
           />
           @if (termoBusca()) {
             <button
@@ -86,19 +86,6 @@
       <div class="col-md-4">
         <select
           class="form-select form-select-sm"
-          [ngModel]="filtroModuloId()"
-          (ngModelChange)="atualizarFiltroModulo($event)"
-        >
-          <option value="TODOS">Todos os Módulos GTT</option>
-          @for (m of modulos(); track m.id) {
-            <option [value]="m.id">{{ m.nome }} ({{ m.codigo }})</option>
-          }
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <select
-          class="form-select form-select-sm"
           [ngModel]="filtroStatus()"
           (ngModelChange)="atualizarFiltroStatus($event)"
         >
@@ -110,7 +97,7 @@
     </div>
   </div>
 
-  <!-- TABELA DE GATILHOS COM FUNDO BRANCO PURO E SEM BADGES -->
+  <!-- TABELA DE MÓDULOS COM FUNDO BRANCO PURO E SEM BADGES -->
   <div
     class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
   >
@@ -124,13 +111,13 @@
               CÓDIGO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              MÓDULO GTT
+              NOME DO MÓDULO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              DESCRIÇÃO OPERACIONAL
+              ESCOPO CLÍNICO
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              LIMIAR DE REFERÊNCIA
+              GATILHOS VINCULADOS
             </th>
             <th scope="col" class="py-2 px-2 bg-white text-secondary">
               STATUS
@@ -141,53 +128,53 @@
           </tr>
         </thead>
         <tbody class="small font-monospace bg-white">
-          @for (g of gatilhosLinhasPaginadas(); track g.id) {
+          @for (m of modulosLinhasPaginadas(); track m.id) {
             <tr class="bg-white">
               <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
-                {{ g.codigo }}
+                {{ m.codigo }}
               </td>
               <td
-                class="py-2 px-2 font-sans-serif fw-medium text-dark bg-white"
+                class="py-2 px-2 font-sans-serif fw-semibold text-dark bg-white"
               >
-                {{ g.moduloNome }}
+                {{ m.nome }}
               </td>
               <td class="py-2 px-2 font-sans-serif text-secondary bg-white">
-                {{ g.descricao }}
+                {{ m.descricao }}
               </td>
               <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                {{ g.limiar }}
+                {{ m.totalGatilhos }}
               </td>
               <td
                 class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="g.ativo"
-                [class.text-muted]="!g.ativo"
+                [class.text-success]="m.ativo"
+                [class.text-muted]="!m.ativo"
               >
-                {{ g.status }}
+                {{ m.status }}
               </td>
               <td class="py-2 px-3 text-end text-nowrap bg-white">
                 <button
                   type="button"
                   class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="navegarParaEditar(g.original)"
-                  title="Editar Gatilho"
+                  (click)="navegarParaEditar(m.original)"
+                  title="Editar Módulo"
                 >
                   EDITAR
                 </button>
                 <button
                   type="button"
                   class="btn btn-sm py-0 px-2 me-1 rounded-1"
-                  [class.btn-outline-secondary]="g.ativo"
-                  [class.btn-outline-success]="!g.ativo"
-                  (click)="alternarStatus(g.original)"
-                  [title]="g.ativo ? 'Inativar Gatilho' : 'Ativar Gatilho'"
+                  [class.btn-outline-secondary]="m.ativo"
+                  [class.btn-outline-success]="!m.ativo"
+                  (click)="alternarStatus(m.original)"
+                  [title]="m.ativo ? 'Inativar Módulo' : 'Ativar Módulo'"
                 >
-                  {{ g.ativo ? "INATIVAR" : "ATIVAR" }}
+                  {{ m.ativo ? "INATIVAR" : "ATIVAR" }}
                 </button>
                 <button
                   type="button"
                   class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                  (click)="excluir(g.original)"
-                  title="Excluir Gatilho"
+                  (click)="excluir(m.original)"
+                  title="Excluir Módulo"
                 >
                   EXCLUIR
                 </button>
@@ -196,8 +183,10 @@
           } @empty {
             <tr>
               <td colspan="6" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-sliders fs-2 d-block text-secondary mb-2"></i>
-                Nenhum gatilho encontrado com os filtros selecionados.
+                <i
+                  class="bi bi-collection fs-2 d-block text-secondary mb-2"
+                ></i>
+                Nenhum módulo encontrado com os filtros selecionados.
               </td>
             </tr>
           }

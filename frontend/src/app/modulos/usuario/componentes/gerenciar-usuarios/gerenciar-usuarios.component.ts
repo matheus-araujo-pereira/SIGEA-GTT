@@ -1,10 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  UsuarioService,
-  UsuarioRequisicao,
-} from '../../servicos/usuario.service';
+import { Router } from '@angular/router';
+import { UsuarioService } from '../../servicos/usuario.service';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 import { Usuario } from '../../modelos/usuario.modelos';
 import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
@@ -30,60 +28,39 @@ export interface UsuarioLinha {
 })
 export class GerenciarUsuariosComponent implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
-  readonly auth = inject(AutenticacaoService);
+  private readonly auth = inject(AutenticacaoService);
+  private readonly router = inject(Router);
 
   readonly usuarios = signal<Usuario[]>([]);
   readonly carregando = signal(false);
   readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
-  readonly exibirFormulario = signal(false);
-  readonly idEdicao = signal<number | null>(null);
-  formulario: UsuarioRequisicao = this.obterFormularioVazio();
-
   readonly termoBusca = signal('');
-  readonly filtroPerfil = signal('TODOS');
-  readonly filtroStatus = signal('TODOS');
+  readonly filtroPerfil = signal<string>('TODOS');
+  readonly filtroStatus = signal<string>('TODOS');
 
   readonly paginaAtual = signal(1);
   readonly itensPorPagina = 10;
 
-  readonly usuarioLogadoId = computed(() => this.auth.usuarioLogado()?.id);
-
-  readonly tituloFormulario = computed(() => {
-    const id = this.idEdicao();
-    return id ? `EDITAR USUÁRIO #${id}` : 'NOVO USUÁRIO';
-  });
-
-  readonly textoBotaoSubmit = computed(() => {
-    return this.idEdicao() ? 'Editar Usuário' : 'Cadastrar Usuário';
-  });
-
   readonly totalUsuarios = computed(() => this.usuarios().length);
 
   readonly usuariosLinhasFiltradas = computed<UsuarioLinha[]>(() => {
-    const termo = this.termoBusca().trim().toLowerCase();
+    const termo = this.termoBusca().toLowerCase().trim();
     const perfil = this.filtroPerfil();
     const status = this.filtroStatus();
-    const logadoId = this.usuarioLogadoId();
+    const emailLogado = this.auth.usuarioLogado()?.email?.toLowerCase();
 
     return this.usuarios()
       .filter((u) => {
-        let matchTermo = true;
-        if (termo.length > 0) {
-          const matchNome = u.nomeCompleto
-            ? u.nomeCompleto.toLowerCase().includes(termo)
-            : false;
-          const matchEmail = u.email
-            ? u.email.toLowerCase().includes(termo)
-            : false;
-          const matchMatricula = u.matriculaSigaa
-            ? u.matriculaSigaa.toLowerCase().includes(termo)
-            : false;
-          matchTermo = matchNome || matchEmail || matchMatricula;
-        }
+        const matchTermo =
+          !termo ||
+          u.nomeCompleto.toLowerCase().includes(termo) ||
+          u.email.toLowerCase().includes(termo) ||
+          (u.matriculaSigaa && u.matriculaSigaa.toLowerCase().includes(termo));
 
         const matchPerfil = perfil === 'TODOS' || u.perfil === perfil;
+
         const matchStatus =
           status === 'TODOS' || (status === 'ATIVOS' ? u.ativo : !u.ativo);
 
@@ -93,10 +70,10 @@ export class GerenciarUsuariosComponent implements OnInit {
         id: u.id,
         nome: u.nomeCompleto,
         matricula: u.matriculaSigaa || '-',
-        ehVoce: u.id === logadoId,
+        ehVoce: !!emailLogado && u.email.toLowerCase() === emailLogado,
         email: u.email,
-        perfil: `[${u.perfil}]`,
-        primeiroAcesso: u.primeiroAcesso ? '[1º ACESSO PENDENTE]' : '[OK]',
+        perfil: u.perfil,
+        primeiroAcesso: u.primeiroAcesso ? '[PENDENTE]' : '[OK]',
         status: u.ativo ? '[ATIVO]' : '[INATIVO]',
         ativo: u.ativo,
         original: u,
@@ -120,13 +97,31 @@ export class GerenciarUsuariosComponent implements OnInit {
   }
 
   carregarUsuarios(): void {
+    this.carregando.set(true);
     this.usuarioService.listar().subscribe({
-      next: (dados) => this.usuarios.set(dados),
-      error: (err) =>
+      next: (dados) => {
+        this.usuarios.set(dados);
+        this.carregando.set(false);
+      },
+      error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar dados: ' + (err.error?.mensagem || err.message),
-        ),
+          'Erro ao carregar usuários: ' + (err.error?.mensagem || err.message),
+        );
+        this.carregando.set(false);
+      },
     });
+  }
+
+  navegarParaNovo(): void {
+    this.router.navigate(['/usuarios/novo']);
+  }
+
+  navegarParaEditar(u: Usuario): void {
+    this.router.navigate(['/usuarios', u.id, 'editar']);
+  }
+
+  mudarPagina(novaPagina: number): void {
+    this.paginaAtual.set(novaPagina);
   }
 
   atualizarBusca(termo: string): void {
@@ -144,153 +139,54 @@ export class GerenciarUsuariosComponent implements OnInit {
     this.paginaAtual.set(1);
   }
 
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
-  }
-
-  iniciarNovoCadastro(): void {
-    this.idEdicao.set(null);
-    this.formulario = this.obterFormularioVazio();
-    this.exibirFormulario.update((v) => !v);
-    this.limparMensagens();
-  }
-
-  iniciarEdicao(usuario: Usuario): void {
-    this.idEdicao.set(usuario.id);
-    this.formulario = {
-      nomeCompleto: usuario.nomeCompleto,
-      email: usuario.email,
-      matriculaSigaa: usuario.matriculaSigaa || null,
-      perfil: usuario.perfil,
-    };
-    this.exibirFormulario.set(true);
-    this.limparMensagens();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  fecharFormulario(): void {
-    this.exibirFormulario.set(false);
-    this.idEdicao.set(null);
-    this.formulario = this.obterFormularioVazio();
-  }
-
-  ajustarPerfil(): void {
-    if (this.formulario.perfil !== 'ALUNO') {
-      this.formulario.matriculaSigaa = null;
-    }
-  }
-
-  aplicarMascaraMatricula(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let num = input.value.replace(/\D/g, '');
-    if (num.length > 12) num = num.slice(0, 12);
-    input.value = num;
-    this.formulario.matriculaSigaa = num;
-  }
-
-  salvar(): void {
-    const emailLimpo = this.formulario.email
-      ? this.formulario.email.trim().toLowerCase()
-      : '';
-    if (!emailLimpo.endsWith('@academico.ufs.br')) {
-      this.mensagemErro.set(
-        'O e-mail deve pertencer obrigatoriamente ao domínio @academico.ufs.br',
-      );
-      return;
-    }
+  solicitarResetSenha(u: Usuario): void {
+    const confirmacao = confirm(
+      `Confirma o reset da senha de "${u.nomeCompleto}" para o padrão temporário Sigea@123?`,
+    );
+    if (!confirmacao) return;
 
     this.carregando.set(true);
-    this.limparMensagens();
-
-    const payload: UsuarioRequisicao = {
-      ...this.formulario,
-      email: emailLimpo,
-      matriculaSigaa:
-        this.formulario.perfil === 'ALUNO' &&
-        this.formulario.matriculaSigaa?.trim()
-          ? this.formulario.matriculaSigaa.replace(/\D/g, '')
-          : null,
-    };
-
-    const idAtual = this.idEdicao();
-    if (idAtual) {
-      this.usuarioService.editar(idAtual, payload).subscribe({
-        next: (atualizado) => {
-          this.mensagemSucesso.set(
-            `Usuário ${atualizado.nomeCompleto} atualizado com sucesso.`,
-          );
-          this.fecharFormulario();
-          this.carregando.set(false);
-          this.carregarUsuarios();
-
-          if (atualizado.id === this.auth.usuarioLogado()?.id) {
-            this.auth.salvarSessao(atualizado);
-          }
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar usuário.',
-          );
-          this.carregando.set(false);
-        },
-      });
-    } else {
-      this.usuarioService.cadastrar(payload).subscribe({
-        next: (criado) => {
-          this.mensagemSucesso.set(
-            `Usuário ${criado.nomeCompleto} cadastrado. Senha temporária: Sigea@123`,
-          );
-          this.fecharFormulario();
-          this.carregando.set(false);
-          this.carregarUsuarios();
-        },
-        error: (err) => {
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar usuário.',
-          );
-          this.carregando.set(false);
-        },
-      });
-    }
-  }
-
-  solicitarResetSenha(usuario: Usuario): void {
-    const confirmar = confirm(
-      `Resetar a senha de ${usuario.nomeCompleto} para "Sigea@123"?`,
-    );
-    if (!confirmar) return;
-
-    this.usuarioService.resetarSenha(usuario.id).subscribe({
+    this.usuarioService.resetarSenha(u.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(`Senha de ${usuario.nomeCompleto} resetada.`);
+        this.mensagemSucesso.set(
+          `Senha do usuário ${u.nomeCompleto} resetada com sucesso para Sigea@123.`,
+        );
+        this.carregando.set(false);
         this.carregarUsuarios();
       },
-      error: (err) => this.mensagemErro.set('Erro ao resetar: ' + err.message),
+      error: (err) => {
+        this.mensagemErro.set(err.error?.mensagem || 'Falha ao resetar senha.');
+        this.carregando.set(false);
+      },
     });
   }
 
-  alternarAtivacao(usuario: Usuario): void {
-    const obs = usuario.ativo
-      ? this.usuarioService.inativar(usuario.id)
-      : this.usuarioService.reativar(usuario.id);
+  alternarAtivacao(u: Usuario): void {
+    const acao = u.ativo ? 'inativar' : 'reativar';
+    const confirmacao = confirm(
+      `Deseja realmente ${acao} a conta de "${u.nomeCompleto}"?`,
+    );
+    if (!confirmacao) return;
 
-    obs.subscribe({
-      next: () => this.carregarUsuarios(),
-      error: (err) => this.mensagemErro.set(err.error?.mensagem || err.message),
+    this.carregando.set(true);
+    const requisicao$ = u.ativo
+      ? this.usuarioService.inativar(u.id)
+      : this.usuarioService.reativar(u.id);
+
+    requisicao$.subscribe({
+      next: () => {
+        this.mensagemSucesso.set(
+          `Conta de ${u.nomeCompleto} ${u.ativo ? 'inativada' : 'reativada'} com sucesso.`,
+        );
+        this.carregando.set(false);
+        this.carregarUsuarios();
+      },
+      error: (err) => {
+        this.mensagemErro.set(
+          err.error?.mensagem || `Falha ao ${acao} usuário.`,
+        );
+        this.carregando.set(false);
+      },
     });
-  }
-
-  private limparMensagens(): void {
-    this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
-  }
-
-  private obterFormularioVazio(): UsuarioRequisicao {
-    return {
-      nomeCompleto: '',
-      email: '',
-      matriculaSigaa: null,
-      perfil: 'ALUNO',
-    };
   }
 }

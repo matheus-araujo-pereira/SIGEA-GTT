@@ -1,47 +1,63 @@
 @if (visivel()) {
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 bg-white b-1 mt-2">
-    <span class="text-secondary small font-monospace">{{ textoResumo() }}</span>
+  <div
+    class="d-flex flex-wrap justify-content-between align-items-center gap-2 px-3 py-2 bg-white border-top border-light-subtle"
+  >
+    <span class="text-secondary small">{{ textoResumo() }}</span>
 
-    <div class="d-flex gap-1">
-      <button type="button"
-              class="btn btn-outline-secondary btn-sm py-0 px-2 font-monospace"
-              [disabled]="desabilitarAnterior()"
-              (click)="irParaPrimeira()"
-              title="Primeira Página">
+    <div class="d-flex align-items-center gap-1">
+      <button
+        type="button"
+        class="btn btn-sm btn-light border-0 py-1 px-2 text-secondary rounded-1"
+        [disabled]="desabilitarAnterior()"
+        (click)="irParaPrimeira()"
+        title="Primeira Página"
+      >
         &laquo;
       </button>
 
-      <button type="button"
-              class="btn btn-outline-secondary btn-sm py-0 px-2 font-monospace"
-              [disabled]="desabilitarAnterior()"
-              (click)="irParaAnterior()"
-              title="Página Anterior">
+      <button
+        type="button"
+        class="btn btn-sm btn-light border-0 py-1 px-2 text-secondary rounded-1"
+        [disabled]="desabilitarAnterior()"
+        (click)="irParaAnterior()"
+        title="Página Anterior"
+      >
         &lsaquo;
       </button>
 
       @for (btn of botoesPaginas(); track btn.numero) {
-        <button type="button"
-                class="btn btn-sm py-0 px-2 font-monospace"
-                [class.btn-primary]="btn.ativo"
-                [class.btn-outline-secondary]="!btn.ativo"
-                (click)="irParaPagina(btn.numero)">
+        <button
+          type="button"
+          class="btn btn-sm py-1 px-2 rounded-1"
+          [class.btn-primary]="btn.ativo"
+          [class.text-white]="btn.ativo"
+          [class.fw-bold]="btn.ativo"
+          [class.btn-light]="!btn.ativo"
+          [class.text-secondary]="!btn.ativo"
+          [class.border-0]="true"
+          (click)="irParaPagina(btn.numero)"
+        >
           {{ btn.numero }}
         </button>
       }
 
-      <button type="button"
-              class="btn btn-outline-secondary btn-sm py-0 px-2 font-monospace"
-              [disabled]="desabilitarProxima()"
-              (click)="irParaProxima()"
-              title="Próxima Página">
+      <button
+        type="button"
+        class="btn btn-sm btn-light border-0 py-1 px-2 text-secondary rounded-1"
+        [disabled]="desabilitarProxima()"
+        (click)="irParaProxima()"
+        title="Próxima Página"
+      >
         &rsaquo;
       </button>
 
-      <button type="button"
-              class="btn btn-outline-secondary btn-sm py-0 px-2 font-monospace"
-              [disabled]="desabilitarProxima()"
-              (click)="irParaUltima()"
-              title="Última Página">
+      <button
+        type="button"
+        class="btn btn-sm btn-light border-0 py-1 px-2 text-secondary rounded-1"
+        [disabled]="desabilitarProxima()"
+        (click)="irParaUltima()"
+        title="Última Página"
+      >
         &raquo;
       </button>
     </div>

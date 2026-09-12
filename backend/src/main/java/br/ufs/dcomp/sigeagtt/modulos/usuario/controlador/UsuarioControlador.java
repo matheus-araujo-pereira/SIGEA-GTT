@@ -1,5 +1,6 @@
 package br.ufs.dcomp.sigeagtt.modulos.usuario.controlador;
 
+import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.AlterarSenhaDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioEdicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRespostaDTO;
@@ -54,5 +55,11 @@ public class UsuarioControlador {
     @PatchMapping("/{id}/reativar")
     public ResponseEntity<UsuarioRespostaDTO> reativar(@PathVariable Long id) {
         return ResponseEntity.ok(servico.reativar(id));
+    }
+
+    @PatchMapping("/{id}/alterar-senha")
+    public ResponseEntity<UsuarioRespostaDTO> alterarSenha(@PathVariable Long id,
+            @Valid @RequestBody AlterarSenhaDTO dto) {
+        return ResponseEntity.ok(servico.alterarSenha(id, dto));
     }
 }

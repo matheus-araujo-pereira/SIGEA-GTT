@@ -1,0 +1,194 @@
+<div>
+  <!-- CABEÇALHO DO FORMULÁRIO -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+  >
+    <div>
+      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
+      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      (click)="voltarParaListagem()"
+    >
+      <i class="bi bi-arrow-left"></i>
+      <span>VOLTAR PARA GATILHOS</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACK -->
+  @if (mensagemSucesso()) {
+    <div
+      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{{ mensagemSucesso() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemSucesso.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  @if (mensagemErro()) {
+    <div
+      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
+    >
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ mensagemErro() }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn-close btn-sm"
+        (click)="mensagemErro.set(null)"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  }
+
+  <!-- CORPO DO FORMULÁRIO -->
+  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-4">
+    @if (carregando()) {
+      <div class="text-center py-5 text-secondary">
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+        <span>Carregando dados do gatilho...</span>
+      </div>
+    } @else {
+      <form (ngSubmit)="salvar()">
+        <div class="row g-3">
+          <!-- Módulo GTT -->
+          <div class="col-md-6">
+            <label
+              for="moduloId"
+              class="form-label small fw-semibold text-dark mb-1"
+            >
+              Módulo GTT Vinculado <span class="text-danger">*</span>
+            </label>
+            <select
+              id="moduloId"
+              name="moduloId"
+              class="form-select form-select-sm"
+              [(ngModel)]="formulario.moduloId"
+              required
+            >
+              @for (m of modulos(); track m.id) {
+                <option [ngValue]="m.id">{{ m.nome }} ({{ m.codigo }})</option>
+              }
+            </select>
+            <div class="form-text fs-xxs text-secondary">
+              Selecione o módulo clínico ao qual este gatilho pertence.
+            </div>
+          </div>
+
+          <!-- Código do Gatilho -->
+          <div class="col-md-6">
+            <label
+              for="codigo"
+              class="form-label small fw-semibold text-dark mb-1"
+            >
+              Código do Gatilho <span class="text-danger">*</span>
+            </label>
+            <input
+              id="codigo"
+              name="codigo"
+              type="text"
+              class="form-control form-control-sm font-monospace text-uppercase"
+              [(ngModel)]="formulario.codigo"
+              placeholder="Ex: G01, C02, M04"
+              maxlength="10"
+              required
+            />
+            <div class="form-text fs-xxs text-secondary">
+              Identificador único de até 10 caracteres alfanuméricos.
+            </div>
+          </div>
+
+          <!-- Limiar / Pista de Referência -->
+          <div class="col-12">
+            <label
+              for="limiarReferencia"
+              class="form-label small fw-semibold text-dark mb-1"
+            >
+              Limiar de Referência / Pista Diagnóstica
+            </label>
+            <input
+              id="limiarReferencia"
+              name="limiarReferencia"
+              type="text"
+              class="form-control form-control-sm"
+              [(ngModel)]="formulario.limiarReferencia"
+              placeholder="Ex: INR > 5, Plaquetas < 50.000, PCR reativação"
+              maxlength="150"
+            />
+            <div class="form-text fs-xxs text-secondary">
+              Valor laboratorial de corte ou pista clínica objetiva que ativa a
+              suspeita do evento adverso.
+            </div>
+          </div>
+
+          <!-- Descrição Operacional -->
+          <div class="col-12">
+            <label
+              for="descricao"
+              class="form-label small fw-semibold text-dark mb-1"
+            >
+              Descrição Operacional <span class="text-danger">*</span>
+            </label>
+            <textarea
+              id="descricao"
+              name="descricao"
+              class="form-control form-control-sm"
+              rows="3"
+              [(ngModel)]="formulario.descricao"
+              placeholder="Descreva detalhadamente o evento ou critério clínico que caracteriza este gatilho..."
+              required
+            ></textarea>
+            <div class="form-text fs-xxs text-secondary">
+              Orientações claras para o auditor clínico identificar o evento
+              durante a revisão do prontuário.
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTÕES DE AÇÃO -->
+        <div
+          class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+        >
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm px-3"
+            (click)="voltarParaListagem()"
+            [disabled]="salvando()"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary btn-sm px-4 d-inline-flex align-items-center gap-2"
+            [disabled]="salvando()"
+          >
+            @if (salvando()) {
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span>Salvando...</span>
+            } @else {
+              <i class="bi bi-check-lg"></i>
+              <span>{{
+                modoEdicao() ? "Salvar Alterações" : "Cadastrar Gatilho"
+              }}</span>
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
