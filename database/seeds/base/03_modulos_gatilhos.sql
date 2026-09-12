@@ -1,45 +1,10 @@
 -- =============================================================================
--- SIGEA-GTT: Carga Inicial de Dados (DML)
+-- SIGEA-GTT: Semente Base - Módulos e Catálogo dos 53 Gatilhos Oficiais IHI-GTT
+-- Arquivo: database/seeds/base/03_modulos_gatilhos.sql
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
--- 1. USUÁRIO ADMINISTRADOR INICIAL (Senha padrão: Sigea@123)
--- -----------------------------------------------------------------------------
-INSERT INTO usuarios (
-    nome_completo,
-    email,
-    matricula_sigaa,
-    perfil,
-    senha,
-    primeiro_acesso,
-    ativo
-) VALUES (
-    'Matheus Araujo Pereira',
-    'matheusaraujopereira@academico.ufs.br',
-    NULL,
-    'ADMINISTRADOR',
-    '$2a$10$QrlMhf/Wah7PtuldYOCIOevxYBCx1f0pxoKLSJe5fmyiqzIotQ/M6',
-    FALSE,
-    TRUE
-) ON CONFLICT (email) DO UPDATE
-SET nome_completo = EXCLUDED.nome_completo,
-    senha = EXCLUDED.senha,
-    perfil = EXCLUDED.perfil,
-    ativo = TRUE;
-
--- -----------------------------------------------------------------------------
--- 2. UNIDADES HOSPITALARES ASSISTENCIAIS (HU-UFS)
--- -----------------------------------------------------------------------------
-INSERT INTO unidades_hospitalares (nome, sigla, ativa) VALUES
-    ('Clínica Médica Geral', 'CMED', true),
-    ('Clínica Cirúrgica / Bloco Operatório', 'CCIR', true),
-    ('Unidade de Terapia Intensiva Adulto', 'UTI-A', true),
-    ('Maternidade / Alojamento Conjunto', 'MAT', true),
-    ('Serviço de Urgência e Emergência', 'SUE', true),
-    ('Unidade de Recuperação Pós-Anestésica', 'URPA', true);
-
--- -----------------------------------------------------------------------------
--- 3. MÓDULOS OFICIAIS IHI-GTT
+-- 1. MÓDULOS OFICIAIS IHI-GTT
 -- -----------------------------------------------------------------------------
 INSERT INTO modulos_gtt (codigo, nome, descricao, ativo) VALUES
     ('CUIDADOS', 'Módulo Cuidados', 'Rastreadores gerais de cuidados assistenciais e monitorização clínica', true),
@@ -47,10 +12,14 @@ INSERT INTO modulos_gtt (codigo, nome, descricao, ativo) VALUES
     ('CIRURGICO', 'Módulo Cirúrgico', 'Rastreadores no perioperatório, bloco cirúrgico e anestesia', true),
     ('TERAPIA_INTENSIVA', 'Módulo Cuidados Intensivos/Terapia Intensiva', 'Rastreadores críticos em unidade de terapia intensiva', true),
     ('PERINATAL', 'Módulo Perinatal', 'Rastreadores obstétricos e materno-fetais', true),
-    ('EMERGENCIA', 'Módulo Serviço de Urgência/Pronto Atendimento', 'Rastreadores de urgência, tempo de permanência e complicações agudas', true);
+    ('EMERGENCIA', 'Módulo Serviço de Urgência/Pronto Atendimento', 'Rastreadores de urgência, tempo de permanência e complicações agudas', true)
+ON CONFLICT (codigo) DO UPDATE
+SET nome = EXCLUDED.nome,
+    descricao = EXCLUDED.descricao,
+    ativo = EXCLUDED.ativo;
 
 -- -----------------------------------------------------------------------------
--- 4. CATÁLOGO COMPLETO DOS 53 GATILHOS IHI-GTT (2ª EDIÇÃO)
+-- 2. CATÁLOGO COMPLETO DOS 53 GATILHOS IHI-GTT (2ª EDIÇÃO)
 -- -----------------------------------------------------------------------------
 
 -- MÓDULO CUIDADOS (C1 a C15)
@@ -69,7 +38,11 @@ INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo
     ('C12', (SELECT id FROM modulos_gtt WHERE codigo = 'CUIDADOS'), 'Acidente Vascular Cerebral (AVC) no hospital. Avaliar a causa do AVC para determinar se está associado a um procedimento (cirúrgico, cardioversão) ou anticoagulação.', 'AVC ocorrido durante a hospitalização associado a procedimento ou anticoagulação', true),
     ('C13', (SELECT id FROM modulos_gtt WHERE codigo = 'CUIDADOS'), 'Transferência para unidade de maior complexidade. Transferências para unidades de maior complexidade dentro da instituição ou para outra instituição devem ser revistas quanto a deterioração por evento adverso.', 'Transferência para UTI, cuidados intermediários ou centro de maior suporte', true),
     ('C14', (SELECT id FROM modulos_gtt WHERE codigo = 'CUIDADOS'), 'Qualquer complicação de procedimentos. Uma complicação resultante de qualquer procedimento é um evento adverso.', 'Complicação resultante de qualquer procedimento documentada no prontuário', true),
-    ('C15', (SELECT id FROM modulos_gtt WHERE codigo = 'CUIDADOS'), 'Outros. Evento adverso que não se encaixa em um trigger específico de cuidados.', 'Dano físico não intencional resultante dos cuidados assistenciais', true);
+    ('C15', (SELECT id FROM modulos_gtt WHERE codigo = 'CUIDADOS'), 'Outros. Evento adverso que não se encaixa em um trigger específico de cuidados.', 'Dano físico não intencional resultante dos cuidados assistenciais', true)
+ON CONFLICT (codigo) DO UPDATE
+SET descricao = EXCLUDED.descricao,
+    limiar_referencia = EXCLUDED.limiar_referencia,
+    ativo = EXCLUDED.ativo;
 
 -- MÓDULO MEDICAÇÃO (M1 a M13)
 INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo) VALUES
@@ -85,7 +58,11 @@ INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo
     ('M10', (SELECT id FROM modulos_gtt WHERE codigo = 'MEDICACAO'), 'Administração de antieméticos para náuseas e vômitos persistentes que interfiram na alimentação, recuperação pós-operatória ou atrasem a alta.', 'Náuseas e vômitos persistentes interferindo na alimentação ou alta', true),
     ('M11', (SELECT id FROM modulos_gtt WHERE codigo = 'MEDICACAO'), 'Hipotensão/sedação excessiva e letargia relacionadas à administração de sedativo, analgésico ou relaxante muscular.', 'Sedação excessiva, letargia ou hipotensão induzida por medicamentos', true),
     ('M12', (SELECT id FROM modulos_gtt WHERE codigo = 'MEDICACAO'), 'Suspensão abrupta de medicamentos como interrupção inesperada ou desvio da prática usual por suspeita de evento adverso ou toxicidade.', 'Suspensão inesperada ou abrupta de fármaco por toxicidade/reação adversa', true),
-    ('M13', (SELECT id FROM modulos_gtt WHERE codigo = 'MEDICACAO'), 'Outros eventos adversos relacionados a medicamentos não associados aos triggers anteriores.', 'Qualquer evento adverso a medicamento não classificado em M1-M12', true);
+    ('M13', (SELECT id FROM modulos_gtt WHERE codigo = 'MEDICACAO'), 'Outros eventos adversos relacionados a medicamentos não associados aos triggers anteriores.', 'Qualquer evento adverso a medicamento não classificado em M1-M12', true)
+ON CONFLICT (codigo) DO UPDATE
+SET descricao = EXCLUDED.descricao,
+    limiar_referencia = EXCLUDED.limiar_referencia,
+    ativo = EXCLUDED.ativo;
 
 -- MÓDULO CIRÚRGICO (S1 a S11)
 INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo) VALUES
@@ -99,14 +76,22 @@ INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo
     ('S8', (SELECT id FROM modulos_gtt WHERE codigo = 'CIRURGICO'), 'Administração intraoperatória de adrenalina, noradrenalina, naloxona ou flumazenil para hipotensão por sangramento ou sedação excessiva.', 'Uso não planejado de vasopressores ou reversores no intraoperatório', true),
     ('S9', (SELECT id FROM modulos_gtt WHERE codigo = 'CIRURGICO'), 'Aumento do nível de troponina superior a 1,5 nanograma/mL no pós-operatório indicando evento isquêmico cardíaco.', 'Troponina sérica > 1,5 ng/mL no pós-operatório', true),
     ('S10', (SELECT id FROM modulos_gtt WHERE codigo = 'CIRURGICO'), 'Lesão, reparação ou remoção de órgão durante o procedimento cirúrgico decorrente de complicação ou lesão acidental.', 'Lesão, reparação ou ressecção de órgão não prevista no procedimento inicial', true),
-    ('S11', (SELECT id FROM modulos_gtt WHERE codigo = 'CIRURGICO'), 'Ocorrência de qualquer complicação cirúrgica documentada (EP, TVP, lesão por pressão, IAM, insuficiência renal, infecção ou deiscência).', 'Qualquer complicação pós-cirúrgica documentada em prontuário', true);
+    ('S11', (SELECT id FROM modulos_gtt WHERE codigo = 'CIRURGICO'), 'Ocorrência de qualquer complicação cirúrgica documentada (EP, TVP, lesão por pressão, IAM, insuficiência renal, infecção ou deiscência).', 'Qualquer complicação pós-cirúrgica documentada em prontuário', true)
+ON CONFLICT (codigo) DO UPDATE
+SET descricao = EXCLUDED.descricao,
+    limiar_referencia = EXCLUDED.limiar_referencia,
+    ativo = EXCLUDED.ativo;
 
 -- MÓDULO CUIDADOS INTENSIVOS/TERAPIA INTENSIVA (I1 a I4)
 INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo) VALUES
     ('I1', (SELECT id FROM modulos_gtt WHERE codigo = 'TERAPIA_INTENSIVA'), 'Pneumonia com início no hospital diagnosticada na terapia intensiva ou associada à ventilação mecânica.', 'Pneumonia nosocomial ou associada à ventilação (PAV) iniciada na UTI', true),
     ('I2', (SELECT id FROM modulos_gtt WHERE codigo = 'TERAPIA_INTENSIVA'), 'Readmissão em unidade de cuidados intensivos/terapia intensiva durante a mesma hospitalização.', 'Readmissão não programada em unidade de terapia intensiva', true),
     ('I3', (SELECT id FROM modulos_gtt WHERE codigo = 'TERAPIA_INTENSIVA'), 'Procedimentos em unidade de cuidados intensivos/terapia intensiva com complicações decorrentes dos cuidados.', 'Intercorrências ou complicações decorrentes de procedimentos na UTI', true),
-    ('I4', (SELECT id FROM modulos_gtt WHERE codigo = 'TERAPIA_INTENSIVA'), 'Intubação ou reintubação não planejada ou falha de extubação na UTI.', 'Reintubação orotraqueal não planejada após extubação prévia', true);
+    ('I4', (SELECT id FROM modulos_gtt WHERE codigo = 'TERAPIA_INTENSIVA'), 'Intubação ou reintubação não planejada ou falha de extubação na UTI.', 'Reintubação orotraqueal não planejada após extubação prévia', true)
+ON CONFLICT (codigo) DO UPDATE
+SET descricao = EXCLUDED.descricao,
+    limiar_referencia = EXCLUDED.limiar_referencia,
+    ativo = EXCLUDED.ativo;
 
 -- MÓDULO PERINATAL (P1 a P8)
 INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo) VALUES
@@ -117,9 +102,18 @@ INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo
     ('P5', (SELECT id FROM modulos_gtt WHERE codigo = 'PERINATAL'), 'Consulta com outra especialidade/interconsulta obstétrica urgente como indicador de lesão materna.', 'Interconsulta médica urgente por complicação obstétrica materna', true),
     ('P6', (SELECT id FROM modulos_gtt WHERE codigo = 'PERINATAL'), 'Administração de oxitocina/ocitocina e similares no pós-parto em quantidades superiores a 20 unidades para controle de hemorragia.', 'Administração > 20 unidades de ocitocina no pós-parto para hemorragia', true),
     ('P7', (SELECT id FROM modulos_gtt WHERE codigo = 'PERINATAL'), 'Parto instrumentalizado (fórceps ou vácuo-extrator) com trauma, hematoma ou laceração materna.', 'Parto instrumental com lesão, hematoma ou trauma perineal materno', true),
-    ('P8', (SELECT id FROM modulos_gtt WHERE codigo = 'PERINATAL'), 'Administração de anestesia geral não programada em procedimento obstétrico.', 'Conversão ou uso não eletivo de anestesia geral obstétrica', true);
+    ('P8', (SELECT id FROM modulos_gtt WHERE codigo = 'PERINATAL'), 'Administração de anestesia geral não programada em procedimento obstétrico.', 'Conversão ou uso não eletivo de anestesia geral obstétrica', true)
+ON CONFLICT (codigo) DO UPDATE
+SET descricao = EXCLUDED.descricao,
+    limiar_referencia = EXCLUDED.limiar_referencia,
+    ativo = EXCLUDED.ativo;
 
 -- MÓDULO SERVIÇO DE URGÊNCIA/PRONTO ATENDIMENTO (E1 e E2)
 INSERT INTO gatilhos_gtt (codigo, modulo_id, descricao, limiar_referencia, ativo) VALUES
     ('E1', (SELECT id FROM modulos_gtt WHERE codigo = 'EMERGENCIA'), 'Readmissão no serviço de urgência/pronto atendimento nas 48 horas após a alta com necessidade de hospitalização.', 'Retorno ao pronto atendimento em até 48 horas após a alta com internação', true),
-    ('E2', (SELECT id FROM modulos_gtt WHERE codigo = 'EMERGENCIA'), 'Tempo de permanência no serviço de urgência/pronto atendimento superior a 6 horas com desenvolvimento de complicações.', 'Tempo de permanência no pronto atendimento > 6 horas', true);
+    ('E2', (SELECT id FROM modulos_gtt WHERE codigo = 'EMERGENCIA'), 'Tempo de permanência no serviço de urgência/pronto atendimento superior a 6 horas com desenvolvimento de complicações.', 'Tempo de permanência no pronto atendimento > 6 horas', true)
+ON CONFLICT (codigo) DO UPDATE
+SET descricao = EXCLUDED.descricao,
+    limiar_referencia = EXCLUDED.limiar_referencia,
+    ativo = EXCLUDED.ativo;
+

@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sigea-gtt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sigea_gtt}
+      POSTGRES_USER: ${DB_USER:-sigea_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sigea_dev_password}
+      TZ: America/Maceio
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - sigea_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-sigea_admin} -d ${DB_NAME:-sigea_gtt}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  sigea_postgres_data:
+    name: sigea_gtt_postgres_data

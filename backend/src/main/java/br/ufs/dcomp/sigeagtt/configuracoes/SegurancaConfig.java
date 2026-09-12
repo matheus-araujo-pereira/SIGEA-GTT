@@ -65,7 +65,6 @@ public class SegurancaConfig {
                                 "/api/autenticacao/**",
                                 "/actuator/health",
                                 "/actuator/info",
-                                "/api/administracao/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**")

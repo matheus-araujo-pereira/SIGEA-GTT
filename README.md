@@ -76,16 +76,21 @@ Todos os módulos abaixo foram testados de ponta a ponta (via API real, banco Po
 
 ## Executando localmente
 
-### 1. Banco de dados
+### 1. Banco de dados (PostgreSQL)
+
+O banco de dados é completamente desacoplado e gerenciado explicitamente na pasta `database/`.
 
 ```bash
-# Exemplo usando Podman/Docker
-podman run -d --name sigea-postgres \
-  -e POSTGRES_USER=sigea_admin \
-  -e POSTGRES_PASSWORD=sigea_dev_password \
-  -e POSTGRES_DB=sigea_gtt \
-  -p 5432:5432 \
-  docker.io/library/postgres:16-alpine
+cd database
+
+# Sobe o container PostgreSQL local
+docker compose up -d
+
+# Inicializa o schema DDL e as sementes fundamentais (Admin, Unidades, Gatilhos e Categorias)
+./scripts/init-db.sh
+
+# (Opcional) Aplica a carga massiva de dados simulados para desenvolvimento
+./scripts/seed-dev.sh
 ```
 
 ### 2. Backend
@@ -95,7 +100,7 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-O Flyway aplica automaticamente `V1__ddl.sql` (schema) e `V2__dml.sql` (carga inicial: administrador seed, unidades, módulos e os 53 gatilhos oficiais IHI-GTT). O backend sobe em `http://localhost:8080`.
+O backend sobe em `http://localhost:8080` conectado ao banco.
 
 ### 3. Frontend
 
@@ -111,7 +116,7 @@ O Angular CLI sobe em `http://localhost:4200` com proxy configurado (`proxy.conf
 
 ## Usuário administrador padrão
 
-Criado automaticamente pela migração `V2__dml.sql`:
+Criado via `./scripts/init-db.sh` (ou `database/seeds/base/01_admin_inicial.sql`):
 
 - **E-mail:** `matheusaraujopereira@academico.ufs.br`
 - **Senha:** `Sigea@123`
