@@ -36,9 +36,6 @@ export class UnidadeService {
   }
 
   alternarStatus(id: number): Observable<UnidadeHospitalar> {
-    return this.http.patch<UnidadeHospitalar>(
-      `${this.url}/${id}/alternar-status`,
-      {},
-    );
+    return this.http.patch<UnidadeHospitalar>(`${this.url}/${id}/alternar-status`, {});
   }
 }

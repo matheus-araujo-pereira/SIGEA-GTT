@@ -11,5 +11,4 @@ public record PainelAtividadeDTO(
         Integer totalPendentesCorrecao,
         Integer totalAvaliadas,
         BigDecimal mediaNotas,
-        List<AlunoProgressoDTO> alunos) {
-}
+        List<AlunoProgressoDTO> alunos) {}

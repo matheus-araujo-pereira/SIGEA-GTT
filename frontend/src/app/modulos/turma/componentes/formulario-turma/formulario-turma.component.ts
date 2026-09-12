@@ -1,31 +1,85 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { MessageService } from 'primeng/api';
+
 import { TurmaService, TurmaRequisicao } from '../../servicos/turma.service';
 import { UsuarioService } from '../../../usuario/servicos/usuario.service';
-import { Usuario } from '../../../usuario/modelos/usuario.modelos';
 
 @Component({
   selector: 'app-formulario-turma',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, CardModule, InputTextModule, SelectModule, ButtonModule, MessageModule],
   templateUrl: './formulario-turma.component.html',
+  styles: [
+    `
+      .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .form-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
+      .form-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #334155;
+      }
+      .field-hint {
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .w-full {
+        width: 100%;
+      }
+    `,
+  ],
 })
 export class FormularioTurmaComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly turmaService = inject(TurmaService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly messageService = inject(MessageService);
 
   readonly idTurma = signal<number | null>(null);
   readonly modoEdicao = computed(() => this.idTurma() !== null);
 
-  readonly professores = signal<Usuario[]>([]);
+  readonly professores = signal<{ label: string; value: number }[]>([]);
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
-  readonly mensagemSucesso = signal<string | null>(null);
 
   formulario: TurmaRequisicao = {
     codigoDisciplina: '',
@@ -54,19 +108,18 @@ export class FormularioTurmaComponent implements OnInit {
     this.carregando.set(true);
     this.usuarioService.listar().subscribe({
       next: (usuarios) => {
-        const profs = usuarios.filter(
-          (u) => u.perfil === 'PROFESSOR' && u.ativo,
-        );
+        const profs = usuarios
+          .filter((u) => u.perfil === 'PROFESSOR' && u.ativo)
+          .map((u) => ({ label: `${u.nomeCompleto} (${u.email})`, value: u.id }));
         this.professores.set(profs);
         if (profs.length > 0 && !this.formulario.professorResponsavelId) {
-          this.formulario.professorResponsavelId = profs[0].id;
+          this.formulario.professorResponsavelId = profs[0].value;
         }
         this.verificarParametroRota();
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar lista de professores: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar lista de professores: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -101,8 +154,7 @@ export class FormularioTurmaComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar dados da turma: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar dados da turma: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -112,31 +164,17 @@ export class FormularioTurmaComponent implements OnInit {
   validarFormulario(): boolean {
     this.mensagemErro.set(null);
 
-    // 1. Código da Disciplina
-    if (
-      !this.formulario.codigoDisciplina ||
-      this.formulario.codigoDisciplina.trim().length === 0
-    ) {
-      this.mensagemErro.set(
-        'O Código da Disciplina é obrigatório (ex: MED0023, ENF0010).',
-      );
+    if (!this.formulario.codigoDisciplina || this.formulario.codigoDisciplina.trim().length === 0) {
+      this.mensagemErro.set('O Código da Disciplina é obrigatório (ex: MED0023, ENF0010).');
       return false;
     }
 
-    // 2. Período Letivo
-    if (
-      !this.formulario.periodoLetivo ||
-      this.formulario.periodoLetivo.trim().length === 0
-    ) {
+    if (!this.formulario.periodoLetivo || this.formulario.periodoLetivo.trim().length === 0) {
       this.mensagemErro.set('O Período Letivo é obrigatório (ex: 2026.1).');
       return false;
     }
 
-    // 3. Professor Responsável
-    if (
-      !this.formulario.professorResponsavelId ||
-      this.formulario.professorResponsavelId <= 0
-    ) {
+    if (!this.formulario.professorResponsavelId || this.formulario.professorResponsavelId <= 0) {
       this.mensagemErro.set('Selecione um Professor Responsável válido.');
       return false;
     }
@@ -151,7 +189,6 @@ export class FormularioTurmaComponent implements OnInit {
 
     this.salvando.set(true);
     this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
 
     const periodo = this.formulario.periodoLetivo.trim();
     const payload: TurmaRequisicao = {
@@ -162,39 +199,25 @@ export class FormularioTurmaComponent implements OnInit {
     };
 
     const id = this.idTurma();
-    if (id) {
-      this.turmaService.editar(id, payload).subscribe({
-        next: (atualizada) => {
-          this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Turma ${atualizada.codigoDisciplina} atualizada com sucesso!`,
-          );
-          setTimeout(() => this.voltarParaListagem(), 1200);
-        },
-        error: (err) => {
-          this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar dados da turma.',
-          );
-        },
-      });
-    } else {
-      this.turmaService.cadastrar(payload).subscribe({
-        next: (criada) => {
-          this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Turma ${criada.codigoDisciplina} cadastrada com sucesso!`,
-          );
-          setTimeout(() => this.voltarParaListagem(), 1200);
-        },
-        error: (err) => {
-          this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar nova turma.',
-          );
-        },
-      });
-    }
+    const requisicao$ = id
+      ? this.turmaService.editar(id, payload)
+      : this.turmaService.cadastrar(payload);
+
+    requisicao$.subscribe({
+      next: (turma) => {
+        this.salvando.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `Turma ${turma.codigoDisciplina} ${id ? 'atualizada' : 'cadastrada'} com sucesso!`,
+        });
+        setTimeout(() => this.voltarParaListagem(), 1000);
+      },
+      error: (err) => {
+        this.salvando.set(false);
+        this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar dados da turma.');
+      },
+    });
   }
 
   voltarParaListagem(): void {

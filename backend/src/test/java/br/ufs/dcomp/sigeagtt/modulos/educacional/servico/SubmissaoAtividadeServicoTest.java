@@ -1,5 +1,9 @@
 package br.ufs.dcomp.sigeagtt.modulos.educacional.servico;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import br.ufs.dcomp.sigeagtt.modulos.educacional.dto.AvaliarSubmissaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.dto.SubmissaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.*;
@@ -8,6 +12,9 @@ import br.ufs.dcomp.sigeagtt.modulos.gtt.repositorio.GatilhoGttRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.Turma;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,36 +23,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class SubmissaoAtividadeServicoTest {
 
-    @Mock
-    private SubmissaoAtividadeRepositorio submissaoRepositorio;
-    @Mock
-    private AtividadeEducacionalRepositorio atividadeRepositorio;
-    @Mock
-    private GatilhoGttRepositorio gatilhoRepositorio;
-    @Mock
-    private CategoriaEventoAdversoRepositorio categoriaRepositorio;
-    @Mock
-    private SubmissaoGatilhoRepositorio submissaoGatilhoRepositorio;
-    @Mock
-    private SubmissaoIshikawaRepositorio submissaoIshikawaRepositorio;
-    @Mock
-    private SubmissaoPlano5w3hRepositorio submissaoPlano5w3hRepositorio;
-    @Mock
-    private SubmissaoPdcaRepositorio submissaoPdcaRepositorio;
+    @Mock private SubmissaoAtividadeRepositorio submissaoRepositorio;
+    @Mock private AtividadeEducacionalRepositorio atividadeRepositorio;
+    @Mock private GatilhoGttRepositorio gatilhoRepositorio;
+    @Mock private CategoriaEventoAdversoRepositorio categoriaRepositorio;
+    @Mock private SubmissaoGatilhoRepositorio submissaoGatilhoRepositorio;
+    @Mock private SubmissaoIshikawaRepositorio submissaoIshikawaRepositorio;
+    @Mock private SubmissaoPlano5w3hRepositorio submissaoPlano5w3hRepositorio;
+    @Mock private SubmissaoPdcaRepositorio submissaoPdcaRepositorio;
 
-    @InjectMocks
-    private SubmissaoAtividadeServico servico;
+    @InjectMocks private SubmissaoAtividadeServico servico;
 
     private Usuario professor;
     private Usuario aluno;
@@ -97,29 +87,33 @@ class SubmissaoAtividadeServicoTest {
     }
 
     @Test
-    @DisplayName("Deve avaliar submissao com sucesso quando o professor responsavel submeter nota e parecer")
+    @DisplayName(
+            "Deve avaliar submissao com sucesso quando o professor responsavel submeter nota e parecer")
     void deveAvaliarSubmissaoComSucesso() {
         when(submissaoRepositorio.findById(400L)).thenReturn(Optional.of(submissao));
         when(submissaoRepositorio.save(any(SubmissaoAtividade.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        AvaliarSubmissaoDTO dto = new AvaliarSubmissaoDTO(
-                new BigDecimal("9.50"),
-                "Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.");
+        AvaliarSubmissaoDTO dto =
+                new AvaliarSubmissaoDTO(
+                        new BigDecimal("9.50"),
+                        "Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.");
 
         SubmissaoDTO resultado = servico.avaliar(400L, dto, professor);
 
         assertNotNull(resultado);
         assertEquals(StatusSubmissao.AVALIADA, resultado.status());
         assertEquals(new BigDecimal("9.50"), resultado.nota());
-        assertEquals("Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.",
+        assertEquals(
+                "Excelente identificação dos gatilhos e estruturação do diagrama de Ishikawa 6M.",
                 resultado.parecerDocente());
         assertEquals("Prof. Ana Waleska", resultado.professorCorretorNome());
         verify(submissaoRepositorio, times(1)).save(any(SubmissaoAtividade.class));
     }
 
     @Test
-    @DisplayName("Deve rejeitar avaliacao se professor nao for o responsavel pela turma nem administrador")
+    @DisplayName(
+            "Deve rejeitar avaliacao se professor nao for o responsavel pela turma nem administrador")
     void deveRejeitarAvaliacaoSeNaoForProfessorDaTurma() {
         Usuario outroProfessor = new Usuario();
         outroProfessor.setId(99L);
@@ -129,7 +123,8 @@ class SubmissaoAtividadeServicoTest {
 
         AvaliarSubmissaoDTO dto = new AvaliarSubmissaoDTO(new BigDecimal("8.00"), "Ok");
 
-        assertThrows(IllegalArgumentException.class, () -> servico.avaliar(400L, dto, outroProfessor));
+        assertThrows(
+                IllegalArgumentException.class, () -> servico.avaliar(400L, dto, outroProfessor));
         verify(submissaoRepositorio, never()).save(any());
     }
 
@@ -137,7 +132,8 @@ class SubmissaoAtividadeServicoTest {
     @DisplayName("Deve retornar submissao existente ao iniciarOuRetomar se aluno ja iniciou")
     void deveRetornarSubmissaoExistenteAoIniciar() {
         when(atividadeRepositorio.findById(300L)).thenReturn(Optional.of(atividade));
-        when(submissaoRepositorio.findByAtividadeIdAndAlunoId(300L, aluno.getId())).thenReturn(Optional.of(submissao));
+        when(submissaoRepositorio.findByAtividadeIdAndAlunoId(300L, aluno.getId()))
+                .thenReturn(Optional.of(submissao));
 
         SubmissaoDTO resultado = servico.iniciarOuContinuar(300L, aluno);
 

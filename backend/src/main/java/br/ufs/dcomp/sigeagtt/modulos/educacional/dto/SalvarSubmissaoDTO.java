@@ -8,5 +8,4 @@ public record SalvarSubmissaoDTO(
         List<SubmissaoGatilhoDTO> achadosGatilhos,
         SubmissaoIshikawaDTO ishikawa,
         List<SubmissaoPlano5w3hDTO> planos5w3h,
-        SubmissaoPdcaDTO pdca) {
-}
+        SubmissaoPdcaDTO pdca) {}

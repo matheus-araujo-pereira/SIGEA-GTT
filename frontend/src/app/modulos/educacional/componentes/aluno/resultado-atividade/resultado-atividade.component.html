@@ -1,263 +1,276 @@
-<div>
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.5rem">
   @if (carregando()) {
     <div
-      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        padding: 4rem;
+        background: #ffffff;
+        border-radius: 6px;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+      "
     >
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Carregando resultado...</span>
-      </div>
-      <p class="text-secondary small mt-2 mb-0">
-        Carregando avaliação e respostas da atividade...
-      </p>
+      <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4" />
+      <span style="color: #64748b">Carregando avaliação e respostas da atividade...</span>
     </div>
   } @else {
     @if (submissao(); as sub) {
       <!-- CABEÇALHO DO RESULTADO -->
       <div
-        class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+          padding-bottom: 1rem;
+        "
       >
         <div>
-          <div class="d-flex align-items-center gap-2">
-            <span
-              class="badge"
-              [class.bg-success]="sub.status === 'AVALIADA'"
-              [class.bg-warning]="sub.status === 'SUBMETIDA'"
-              [class.text-white]="sub.status === 'AVALIADA'"
-              [class.text-dark]="sub.status === 'SUBMETIDA'"
-            >
-              {{
-                sub.status === "AVALIADA"
-                  ? "AVALIAÇÃO CONCLUÍDA"
-                  : "SUBMETIDA - AGUARDANDO NOTA"
-              }}
-            </span>
-            <h1 class="h4 fw-bold text-dark m-0">{{ sub.atividadeTitulo }}</h1>
+          <div style="display: flex; align-items: center; gap: 0.75rem">
+            <p-tag
+              [value]="
+                sub.status === 'AVALIADA' ? 'AVALIAÇÃO CONCLUÍDA' : 'SUBMETIDA - AGUARDANDO NOTA'
+              "
+              [severity]="sub.status === 'AVALIADA' ? 'success' : 'warn'"
+            />
+            <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
+              {{ sub.atividadeTitulo }}
+            </h1>
           </div>
-          <span class="text-secondary small">
-            {{ sub.disciplinaNome }} • Docente: {{ sub.professorNome }} •
-            Enviada em:
-            {{
-              sub.dataSubmissao
-                ? (sub.dataSubmissao | date: "dd/MM/yyyy HH:mm")
-                : "-"
-            }}
-            • Tempo Gasto:
-            <strong>{{ formatarTempo(sub.tempoGastoSegundos) }}</strong>
+          <span style="font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; display: block">
+            {{ sub.disciplinaNome }} • Docente: {{ sub.professorNome }} • Enviada em:
+            {{ sub.dataSubmissao ? (sub.dataSubmissao | date: 'dd/MM/yyyy HH:mm') : '-' }} • Tempo
+            Gasto: <strong>{{ formatarTempo(sub.tempoGastoSegundos) }}</strong>
           </span>
         </div>
-        <button
-          type="button"
-          class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
-          (click)="voltar()"
-        >
-          <i class="bi bi-arrow-left"></i>
-          <span>VOLTAR PARA MINHAS ATIVIDADES</span>
-        </button>
+        <p-button
+          label="VOLTAR PARA MINHAS ATIVIDADES"
+          icon="pi pi-arrow-left"
+          [outlined]="true"
+          severity="secondary"
+          size="small"
+          (onClick)="voltar()"
+        />
       </div>
 
-      <!-- CARD PRINCIPAL DE DESEMPENHO E FEEDBACK DOCENTE -->
-      @if (sub.status === "AVALIADA") {
-        <div
-          class="card border border-success-subtle rounded-2 shadow-sm bg-white p-4 mb-3"
-        >
-          <div class="row g-3 align-items-center">
-            <div class="col-md-3 text-center border-end border-light-subtle">
-              <div class="text-secondary small font-monospace text-uppercase">
+      <!-- CARD DE DESEMPENHO & PARECER DOCENTE -->
+      @if (sub.status === 'AVALIADA') {
+        <p-card styleClass="border-emerald-200">
+          <div
+            style="display: grid; grid-template-columns: 240px 1fr; gap: 2rem; align-items: center"
+          >
+            <div
+              style="
+                text-align: center;
+                border-right: 1px solid var(--p-content-border-color, #e2e8f0);
+                padding-right: 2rem;
+              "
+            >
+              <div
+                style="
+                  font-size: 0.75rem;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  color: #64748b;
+                  letter-spacing: 0.05em;
+                "
+              >
                 Nota Atribuída
               </div>
-              <div class="fs-1 fw-bold text-success my-1">
-                {{ sub.nota | number: "1.1-1" }}
-                <span class="fs-5 text-muted">/ 10</span>
-              </div>
-              <span
-                class="badge bg-success-subtle text-success border border-success-subtle"
+              <div
+                style="
+                  font-size: 3rem;
+                  font-weight: 800;
+                  color: #16a34a;
+                  margin: 0.5rem 0;
+                  font-variant-numeric: tabular-nums;
+                "
               >
-                Avaliada em {{ sub.dataAvaliacao | date: "dd/MM/yyyy" }}
-              </span>
+                {{ sub.nota | number: '1.1-1' }}
+                <span style="font-size: 1.25rem; color: #94a3b8; font-weight: 500">/ 10</span>
+              </div>
+              <p-tag
+                [value]="'Avaliada em ' + (sub.dataAvaliacao | date: 'dd/MM/yyyy')"
+                severity="success"
+              />
             </div>
 
-            <div class="col-md-9 ps-md-4">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <i class="bi bi-chat-quote-fill text-primary fs-5"></i>
-                <h6 class="fw-bold text-dark m-0">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem">
+                <i class="pi pi-comment" style="color: #0284c7; font-size: 1.25rem"></i>
+                <h3 style="font-size: 1.125rem; font-weight: 700; color: #0f172a; margin: 0">
                   Parecer Pedagógico Formativo do Docente
-                </h6>
+                </h3>
               </div>
               <div
-                class="p-3 bg-light rounded border text-dark font-sans-serif"
-                style="white-space: pre-wrap; line-height: 1.6"
+                style="
+                  background: #f8fafc;
+                  border: 1px solid var(--p-content-border-color, #e2e8f0);
+                  border-radius: 6px;
+                  padding: 1rem;
+                  color: #1e293b;
+                  line-height: 1.6;
+                  white-space: pre-wrap;
+                  font-size: 0.875rem;
+                "
               >
-                {{
-                  sub.parecerDocente ||
-                    "Nenhum comentário adicional registrado pelo docente."
-                }}
+                {{ sub.parecerDocente || 'Nenhum comentário adicional registrado pelo docente.' }}
               </div>
             </div>
           </div>
-        </div>
+        </p-card>
       } @else {
-        <div
-          class="alert alert-warning d-flex align-items-center gap-3 p-3 mb-3 rounded-2"
-        >
-          <i class="bi bi-hourglass-split fs-3"></i>
-          <div>
-            <h6 class="fw-bold m-0">Submissão Entregue com Sucesso!</h6>
-            <span class="small">
-              Sua resolução de auditoria clínica foi enviada. O docente
-              responsável avaliará seus 4 pilares e atribuirá a nota com parecer
-              formativo em breve.
-            </span>
-          </div>
-        </div>
+        <p-message
+          severity="warn"
+          text="Submissão Entregue com Sucesso! Sua resolução de auditoria clínica foi enviada. O docente responsável avaliará seus 4 pilares e atribuirá a nota com parecer formativo em breve."
+          styleClass="w-full"
+        />
       }
 
-      <!-- CARD DA RESOLUÇÃO ENVIADA (VISUALIZAÇÃO COMPLETA) -->
-      <div
-        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-4"
-      >
+      <!-- RESPOSTA ENVIADA (VISUALIZAÇÃO DOS 4 PILARES) -->
+      <p-card header="Resposta Enviada pelo Discente">
+        <!-- Abas -->
         <div
-          class="card-header bg-white border-bottom border-light-subtle py-2 px-3"
+          style="
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+          "
         >
-          <span class="fw-bold text-dark small text-uppercase font-monospace">
-            <i class="bi bi-eye text-secondary me-1"></i> Resposta Enviada pelo
-            Discente
-          </span>
+          <p-button
+            [label]="'1. Gatilhos GTT (' + sub.achadosGatilhos.length + ')'"
+            icon="pi pi-flag"
+            [text]="abaResolucao() !== 'gatilhos'"
+            [severity]="abaResolucao() === 'gatilhos' ? 'primary' : 'secondary'"
+            size="small"
+            (onClick)="abaResolucao.set('gatilhos')"
+          />
+          <p-button
+            label="2. Ishikawa 6M"
+            icon="pi pi-sitemap"
+            [text]="abaResolucao() !== 'ishikawa'"
+            [severity]="abaResolucao() === 'ishikawa' ? 'primary' : 'secondary'"
+            size="small"
+            (onClick)="abaResolucao.set('ishikawa')"
+          />
+          <p-button
+            [label]="'3. Plano 5W3H (' + (sub.planos5w3h?.length || 0) + ')'"
+            icon="pi pi-list-check"
+            [text]="abaResolucao() !== 'plano5w3h'"
+            [severity]="abaResolucao() === 'plano5w3h' ? 'primary' : 'secondary'"
+            size="small"
+            (onClick)="abaResolucao.set('plano5w3h')"
+          />
+          <p-button
+            label="4. Ciclo PDCA"
+            icon="pi pi-sync"
+            [text]="abaResolucao() !== 'pdca'"
+            [severity]="abaResolucao() === 'pdca' ? 'primary' : 'secondary'"
+            size="small"
+            (onClick)="abaResolucao.set('pdca')"
+          />
+          <p-button
+            label="Prontuário Simulado"
+            icon="pi pi-file-edit"
+            [text]="abaResolucao() !== 'prontuario'"
+            [severity]="abaResolucao() === 'prontuario' ? 'primary' : 'secondary'"
+            size="small"
+            (onClick)="abaResolucao.set('prontuario')"
+          />
         </div>
 
-        <!-- ABAS DOS 4 PILARES + PRONTUÁRIO -->
-        <div class="border-bottom px-3 pt-2 bg-white">
-          <ul class="nav nav-tabs border-0 small font-monospace">
-            <li class="nav-item">
-              <button
-                class="nav-link py-2"
-                [class.active]="abaResolucao() === 'gatilhos'"
-                (click)="abaResolucao.set('gatilhos')"
-              >
-                <i class="bi bi-flag me-1"></i>1. Gatilhos GTT ({{
-                  sub.achadosGatilhos.length
-                }})
-              </button>
-            </li>
-            <li class="nav-item">
-              <button
-                class="nav-link py-2"
-                [class.active]="abaResolucao() === 'ishikawa'"
-                (click)="abaResolucao.set('ishikawa')"
-              >
-                <i class="bi bi-diagram-3 me-1"></i>2. Ishikawa 6M
-              </button>
-            </li>
-            <li class="nav-item">
-              <button
-                class="nav-link py-2"
-                [class.active]="abaResolucao() === 'plano5w3h'"
-                (click)="abaResolucao.set('plano5w3h')"
-              >
-                <i class="bi bi-list-check me-1"></i>3. Plano 5W3H ({{
-                  sub.planos5w3h?.length || 0
-                }})
-              </button>
-            </li>
-            <li class="nav-item">
-              <button
-                class="nav-link py-2"
-                [class.active]="abaResolucao() === 'pdca'"
-                (click)="abaResolucao.set('pdca')"
-              >
-                <i class="bi bi-arrow-repeat me-1"></i>4. Ciclo PDCA
-              </button>
-            </li>
-            <li class="nav-item">
-              <button
-                class="nav-link py-2 text-secondary"
-                [class.active]="abaResolucao() === 'prontuario'"
-                (click)="abaResolucao.set('prontuario')"
-              >
-                <i class="bi bi-file-earmark-medical me-1"></i>Prontuário
-                Simulado
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <div class="card-body p-4">
+        <div>
           <!-- 1. GATILHOS -->
-          @if (abaResolucao() === "gatilhos") {
+          @if (abaResolucao() === 'gatilhos') {
             @if (sub.achadosGatilhos.length === 0) {
-              <div class="text-center py-4 text-muted">
+              <div style="text-align: center; padding: 2rem; color: #64748b">
                 Nenhum gatilho registrado.
               </div>
             } @else {
-              <div class="d-flex flex-column gap-3">
+              <div style="display: flex; flex-direction: column; gap: 0.75rem">
                 @for (g of sub.achadosGatilhos; track g.gatilhoId) {
                   <div
-                    class="card border border-light-subtle rounded-2 p-3 bg-light"
+                    style="
+                      background: #f8fafc;
+                      border: 1px solid var(--p-content-border-color, #e2e8f0);
+                      border-radius: 6px;
+                      padding: 1rem;
+                    "
                   >
                     <div
-                      class="d-flex justify-content-between align-items-start mb-2"
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        margin-bottom: 0.5rem;
+                      "
                     >
-                      <div>
-                        <span class="badge bg-primary me-2 font-monospace">{{
-                          g.gatilhoCodigo
-                        }}</span>
-                        <span class="fw-bold text-dark">{{
+                      <div style="display: flex; align-items: center; gap: 0.5rem">
+                        <p-tag [value]="g.gatilhoCodigo" severity="primary" />
+                        <strong style="color: #0f172a; font-size: 0.875rem">{{
                           g.gatilhoDescricao
-                        }}</span>
+                        }}</strong>
                       </div>
-                      <span
-                        class="badge bg-light text-secondary border font-monospace"
-                        >{{ g.moduloNome }}</span
-                      >
+                      <p-tag [value]="g.moduloNome" severity="secondary" />
                     </div>
 
-                    <div class="row g-2 small mt-1">
-                      <div class="col-md-6">
-                        <strong>Dano Confirmado (EA)?</strong>
-                        <span
-                          class="ms-1 badge"
-                          [class.bg-danger]="g.confirmouDano"
-                          [class.bg-secondary]="!g.confirmouDano"
-                        >
-                          {{
-                            g.confirmouDano
-                              ? "SIM (Dano Confirmado)"
-                              : "NÃO (Sem Dano)"
-                          }}
-                        </span>
+                    <div
+                      style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 0.75rem;
+                        font-size: 0.8125rem;
+                      "
+                    >
+                      <div>
+                        <span style="color: #64748b">Dano Confirmado (EA):</span>
+                        <p-tag
+                          [value]="g.confirmouDano ? 'SIM (Dano)' : 'NÃO (Sem Dano)'"
+                          [severity]="g.confirmouDano ? 'danger' : 'secondary'"
+                          styleClass="ms-2"
+                        />
                       </div>
-
-                      <div class="col-md-6">
-                        <strong>Presente na Admissão:</strong>
-                        <span class="ms-1">{{
-                          g.danoPresenteAdmissao
-                            ? "Sim (POA)"
-                            : "Não (Ocorreu na Internação)"
-                        }}</span>
+                      <div>
+                        <span style="color: #64748b">Presente na Admissão:</span>
+                        <strong style="color: #0f172a; margin-left: 0.5rem">{{
+                          g.danoPresenteAdmissao ? 'Sim (POA)' : 'Não (Internação)'
+                        }}</strong>
                       </div>
-
                       @if (g.confirmouDano) {
-                        <div class="col-md-6">
-                          <strong>Gravidade NCC MERP:</strong>
-                          <span
-                            class="ms-1 badge bg-dark text-white font-monospace"
-                            >{{ g.gravidade || "-" }}</span
+                        <div>
+                          <span style="color: #64748b">Gravidade NCC MERP:</span>
+                          <p-tag
+                            [value]="g.gravidade || '-'"
+                            severity="contrast"
+                            styleClass="ms-2"
+                          />
+                        </div>
+                        <div>
+                          <span style="color: #64748b">Categoria EA:</span>
+                          <strong style="color: #0f172a; margin-left: 0.5rem">{{
+                            g.categoriaEaNome || '-'
+                          }}</strong>
+                        </div>
+                        <div style="grid-column: span 2; margin-top: 0.25rem">
+                          <span style="color: #64748b; display: block; margin-bottom: 0.25rem"
+                            >Justificativa do Dano:</span
                           >
-                        </div>
-
-                        <div class="col-md-6">
-                          <strong>Categoria do EA:</strong>
-                          <span class="ms-1 text-dark">{{
-                            g.categoriaEaNome || "-"
-                          }}</span>
-                        </div>
-
-                        <div class="col-12 mt-2">
-                          <strong>Justificativa do Dano:</strong>
                           <div
-                            class="p-2 bg-white rounded border small mt-1 font-monospace"
-                            style="white-space: pre-wrap"
+                            style="
+                              background: #ffffff;
+                              padding: 0.5rem;
+                              border-radius: 4px;
+                              border: 1px solid #e2e8f0;
+                              font-family: monospace;
+                              font-size: 0.75rem;
+                              white-space: pre-wrap;
+                            "
                           >
-                            {{ g.justificativaDano || "Não informada." }}
+                            {{ g.justificativaDano || 'Não informada.' }}
                           </div>
                         </div>
                       }
@@ -269,68 +282,120 @@
           }
 
           <!-- 2. ISHIKAWA -->
-          @if (abaResolucao() === "ishikawa") {
+          @if (abaResolucao() === 'ishikawa') {
             @if (!sub.ishikawa) {
-              <div class="text-center py-4 text-muted">
+              <div style="text-align: center; padding: 2rem; color: #64748b">
                 Nenhum diagrama de Ishikawa registrado.
               </div>
             } @else {
-              <div class="alert alert-primary py-2 px-3 mb-3 small">
-                <strong>Efeito Principal (Problema Central):</strong>
-                <div class="fw-bold mt-1 fs-6">
+              <div
+                style="
+                  background: #eff6ff;
+                  border: 1px solid #bfdbfe;
+                  border-radius: 6px;
+                  padding: 0.875rem;
+                  margin-bottom: 1rem;
+                "
+              >
+                <div
+                  style="
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    color: #1e40af;
+                  "
+                >
+                  Efeito Principal (Problema Central)
+                </div>
+                <div style="font-weight: 700; color: #1e3a8a; font-size: 1rem; margin-top: 0.25rem">
                   {{ sub.ishikawa.efeitoPrincipal }}
                 </div>
               </div>
 
-              <div class="row g-3 small">
-                <div class="col-md-6">
-                  <div class="card border p-3 bg-light">
-                    <strong class="text-secondary">Método:</strong>
-                    <div class="mt-1 font-monospace">
-                      {{ sub.ishikawa.metodo || "-" }}
-                    </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 0.75rem;
+                  font-size: 0.8125rem;
+                "
+              >
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                  "
+                >
+                  <strong style="color: #64748b">Método:</strong>
+                  <div style="font-family: monospace; margin-top: 0.25rem; color: #1e293b">
+                    {{ sub.ishikawa.metodo || '-' }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border p-3 bg-light">
-                    <strong class="text-secondary">Mão de Obra:</strong>
-                    <div class="mt-1 font-monospace">
-                      {{ sub.ishikawa.maoDeObra || "-" }}
-                    </div>
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                  "
+                >
+                  <strong style="color: #64748b">Mão de Obra:</strong>
+                  <div style="font-family: monospace; margin-top: 0.25rem; color: #1e293b">
+                    {{ sub.ishikawa.maoDeObra || '-' }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border p-3 bg-light">
-                    <strong class="text-secondary">Material:</strong>
-                    <div class="mt-1 font-monospace">
-                      {{ sub.ishikawa.material || "-" }}
-                    </div>
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                  "
+                >
+                  <strong style="color: #64748b">Material:</strong>
+                  <div style="font-family: monospace; margin-top: 0.25rem; color: #1e293b">
+                    {{ sub.ishikawa.material || '-' }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border p-3 bg-light">
-                    <strong class="text-secondary">Medida:</strong>
-                    <div class="mt-1 font-monospace">
-                      {{ sub.ishikawa.medida || "-" }}
-                    </div>
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                  "
+                >
+                  <strong style="color: #64748b">Medida:</strong>
+                  <div style="font-family: monospace; margin-top: 0.25rem; color: #1e293b">
+                    {{ sub.ishikawa.medida || '-' }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border p-3 bg-light">
-                    <strong class="text-secondary">Meio Ambiente:</strong>
-                    <div class="mt-1 font-monospace">
-                      {{ sub.ishikawa.meioAmbiente || "-" }}
-                    </div>
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                  "
+                >
+                  <strong style="color: #64748b">Meio Ambiente:</strong>
+                  <div style="font-family: monospace; margin-top: 0.25rem; color: #1e293b">
+                    {{ sub.ishikawa.meioAmbiente || '-' }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border p-3 bg-light">
-                    <strong class="text-secondary"
-                      >Máquina / Equipamento:</strong
-                    >
-                    <div class="mt-1 font-monospace">
-                      {{ sub.ishikawa.maquina || "-" }}
-                    </div>
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                  "
+                >
+                  <strong style="color: #64748b">Máquina / Equipamento:</strong>
+                  <div style="font-family: monospace; margin-top: 0.25rem; color: #1e293b">
+                    {{ sub.ishikawa.maquina || '-' }}
                   </div>
                 </div>
               </div>
@@ -338,92 +403,112 @@
           }
 
           <!-- 3. PLANO 5W3H -->
-          @if (abaResolucao() === "plano5w3h") {
+          @if (abaResolucao() === 'plano5w3h') {
             @if (!sub.planos5w3h || sub.planos5w3h.length === 0) {
-              <div class="text-center py-4 text-muted">
+              <div style="text-align: center; padding: 2rem; color: #64748b">
                 Nenhuma ação cadastrada no plano 5W3H.
               </div>
             } @else {
-              <div class="table-responsive">
-                <table class="table table-bordered table-sm small align-middle">
-                  <thead class="table-light text-secondary font-monospace">
-                    <tr>
-                      <th>O Quê (What)</th>
-                      <th>Por Quê (Why)</th>
-                      <th>Quem (Who)</th>
-                      <th>Onde (Where)</th>
-                      <th>Quando (When)</th>
-                      <th>Como (How)</th>
-                      <th>Como Medir (How Measure)</th>
-                    </tr>
-                  </thead>
-                  <tbody class="font-monospace">
-                    @for (p of sub.planos5w3h; track p.id || p.oQue) {
-                      <tr>
-                        <td class="fw-semibold">{{ p.oQue }}</td>
-                        <td>{{ p.porQue }}</td>
-                        <td>{{ p.quem }}</td>
-                        <td>{{ p.onde }}</td>
-                        <td>{{ p.quando }}</td>
-                        <td>{{ p.como }}</td>
-                        <td>{{ p.comoMedir || "-" }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+              <p-table [value]="sub.planos5w3h" styleClass="p-datatable-sm p-datatable-gridlines">
+                <ng-template #header>
+                  <tr>
+                    <th>O Quê (What)</th>
+                    <th>Por Quê (Why)</th>
+                    <th>Quem (Who)</th>
+                    <th>Onde (Where)</th>
+                    <th>Quando (When)</th>
+                    <th>Como (How)</th>
+                    <th>Como Medir</th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-p>
+                  <tr style="font-size: 0.75rem; font-family: monospace">
+                    <td style="font-weight: 600">{{ p.oQue }}</td>
+                    <td>{{ p.porQue }}</td>
+                    <td>{{ p.quem }}</td>
+                    <td>{{ p.onde }}</td>
+                    <td>{{ p.quando }}</td>
+                    <td>{{ p.como }}</td>
+                    <td>{{ p.comoMedir || '-' }}</td>
+                  </tr>
+                </ng-template>
+              </p-table>
             }
           }
 
           <!-- 4. PDCA -->
-          @if (abaResolucao() === "pdca") {
+          @if (abaResolucao() === 'pdca') {
             @if (!sub.pdca) {
-              <div class="text-center py-4 text-muted">
+              <div style="text-align: center; padding: 2rem; color: #64748b">
                 Nenhum ciclo PDCA registrado.
               </div>
             } @else {
-              <div class="row g-3 small">
-                <div class="col-md-6">
-                  <div class="card border-primary p-3 bg-light">
-                    <div class="fw-bold text-primary mb-1">
-                      <i class="bi bi-calendar-check me-1"></i> P - Plan
-                      (Planejar)
-                    </div>
-                    <div class="font-monospace" style="white-space: pre-wrap">
-                      {{ sub.pdca.planejar }}
-                    </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 0.75rem;
+                  font-size: 0.8125rem;
+                "
+              >
+                <div
+                  style="
+                    background: #eff6ff;
+                    border: 1px solid #bfdbfe;
+                    border-radius: 6px;
+                    padding: 0.875rem;
+                  "
+                >
+                  <div style="font-weight: 700; color: #1e40af; margin-bottom: 0.25rem">
+                    P - Plan (Planejar)
+                  </div>
+                  <div style="font-family: monospace; white-space: pre-wrap; color: #1e293b">
+                    {{ sub.pdca.planejar }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border-info p-3 bg-light">
-                    <div class="fw-bold text-info-emphasis mb-1">
-                      <i class="bi bi-play-circle me-1"></i> D - Do (Executar)
-                    </div>
-                    <div class="font-monospace" style="white-space: pre-wrap">
-                      {{ sub.pdca.fazer }}
-                    </div>
+                <div
+                  style="
+                    background: #f0fdf4;
+                    border: 1px solid #bbf7d0;
+                    border-radius: 6px;
+                    padding: 0.875rem;
+                  "
+                >
+                  <div style="font-weight: 700; color: #166534; margin-bottom: 0.25rem">
+                    D - Do (Executar)
+                  </div>
+                  <div style="font-family: monospace; white-space: pre-wrap; color: #1e293b">
+                    {{ sub.pdca.fazer }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border-warning p-3 bg-light">
-                    <div class="fw-bold text-warning-emphasis mb-1">
-                      <i class="bi bi-search me-1"></i> C - Check (Verificar /
-                      Avaliar)
-                    </div>
-                    <div class="font-monospace" style="white-space: pre-wrap">
-                      {{ sub.pdca.checar }}
-                    </div>
+                <div
+                  style="
+                    background: #fefce8;
+                    border: 1px solid #fef08a;
+                    border-radius: 6px;
+                    padding: 0.875rem;
+                  "
+                >
+                  <div style="font-weight: 700; color: #854d0e; margin-bottom: 0.25rem">
+                    C - Check (Verificar / Avaliar)
+                  </div>
+                  <div style="font-family: monospace; white-space: pre-wrap; color: #1e293b">
+                    {{ sub.pdca.checar }}
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="card border-success p-3 bg-light">
-                    <div class="fw-bold text-success mb-1">
-                      <i class="bi bi-arrow-repeat me-1"></i> A - Act (Agir
-                      Corretivamente)
-                    </div>
-                    <div class="font-monospace" style="white-space: pre-wrap">
-                      {{ sub.pdca.agir }}
-                    </div>
+                <div
+                  style="
+                    background: #faf5ff;
+                    border: 1px solid #e9d5ff;
+                    border-radius: 6px;
+                    padding: 0.875rem;
+                  "
+                >
+                  <div style="font-weight: 700; color: #6b21a8; margin-bottom: 0.25rem">
+                    A - Act (Agir Corretivamente)
+                  </div>
+                  <div style="font-family: monospace; white-space: pre-wrap; color: #1e293b">
+                    {{ sub.pdca.agir }}
                   </div>
                 </div>
               </div>
@@ -431,54 +516,101 @@
           }
 
           <!-- 5. PRONTUÁRIO -->
-          @if (abaResolucao() === "prontuario") {
-            <div class="p-3 bg-light rounded border">
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
-                {{ sub.casoClinico.numeroAtendimento }} —
-                {{ sub.casoClinico.titulo }} ({{
+          @if (abaResolucao() === 'prontuario') {
+            <div
+              style="
+                background: #f8fafc;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 1.25rem;
+              "
+            >
+              <h4
+                style="
+                  font-size: 1rem;
+                  font-weight: 700;
+                  color: #0f172a;
+                  margin: 0 0 1rem 0;
+                  border-bottom: 1px solid #e2e8f0;
+                  padding-bottom: 0.5rem;
+                "
+              >
+                {{ sub.casoClinico.numeroAtendimento }} — {{ sub.casoClinico.titulo }} ({{
                   sub.casoClinico.unidadeHospitalarSigla
                 }})
-              </h6>
-              <h6 class="fw-bold text-secondary small text-uppercase">
-                Sumário de Alta:
-              </h6>
+              </h4>
               <div
-                class="font-monospace small mb-3"
-                style="white-space: pre-wrap"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 1rem;
+                  font-family: monospace;
+                  font-size: 0.8125rem;
+                  color: #334155;
+                  line-height: 1.6;
+                "
               >
-                {{ sub.casoClinico.sumarioAlta }}
-              </div>
-
-              <h6 class="fw-bold text-secondary small text-uppercase">
-                Prescrições:
-              </h6>
-              <div
-                class="font-monospace small mb-3"
-                style="white-space: pre-wrap"
-              >
-                {{ sub.casoClinico.prescricoesMedicas }}
-              </div>
-
-              <h6 class="fw-bold text-secondary small text-uppercase">
-                Exames:
-              </h6>
-              <div
-                class="font-monospace small mb-3"
-                style="white-space: pre-wrap"
-              >
-                {{ sub.casoClinico.examesLaboratoriais }}
-              </div>
-
-              <h6 class="fw-bold text-secondary small text-uppercase">
-                Evoluções:
-              </h6>
-              <div class="font-monospace small" style="white-space: pre-wrap">
-                {{ sub.casoClinico.evolucoesMultiprofissionais }}
+                <div>
+                  <strong
+                    style="
+                      color: #64748b;
+                      font-family: sans-serif;
+                      text-transform: uppercase;
+                      font-size: 0.75rem;
+                    "
+                    >Sumário de Alta:</strong
+                  >
+                  <div style="white-space: pre-wrap; margin-top: 0.25rem">
+                    {{ sub.casoClinico.sumarioAlta }}
+                  </div>
+                </div>
+                <div>
+                  <strong
+                    style="
+                      color: #64748b;
+                      font-family: sans-serif;
+                      text-transform: uppercase;
+                      font-size: 0.75rem;
+                    "
+                    >Prescrições:</strong
+                  >
+                  <div style="white-space: pre-wrap; margin-top: 0.25rem">
+                    {{ sub.casoClinico.prescricoesMedicas }}
+                  </div>
+                </div>
+                <div>
+                  <strong
+                    style="
+                      color: #64748b;
+                      font-family: sans-serif;
+                      text-transform: uppercase;
+                      font-size: 0.75rem;
+                    "
+                    >Exames:</strong
+                  >
+                  <div style="white-space: pre-wrap; margin-top: 0.25rem">
+                    {{ sub.casoClinico.examesLaboratoriais }}
+                  </div>
+                </div>
+                <div>
+                  <strong
+                    style="
+                      color: #64748b;
+                      font-family: sans-serif;
+                      text-transform: uppercase;
+                      font-size: 0.75rem;
+                    "
+                    >Evoluções:</strong
+                  >
+                  <div style="white-space: pre-wrap; margin-top: 0.25rem">
+                    {{ sub.casoClinico.evolucoesMultiprofissionais }}
+                  </div>
+                </div>
               </div>
             </div>
           }
         </div>
-      </div>
+      </p-card>
     }
   }
 </div>

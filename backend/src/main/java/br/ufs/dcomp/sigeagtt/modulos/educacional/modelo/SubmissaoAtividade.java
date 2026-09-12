@@ -2,17 +2,21 @@ package br.ufs.dcomp.sigeagtt.modulos.educacional.modelo;
 
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "submissoes_atividades", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_submissao_aluno_atividade", columnNames = { "atividade_id", "aluno_id" })
-})
+@Table(
+        name = "submissoes_atividades",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uq_submissao_aluno_atividade",
+                    columnNames = {"atividade_id", "aluno_id"})
+        })
 public class SubmissaoAtividade {
 
     @Id
@@ -66,8 +70,7 @@ public class SubmissaoAtividade {
     @OneToOne(mappedBy = "submissao", cascade = CascadeType.ALL, orphanRemoval = true)
     private SubmissaoPdca pdca;
 
-    public SubmissaoAtividade() {
-    }
+    public SubmissaoAtividade() {}
 
     @PrePersist
     public void prePersist() {

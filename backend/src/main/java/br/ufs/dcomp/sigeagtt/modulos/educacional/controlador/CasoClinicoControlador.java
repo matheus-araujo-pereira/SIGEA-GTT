@@ -5,13 +5,12 @@ import br.ufs.dcomp.sigeagtt.modulos.educacional.dto.SalvarCasoClinicoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.servico.CasoClinicoServico;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/casos-clinicos")
@@ -25,7 +24,8 @@ public class CasoClinicoControlador {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
-    public ResponseEntity<List<CasoClinicoDTO>> listar(@AuthenticationPrincipal Usuario usuarioLogado) {
+    public ResponseEntity<List<CasoClinicoDTO>> listar(
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(casoServico.listar(usuarioLogado));
     }
 
@@ -56,8 +56,7 @@ public class CasoClinicoControlador {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<Void> excluir(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Usuario usuarioLogado) {
+            @PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogado) {
         casoServico.excluir(id, usuarioLogado);
         return ResponseEntity.noContent().build();
     }

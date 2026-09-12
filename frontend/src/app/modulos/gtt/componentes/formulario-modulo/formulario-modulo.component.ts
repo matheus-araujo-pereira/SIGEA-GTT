@@ -1,22 +1,33 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  ModuloGttService,
-  ModuloRequisicao,
-} from '../../servicos/modulo-gtt.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageService } from 'primeng/api';
+import { ModuloGttService, ModuloRequisicao } from '../../servicos/modulo-gtt.service';
 
 @Component({
   selector: 'app-formulario-modulo',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    FormsModule,
+    CardModule,
+    InputTextModule,
+    TextareaModule,
+    ButtonModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './formulario-modulo.component.html',
 })
 export class FormularioModuloComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly moduloService = inject(ModuloGttService);
+  private readonly messageService = inject(MessageService);
 
   readonly idModulo = signal<number | null>(null);
   readonly modoEdicao = computed(() => this.idModulo() !== null);
@@ -33,9 +44,7 @@ export class FormularioModuloComponent implements OnInit {
   };
 
   readonly tituloPagina = computed(() => {
-    return this.modoEdicao()
-      ? `Editar Módulo #${this.idModulo()}`
-      : 'Cadastrar Novo Módulo GTT';
+    return this.modoEdicao() ? `Editar Módulo #${this.idModulo()}` : 'Cadastrar Novo Módulo GTT';
   });
 
   readonly subtituloPagina = computed(() => {
@@ -70,8 +79,7 @@ export class FormularioModuloComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar dados do módulo: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar dados do módulo: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -81,15 +89,11 @@ export class FormularioModuloComponent implements OnInit {
   validarFormulario(): boolean {
     this.mensagemErro.set(null);
 
-    // 1. Código
     if (!this.formulario.codigo || this.formulario.codigo.trim().length === 0) {
-      this.mensagemErro.set(
-        'O Código do Módulo é obrigatório (ex: MOD-GERAL, MOD-CIRURGIA).',
-      );
+      this.mensagemErro.set('O Código do Módulo é obrigatório (ex: MOD-GERAL, MOD-CIRURGIA).');
       return false;
     }
 
-    // 2. Nome
     if (!this.formulario.nome || this.formulario.nome.trim().length === 0) {
       this.mensagemErro.set('O Nome do Módulo é obrigatório.');
       return false;
@@ -118,32 +122,32 @@ export class FormularioModuloComponent implements OnInit {
       this.moduloService.editar(id, payload).subscribe({
         next: (atualizado) => {
           this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Módulo "${atualizado.nome}" atualizado com sucesso!`,
-          );
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: `Módulo "${atualizado.nome}" atualizado com sucesso!`,
+          });
           setTimeout(() => this.voltarParaListagem(), 1200);
         },
         error: (err) => {
           this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar dados do módulo.',
-          );
+          this.mensagemErro.set(err.error?.mensagem || 'Falha ao atualizar dados do módulo.');
         },
       });
     } else {
       this.moduloService.cadastrar(payload).subscribe({
         next: (criado) => {
           this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Módulo "${criado.nome}" cadastrado com sucesso!`,
-          );
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: `Módulo "${criado.nome}" cadastrado com sucesso!`,
+          });
           setTimeout(() => this.voltarParaListagem(), 1200);
         },
         error: (err) => {
           this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar novo módulo.',
-          );
+          this.mensagemErro.set(err.error?.mensagem || 'Falha ao cadastrar novo módulo.');
         },
       });
     }

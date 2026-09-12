@@ -19,8 +19,7 @@ public class CategoriaEventoAdverso {
     @Column(nullable = false)
     private Boolean ativa = true;
 
-    public CategoriaEventoAdverso() {
-    }
+    public CategoriaEventoAdverso() {}
 
     public Long getId() {
         return id;

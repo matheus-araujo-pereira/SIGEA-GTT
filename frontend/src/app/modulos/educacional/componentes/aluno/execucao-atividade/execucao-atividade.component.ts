@@ -1,20 +1,26 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  EducacionalService,
-  CategoriaEA,
-} from '../../../servicos/educacional.service';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { SelectModule } from 'primeng/select';
+import { TextareaModule } from 'primeng/textarea';
+import { TagModule } from 'primeng/tag';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { DialogModule } from 'primeng/dialog';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TableModule } from 'primeng/table';
+import { MessageService } from 'primeng/api';
+import { EducacionalService, CategoriaEA } from '../../../servicos/educacional.service';
 import { GatilhoService } from '../../../../gtt/servicos/gatilho.service';
-import { GatilhoGtt } from '../../../../gtt/modelos/gtt.modelos';
+import { ModuloGttService } from '../../../../gtt/servicos/modulo-gtt.service';
+import { GatilhoGtt, ModuloGtt } from '../../../../gtt/modelos/gtt.modelos';
 import {
   Submissao,
   SubmissaoGatilho,
@@ -22,18 +28,36 @@ import {
   SubmissaoPlano5w3h,
   SubmissaoPdca,
   SalvarSubmissaoPayload,
-  GravidadeNccMerp,
 } from '../../../modelos/educacional.modelos';
 
 @Component({
   selector: 'app-execucao-atividade',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    DecimalPipe,
+    FormsModule,
+    CardModule,
+    ButtonModule,
+    InputTextModule,
+    InputNumberModule,
+    SelectModule,
+    TextareaModule,
+    TagModule,
+    ProgressBarModule,
+    DialogModule,
+    CheckboxModule,
+    TooltipModule,
+    MessageModule,
+    ProgressSpinnerModule,
+    TableModule,
+  ],
   templateUrl: './execucao-atividade.component.html',
 })
 export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   private readonly educacionalService = inject(EducacionalService);
   private readonly gatilhoService = inject(GatilhoService);
+  private readonly moduloService = inject(ModuloGttService);
+  private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -44,17 +68,24 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
 
   readonly submissao = signal<Submissao | null>(null);
   readonly todosGatilhos = signal<GatilhoGtt[]>([]);
+  readonly modulos = signal<ModuloGtt[]>([]);
   readonly categoriasEA = signal<CategoriaEA[]>([]);
 
+  readonly opcoesGravidade = [
+    { label: 'Cat E - Dano temporário c/ intervenção', value: 'CATEGORIA_E' },
+    { label: 'Cat F - Dano temporário c/ internação prolongada', value: 'CATEGORIA_F' },
+    { label: 'Cat G - Dano permanente', value: 'CATEGORIA_G' },
+    { label: 'Cat H - Risco iminente à vida / intervenção vital', value: 'CATEGORIA_H' },
+    { label: 'Cat I - Óbito do paciente', value: 'CATEGORIA_I' },
+  ];
+
   // Abas do prontuário
-  readonly abaProntuario = signal<
-    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
-  >('sumario');
+  readonly abaProntuario = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>(
+    'sumario',
+  );
 
   // Abas da resolução
-  readonly abaResolucao = signal<
-    'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca'
-  >('gatilhos');
+  readonly abaResolucao = signal<'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca'>('gatilhos');
 
   // Modal para adicionar gatilho
   readonly modalGatilhoAberto = signal(false);
@@ -83,22 +114,17 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   // Cronômetro (tempo limite IHI GTT: padrão 20 min)
   tempoGastoSegundos = 0;
   tempoLimiteSegundos = 20 * 60;
-  private intervaloTimer: any = null;
-  private intervaloAutoSave: any = null;
+  private intervaloTimer: ReturnType<typeof setInterval> | null = null;
+  private intervaloAutoSave: ReturnType<typeof setInterval> | null = null;
 
   readonly tempoRestanteFormatado = computed(() => {
-    const restante = Math.max(
-      0,
-      this.tempoLimiteSegundos - this.tempoGastoSegundos,
-    );
+    const restante = Math.max(0, this.tempoLimiteSegundos - this.tempoGastoSegundos);
     const min = Math.floor(restante / 60);
     const seg = restante % 60;
     return `${min < 10 ? '0' : ''}${min}:${seg < 10 ? '0' : ''}${seg}`;
   });
 
-  readonly tempoEsgotado = computed(
-    () => this.tempoGastoSegundos >= this.tempoLimiteSegundos,
-  );
+  readonly tempoEsgotado = computed(() => this.tempoGastoSegundos >= this.tempoLimiteSegundos);
 
   // Controle de versão reativa para cálculo de progresso
   readonly versaoResolucao = signal(0);
@@ -115,10 +141,7 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
 
   readonly progressoIshikawa = computed(() => {
     this.versaoResolucao();
-    return (
-      !!this.ishikawa.efeitoPrincipal &&
-      this.ishikawa.efeitoPrincipal.trim().length > 0
-    );
+    return !!this.ishikawa.efeitoPrincipal && this.ishikawa.efeitoPrincipal.trim().length > 0;
   });
 
   readonly progresso5w3h = computed(() => {
@@ -150,11 +173,13 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     return count;
   });
 
-  readonly porcentagemProgresso = computed(
-    () => (this.totalPilaresCompletos() / 4) * 100,
-  );
+  readonly porcentagemProgresso = computed(() => (this.totalPilaresCompletos() / 4) * 100);
 
-  // Filtro de gatilhos no modal com ordenação natural (C1, C2, ..., C10, C11, ...)
+  readonly modulosOpcoes = computed(() => [
+    { label: 'Todos os Módulos', value: null },
+    ...this.modulos().map((m) => ({ label: `${m.codigo} - ${m.nome}`, value: m.id })),
+  ]);
+
   readonly gatilhosFiltrados = computed(() => {
     const termo = this.termoBuscaGatilho().trim().toLowerCase();
     const moduloId = this.filtroModuloGatilho();
@@ -177,10 +202,6 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     );
   });
 
-  atualizarFiltroModulo(valor: any): void {
-    this.filtroModuloGatilho.set(valor ? Number(valor) : null);
-  }
-
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
@@ -196,35 +217,33 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   carregarAtividadeEIniciar(atividadeId: number): void {
     this.carregando.set(true);
 
-    // Carregar lista de gatilhos do sistema
     this.gatilhoService.listar().subscribe({
       next: (dados) => this.todosGatilhos.set(dados),
       error: () => {},
     });
 
-    // Carregar categorias de EA
+    this.moduloService.listar().subscribe({
+      next: (dados) => this.modulos.set(dados),
+      error: () => {},
+    });
+
     this.educacionalService.listarCategoriasEA().subscribe({
       next: (dados) => this.categoriasEA.set(dados),
       error: () => {},
     });
 
-    // Iniciar ou carregar submissão
     this.educacionalService.iniciarOuContinuar(atividadeId).subscribe({
       next: (sub) => {
         this.submissao.set(sub);
         this.tempoGastoSegundos = sub.tempoGastoSegundos || 0;
         this.tempoLimiteSegundos = (sub.tempoLimiteMinutos || 20) * 60;
 
-        // Se já foi avaliada ou submetida, redirecionar para tela de resultado
         if (sub.status === 'SUBMETIDA' || sub.status === 'AVALIADA') {
           this.router.navigate(['/submissoes', sub.id, 'resultado']);
           return;
         }
 
-        // Preencher dados salvos
-        this.achadosGatilhos = sub.achadosGatilhos
-          ? [...sub.achadosGatilhos]
-          : [];
+        this.achadosGatilhos = sub.achadosGatilhos ? [...sub.achadosGatilhos] : [];
         if (sub.ishikawa) {
           this.ishikawa = { ...sub.ishikawa };
         }
@@ -258,13 +277,11 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   }
 
   iniciarAutoSave(): void {
-    // Salvar rascunho silenciosamente a cada 60 segundos
     this.intervaloAutoSave = setInterval(() => {
       this.salvarRascunhoSilencioso();
     }, 60000);
   }
 
-  // --- GATILHOS ---
   abrirModalGatilho(): void {
     this.termoBuscaGatilho.set('');
     this.filtroModuloGatilho.set(null);
@@ -276,10 +293,13 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
   }
 
   selecionarGatilho(g: GatilhoGtt): void {
-    // Verifica se já adicionou
     const existe = this.achadosGatilhos.some((item) => item.gatilhoId === g.id);
     if (existe) {
-      alert('Este gatilho já foi adicionado à sua lista de achados.');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Este gatilho já foi adicionado à sua lista de achados.',
+      });
       return;
     }
 
@@ -305,7 +325,6 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     this.notificarMudanca();
   }
 
-  // --- 5W3H ---
   adicionarAcao5w3h(): void {
     this.planos5w3h.push({
       oQue: '',
@@ -338,7 +357,6 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     this.notificarMudanca();
   }
 
-  // --- SALVAMENTO / SUBMISSÃO ---
   montarPayload(finalizar: boolean): SalvarSubmissaoPayload {
     return {
       tempoGastoSegundos: this.tempoGastoSegundos,
@@ -362,15 +380,15 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     this.educacionalService.salvarProgresso(sub.id, payload).subscribe({
       next: (res) => {
         this.submissao.set(res);
-        this.mensagemSucesso.set(
-          'Rascunho salvo com sucesso! Você pode continuar a qualquer momento.',
-        );
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Salvo',
+          detail: 'Rascunho salvo com sucesso!',
+        });
         this.salvando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao salvar rascunho: ' + (err.error?.mensagem || err.message),
-        );
+        this.mensagemErro.set('Erro ao salvar rascunho: ' + (err.error?.mensagem || err.message));
         this.salvando.set(false);
       },
     });
@@ -390,7 +408,6 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     const sub = this.submissao();
     if (!sub) return;
 
-    // Validação estrita de 100% de conclusão dos 4 pilares:
     if (this.achadosGatilhos.length === 0) {
       this.abaResolucao.set('gatilhos');
       this.mensagemErro.set(
@@ -399,7 +416,6 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Para gatilhos com dano confirmado, validar justificativa e gravidade
     for (const g of this.achadosGatilhos) {
       if (g.confirmouDano) {
         if (!g.gravidade) {
@@ -419,10 +435,7 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (
-      !this.ishikawa.efeitoPrincipal ||
-      !this.ishikawa.efeitoPrincipal.trim()
-    ) {
+    if (!this.ishikawa.efeitoPrincipal || !this.ishikawa.efeitoPrincipal.trim()) {
       this.abaResolucao.set('ishikawa');
       this.mensagemErro.set(
         'Pilar 2 incompleto: Defina o Efeito Principal no Diagrama de Ishikawa 6M.',
@@ -455,7 +468,7 @@ export class ExecucaoAtividadeComponent implements OnInit, OnDestroy {
     }
 
     const conf = confirm(
-      'Confirma o envio definitivo da sua auditoria clínica? Após submeter, as respostas não poderão mais ser alteradas até a avaliação do docente.',
+      'Confirma o envio definitivo da sua auditoria clínica? Após submeter, as respostas não poderão mais ser alteradas.',
     );
     if (!conf) return;
 

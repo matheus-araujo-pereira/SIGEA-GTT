@@ -1,15 +1,15 @@
+<p-toast position="top-right" />
+<p-confirmDialog />
+
 <router-outlet></router-outlet>
 
 @if (loadingService.carregando()) {
   <div class="loading-overlay">
-    <div class="loading-box shadow-sm rounded-3">
-      <!-- Trocado spinner-border (círculo cortado) pelo spinner-grow (pulso suave) -->
-      <div
-        class="spinner-grow text-primary mb-3"
-        style="width: 2.5rem; height: 2.5rem"
-        role="status"
-      ></div>
-      <span class="small font-monospace text-dark fw-bold">CARREGANDO...</span>
+    <div class="loading-box">
+      <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4" />
+      <span style="font-size: 0.8rem; font-weight: 600; margin-top: 12px; letter-spacing: 0.05em"
+        >CARREGANDO...</span
+      >
     </div>
   </div>
 }

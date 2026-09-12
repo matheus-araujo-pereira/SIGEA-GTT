@@ -1,235 +1,137 @@
 <div>
   <!-- CABEÇALHO -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light-subtle"
-  >
-    <div>
-      <h1 class="h4 fw-bold text-dark m-0">Meu Perfil</h1>
-      <span class="text-secondary small"
-        >Gerencie seus dados de acesso e credenciais de segurança no
-        SIGEA-GTT</span
-      >
-    </div>
+  <div class="profile-header">
+    <h1 class="profile-title">Meu Perfil</h1>
+    <span class="profile-subtitle"
+      >Gerencie seus dados de acesso e credenciais de segurança no SIGEA-GTT</span
+    >
   </div>
 
-  <!-- FEEDBACKS -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
   @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
+    <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full mb-3" />
   }
 
-  <div class="row g-4">
+  <div class="profile-grid">
     <!-- COLUNA DA ESQUERDA: DADOS INSTITUCIONAIS -->
-    <div class="col-lg-5">
-      <div
-        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden h-100"
-      >
-        <div
-          class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
-        >
-          <span class="fw-bold text-dark small text-uppercase font-monospace">
-            <i class="bi bi-person-badge me-1"></i> Dados Institucionais
-          </span>
+    <p-card header="Dados Institucionais">
+      <div class="user-avatar-block">
+        <div class="avatar-circle">
+          <i class="pi pi-user"></i>
         </div>
-
-        <div class="card-body p-4">
-          <div
-            class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-light-subtle"
-          >
-            <div
-              class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold fs-3"
-              style="width: 64px; height: 64px"
-            >
-              <i class="bi bi-person"></i>
-            </div>
-            <div>
-              <h2 class="h5 fw-bold text-dark mb-1">
-                {{ usuario()?.nomeCompleto }}
-              </h2>
-              <span
-                class="badge"
-                [class.bg-primary]="usuario()?.perfil === 'ADMINISTRADOR'"
-                [class.bg-success]="usuario()?.perfil === 'PROFESSOR'"
-                [class.bg-secondary]="usuario()?.perfil === 'ALUNO'"
-              >
-                {{ usuario()?.perfil }}
-              </span>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <span class="text-secondary d-block small fw-semibold"
-              >E-MAIL INSTITUCIONAL:</span
-            >
-            <span class="text-dark font-monospace small">{{
-              usuario()?.email
-            }}</span>
-          </div>
-
-          @if (usuario()?.matriculaSigaa) {
-            <div class="mb-3">
-              <span class="text-secondary d-block small fw-semibold"
-                >MATRÍCULA SIGAA:</span
-              >
-              <span class="text-dark font-monospace small">{{
-                usuario()?.matriculaSigaa
-              }}</span>
-            </div>
-          }
-
-          <div class="mb-3">
-            <span class="text-secondary d-block small fw-semibold"
-              >STATUS DA CONTA:</span
-            >
-            <span
-              class="badge bg-success-subtle text-success border border-success-subtle"
-            >
-              <i class="bi bi-check-circle me-1"></i> CONTA ATIVA NO SIGEA-GTT
-            </span>
-          </div>
-
-          <div
-            class="p-3 bg-light rounded-2 border border-light-subtle small text-secondary mt-4"
-          >
-            <i class="bi bi-info-circle me-1"></i>
-            Seus dados cadastrais institucionais são gerenciados pela
-            administração do sistema e integrados à Universidade Federal de
-            Sergipe (UFS).
-          </div>
+        <div>
+          <h2 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin: 0 0 4px 0">
+            {{ usuario()?.nomeCompleto }}
+          </h2>
+          <p-tag
+            [value]="usuario()?.perfil || ''"
+            [severity]="getPerfilSeverity(usuario()?.perfil)"
+          />
         </div>
       </div>
-    </div>
+
+      <div class="info-group">
+        <span class="info-label">E-mail Institucional:</span>
+        <span class="info-value">{{ usuario()?.email }}</span>
+      </div>
+
+      @if (usuario()?.matriculaSigaa) {
+        <div class="info-group">
+          <span class="info-label">Matrícula SIGAA:</span>
+          <span class="info-value"
+            ><code>{{ usuario()?.matriculaSigaa }}</code></span
+          >
+        </div>
+      }
+
+      <div class="info-group">
+        <span class="info-label">Status da Conta:</span>
+        <p-tag value="CONTA ATIVA NO SIGEA-GTT" severity="success" />
+      </div>
+
+      <div
+        style="
+          background-color: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          padding: 12px;
+          margin-top: 16px;
+          font-size: 0.78rem;
+          color: #64748b;
+        "
+      >
+        <i class="pi pi-info-circle" style="margin-right: 6px; color: #1d4ed8"></i>
+        Seus dados cadastrais institucionais são gerenciados pela administração do sistema e
+        integrados à Universidade Federal de Sergipe (UFS).
+      </div>
+    </p-card>
 
     <!-- COLUNA DA DIREITA: ALTERAR SENHA -->
-    <div class="col-lg-7">
-      <div
-        class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden h-100"
-      >
-        <div
-          class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
-        >
-          <span class="fw-bold text-dark small text-uppercase font-monospace">
-            <i class="bi bi-shield-lock me-1"></i> Segurança & Alteração de
-            Senha
-          </span>
+    <p-card header="Segurança & Alteração de Senha">
+      <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 16px 0">
+        Para garantir a segurança de seus acessos e auditorias clínicas, escolha uma senha forte com
+        no mínimo 6 caracteres.
+      </p>
+
+      <form (ngSubmit)="salvarNovaSenha()">
+        <div class="form-field">
+          <label for="senhaAtual">Senha Atual *</label>
+          <p-password
+            id="senhaAtual"
+            [(ngModel)]="formularioSenha.senhaAtual"
+            name="senhaAtual"
+            [feedback]="false"
+            [toggleMask]="true"
+            required
+            placeholder="Digite sua senha atual"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
         </div>
 
-        <div class="card-body p-4">
-          <p class="text-secondary small mb-4">
-            Para garantir a segurança de seus acessos e auditorias clínicas,
-            escolha uma senha forte com no mínimo 6 caracteres.
-          </p>
+        <div class="password-row">
+          <div class="form-field">
+            <label for="novaSenha">Nova Senha *</label>
+            <p-password
+              id="novaSenha"
+              [(ngModel)]="formularioSenha.novaSenha"
+              name="novaSenha"
+              [feedback]="true"
+              [toggleMask]="true"
+              required
+              minlength="6"
+              placeholder="Mínimo 6 caracteres"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+            />
+          </div>
 
-          <form (ngSubmit)="salvarNovaSenha()">
-            <div class="mb-3">
-              <label
-                for="senhaAtual"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Senha Atual <span class="text-danger">*</span>
-              </label>
-              <input
-                id="senhaAtual"
-                type="password"
-                class="form-control"
-                [(ngModel)]="formularioSenha.senhaAtual"
-                name="senhaAtual"
-                required
-                placeholder="Digite sua senha atual"
-              />
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label
-                  for="novaSenha"
-                  class="form-label small fw-semibold text-secondary"
-                >
-                  Nova Senha <span class="text-danger">*</span>
-                </label>
-                <input
-                  id="novaSenha"
-                  type="password"
-                  class="form-control"
-                  [(ngModel)]="formularioSenha.novaSenha"
-                  name="novaSenha"
-                  required
-                  minlength="6"
-                  placeholder="Mínimo 6 caracteres"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label
-                  for="confirmacaoNovaSenha"
-                  class="form-label small fw-semibold text-secondary"
-                >
-                  Confirmar Nova Senha <span class="text-danger">*</span>
-                </label>
-                <input
-                  id="confirmacaoNovaSenha"
-                  type="password"
-                  class="form-control"
-                  [(ngModel)]="formularioSenha.confirmacaoNovaSenha"
-                  name="confirmacaoNovaSenha"
-                  required
-                  minlength="6"
-                  placeholder="Repita a nova senha"
-                />
-              </div>
-            </div>
-
-            <div class="pt-3 border-top border-light-subtle text-end">
-              <button
-                type="submit"
-                class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
-                [disabled]="alterandoSenha()"
-              >
-                @if (alterandoSenha()) {
-                  <span
-                    class="spinner-border spinner-border-sm"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
-                  <span>Atualizando senha...</span>
-                } @else {
-                  <i class="bi bi-shield-check"></i>
-                  <span>Atualizar Senha</span>
-                }
-              </button>
-            </div>
-          </form>
+          <div class="form-field">
+            <label for="confirmacaoNovaSenha">Confirmar Nova Senha *</label>
+            <p-password
+              id="confirmacaoNovaSenha"
+              [(ngModel)]="formularioSenha.confirmacaoNovaSenha"
+              name="confirmacaoNovaSenha"
+              [feedback]="false"
+              [toggleMask]="true"
+              required
+              minlength="6"
+              placeholder="Repita a nova senha"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+            />
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div class="form-actions">
+          <button
+            pButton
+            type="submit"
+            label="Atualizar Senha"
+            icon="pi pi-check"
+            [loading]="alterandoSenha()"
+          ></button>
+        </div>
+      </form>
+    </p-card>
   </div>
 </div>

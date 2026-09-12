@@ -3,13 +3,12 @@ package br.ufs.dcomp.sigeagtt.modulos.unidade.controlador;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.dto.UnidadeHospitalarRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.modelo.UnidadeHospitalar;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.servico.UnidadeHospitalarServico;
-
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/unidades")
@@ -32,12 +31,14 @@ public class UnidadeHospitalarControlador {
     }
 
     @PostMapping
-    public ResponseEntity<UnidadeHospitalar> cadastrar(@Valid @RequestBody UnidadeHospitalarRequisicaoDTO dto) {
+    public ResponseEntity<UnidadeHospitalar> cadastrar(
+            @Valid @RequestBody UnidadeHospitalarRequisicaoDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(servico.cadastrar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UnidadeHospitalar> editar(@PathVariable Long id, @Valid @RequestBody UnidadeHospitalarRequisicaoDTO dto) {
+    public ResponseEntity<UnidadeHospitalar> editar(
+            @PathVariable Long id, @Valid @RequestBody UnidadeHospitalarRequisicaoDTO dto) {
         return ResponseEntity.ok(servico.editar(id, dto));
     }
 

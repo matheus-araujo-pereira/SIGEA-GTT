@@ -1,10 +1,9 @@
 package br.ufs.dcomp.sigeagtt.modulos.turma.modelo;
 
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
-
 import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "turma_alunos")
@@ -16,9 +15,7 @@ import java.time.LocalDateTime;
 @ToString
 public class TurmaAluno {
 
-    @EmbeddedId
-    @EqualsAndHashCode.Include
-    private TurmaAlunoId id;
+    @EmbeddedId @EqualsAndHashCode.Include private TurmaAlunoId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("turmaId")

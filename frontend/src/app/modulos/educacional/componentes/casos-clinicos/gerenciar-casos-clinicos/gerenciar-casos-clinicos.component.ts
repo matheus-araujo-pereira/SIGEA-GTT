@@ -1,13 +1,20 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { MessageModule } from 'primeng/message';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { CasoClinico } from '../../../modelos/educacional.modelos';
 import { AutenticacaoService } from '../../../../autenticacao/servicos/autenticacao.service';
 import { UnidadeService } from '../../../../unidade/servicos/unidade.service';
 import { UnidadeHospitalar } from '../../../../unidade/modelos/unidade.modelos';
-import { PaginacaoComponent } from '../../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface CasoLinha {
   id: number;
@@ -22,8 +29,17 @@ export interface CasoLinha {
 
 @Component({
   selector: 'app-gerenciar-casos-clinicos',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+    DialogModule,
+    MessageModule,
+  ],
   templateUrl: './gerenciar-casos-clinicos.component.html',
 })
 export class GerenciarCasosClinicosComponent implements OnInit {
@@ -31,30 +47,36 @@ export class GerenciarCasosClinicosComponent implements OnInit {
   private readonly unidadeService = inject(UnidadeService);
   private readonly auth = inject(AutenticacaoService);
   private readonly router = inject(Router);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly messageService = inject(MessageService);
 
   readonly casos = signal<CasoClinico[]>([]);
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly carregando = signal(false);
-  readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
   readonly termoBusca = signal('');
   readonly filtroUnidade = signal<number | null>(null);
 
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
-
   // Modal de visualização rápida do prontuário
   readonly casoModal = signal<CasoClinico | null>(null);
-  readonly abaModal = signal<
-    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
-  >('sumario');
+  readonly abaModal = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>(
+    'sumario',
+  );
 
   readonly totalCasos = computed(() => this.casos().length);
   readonly ehDocenteOuAdmin = computed(() => {
     const p = this.auth.usuarioLogado()?.perfil;
     return p === 'PROFESSOR' || p === 'ADMINISTRADOR';
   });
+
+  readonly unidadesOpcoes = computed(() => [
+    { label: 'Todas as Unidades Hospitalares', value: null },
+    ...this.unidades().map((u) => ({
+      label: `${u.sigla} - ${u.nome}`,
+      value: u.id,
+    })),
+  ]);
 
   readonly casosFiltrados = computed<CasoLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
@@ -84,13 +106,6 @@ export class GerenciarCasosClinicosComponent implements OnInit {
       }));
   });
 
-  readonly totalFiltrados = computed(() => this.casosFiltrados().length);
-
-  readonly casosPaginados = computed<CasoLinha[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.casosFiltrados().slice(inicio, inicio + this.itensPorPagina);
-  });
-
   ngOnInit(): void {
     this.carregarDados();
   }
@@ -109,8 +124,7 @@ export class GerenciarCasosClinicosComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao listar casos clínicos: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao listar casos clínicos: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -140,38 +154,32 @@ export class GerenciarCasosClinicosComponent implements OnInit {
   }
 
   excluir(c: CasoClinico): void {
-    const conf = confirm(
-      `Confirma a exclusão do caso clínico "${c.titulo}"? Todas as atividades vinculadas a este caso podem ser impactadas.`,
-    );
-    if (!conf) return;
-
-    this.educacionalService.excluirCaso(c.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(
-          `Caso clínico "${c.titulo}" excluído com sucesso.`,
-        );
-        this.carregarDados();
-      },
-      error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao excluir caso clínico: ' +
-            (err.error?.mensagem || err.message),
-        );
+    this.confirmationService.confirm({
+      header: 'Confirmar Exclusão',
+      message: `Confirma a exclusão do caso clínico "${c.titulo}"? Todas as atividades vinculadas a este caso podem ser impactadas.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, Excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.educacionalService.excluirCaso(c.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Excluído',
+              detail: `Caso clínico "${c.titulo}" excluído com sucesso.`,
+            });
+            this.carregarDados();
+          },
+          error: (err) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao excluir caso clínico: ' + (err.error?.mensagem || err.message),
+            });
+          },
+        });
       },
     });
-  }
-
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  atualizarFiltroUnidade(unidadeId: any): void {
-    this.filtroUnidade.set(unidadeId ? Number(unidadeId) : null);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
   }
 }

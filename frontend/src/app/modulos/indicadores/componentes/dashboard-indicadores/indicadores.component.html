@@ -1,908 +1,1048 @@
-<div>
-  <!-- CABEÇALHO DA PÁGINA (PADRÃO ADMINISTRAÇÃO / GESTÃO ACADÊMICA) -->
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.25rem">
+  <!-- CABEÇALHO DA PÁGINA -->
   <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 1rem;
+    "
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Painel Epidemiológico IHI-GTT</h1>
-      <span class="text-secondary small">
-        Metodologia Global Trigger Tool (IHI White Paper 2ª Edição) &bull;
-        Hospital Universitário da UFS / EBSERH
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
+        Painel Epidemiológico IHI-GTT
+      </h1>
+      <span style="font-size: 0.875rem; color: #64748b">
+        Metodologia Global Trigger Tool (IHI White Paper 2ª Edição) • Hospital Universitário da UFS
+        / EBSERH
       </span>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm rounded-1 font-monospace"
-        (click)="limparFiltros()"
-      >
-        LIMPAR FILTROS
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary btn-sm rounded-1 font-monospace d-inline-flex align-items-center gap-1"
-        (click)="exportarPDF()"
-        [disabled]="exportandoPdf() || carregando()"
-      >
-        @if (exportandoPdf()) {
-          <span
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          <span>GERANDO PDF...</span>
-        } @else {
-          <i class="bi bi-file-earmark-pdf"></i>
-          <span>EXPORTAR PDF</span>
-        }
-      </button>
+    <div style="display: flex; align-items: center; gap: 0.5rem">
+      <p-button
+        label="LIMPAR FILTROS"
+        icon="pi pi-filter-slash"
+        [outlined]="true"
+        severity="secondary"
+        size="small"
+        (onClick)="limparFiltros()"
+      />
+      <p-button
+        label="EXPORTAR PDF"
+        icon="pi pi-file-pdf"
+        size="small"
+        [loading]="exportandoPdf() || carregando()"
+        (onClick)="exportarPDF()"
+      />
     </div>
   </div>
 
-  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO EPIDEMIOLOGIA) -->
-  <ul class="nav nav-pills mb-3 gap-2">
-    <li class="nav-item">
-      <a
-        class="nav-link active rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores"
-      >
-        <i class="bi bi-graph-up me-1"></i>DASHBOARD EXECUTIVO
-      </a>
-    </li>
-    <li class="nav-item">
-      <a
-        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores/quadro-resumo"
-      >
-        <i class="bi bi-table me-1"></i>QUADRO RESUMO
-      </a>
-    </li>
-    <li class="nav-item">
-      <a
-        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores/gatilhos"
-      >
-        <i class="bi bi-bullseye me-1"></i>RASTREABILIDADE & GATILHOS
-      </a>
-    </li>
-  </ul>
-
-  <!-- CARD DE BUSCA E FILTROS PADRONIZADO -->
+  <!-- NAVEGAÇÃO POR ABAS (MÓDULO INDICADORES) -->
   <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+    style="
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 0.5rem;
+    "
   >
-    <div class="row g-2 align-items-end">
-      <!-- PERÍODO LETIVO (SEM DUPLICAÇÃO) -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Período Letivo
-        </label>
-        <select
-          class="form-select form-select-sm"
+    <p-button
+      label="DASHBOARD EXECUTIVO"
+      icon="pi pi-chart-line"
+      severity="primary"
+      size="small"
+      routerLink="/indicadores"
+    />
+    <p-button
+      label="QUADRO RESUMO"
+      icon="pi pi-table"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/indicadores/quadro-resumo"
+    />
+    <p-button
+      label="RASTREABILIDADE & GATILHOS"
+      icon="pi pi-compass"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/indicadores/gatilhos"
+    />
+  </div>
+
+  <!-- CARD DE BUSCA E FILTROS -->
+  <p-card>
+    <div
+      style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: flex-end"
+    >
+      <!-- Período Letivo -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569">Período Letivo</label>
+        <p-select
+          [options]="periodosOpcoes()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroPeriodoLetivo()"
-          (ngModelChange)="
-            filtroPeriodoLetivo.set($event); carregarIndicadores()
-          "
-        >
-          <option value="TODOS">Todos os Períodos</option>
-          @for (p of periodosDisponiveis(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
+          (ngModelChange)="filtroPeriodoLetivo.set($event); carregarIndicadores()"
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- TURMA -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Turma Acadêmica
-        </label>
-        <select
-          class="form-select form-select-sm"
+      <!-- Turma -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569">Turma Acadêmica</label>
+        <p-select
+          [options]="turmasOpcoes()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroTurmaId()"
           (ngModelChange)="filtroTurmaId.set($event); carregarIndicadores()"
-        >
-          <option value="TODOS">Todas as Turmas</option>
-          @for (t of turmasFiltradas(); track t.id) {
-            <option [value]="t.id">
-              {{ t.codigoDisciplina }} ({{ t.periodoLetivo }})
-            </option>
-          }
-        </select>
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- UNIDADE HOSPITALAR -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Unidade Hospitalar
-        </label>
-        <select
-          class="form-select form-select-sm"
+      <!-- Unidade Hospitalar -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569"
+          >Unidade Hospitalar</label
+        >
+        <p-select
+          [options]="unidadesOpcoes()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroUnidadeId()"
           (ngModelChange)="filtroUnidadeId.set($event); carregarIndicadores()"
-        >
-          <option value="TODOS">Todas as Unidades</option>
-          @for (u of unidades(); track u.id) {
-            <option [value]="u.id">{{ u.sigla }} - {{ u.nome }}</option>
-          }
-        </select>
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- MÓDULO GTT -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Módulo de Gatilho
-        </label>
-        <select
-          class="form-select form-select-sm"
+      <!-- Módulo GTT -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569"
+          >Módulo de Gatilho</label
+        >
+        <p-select
+          [options]="modulosOpcoes"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroModulo()"
           (ngModelChange)="filtroModulo.set($event); carregarIndicadores()"
-        >
-          <option value="TODOS">Todos os Módulos</option>
-          <option value="CUIDADOS">Cuidados Gerais (C)</option>
-          <option value="MEDICACAO">Medicamentos (M)</option>
-          <option value="CIRURGICO">Cirúrgico (S)</option>
-          <option value="TERAPIA_INTENSIVA">Terapia Intensiva (I)</option>
-          <option value="PERINATAL">Perinatal (P)</option>
-          <option value="URGENCIA">Pronto Atendimento (E)</option>
-        </select>
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- ORIGEM DO DANO -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Origem do Evento Adverso
-        </label>
-        <select
-          class="form-select form-select-sm"
+      <!-- Origem do Dano -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569">Origem do Dano</label>
+        <p-select
+          [options]="origemOpcoes"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroOrigemDano()"
           (ngModelChange)="filtroOrigemDano.set($event); carregarIndicadores()"
-        >
-          <option value="TODOS">Todas as Origens</option>
-          <option value="HOSPITALAR">
-            Intra-hospitalar (Durante a Internação)
-          </option>
-          <option value="ADMISSAO">
-            Presente na Admissão (Extra-hospitalar)
-          </option>
-        </select>
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- SEVERIDADE NCC MERP -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Gravidade NCC MERP
-        </label>
-        <select
-          class="form-select form-select-sm"
+      <!-- Gravidade NCC MERP -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569"
+          >Gravidade NCC MERP</label
+        >
+        <p-select
+          [options]="gravidadeOpcoes"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroGravidade()"
           (ngModelChange)="filtroGravidade.set($event); carregarIndicadores()"
-        >
-          <option value="TODOS">Todas as Gravidades</option>
-          <option value="CATEGORIA_E">Categoria E (Intervenção)</option>
-          <option value="CATEGORIA_F">Categoria F (Prolongamento)</option>
-          <option value="CATEGORIA_G">Categoria G (Dano Permanente)</option>
-          <option value="CATEGORIA_H">Categoria H (Ameaça à Vida)</option>
-          <option value="CATEGORIA_I">Categoria I (Óbito Contribuinte)</option>
-        </select>
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- DATA INICIAL -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Data Inicial
-        </label>
+      <!-- Datas Início e Fim -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569">Data Inicial</label>
         <input
+          pInputText
           type="date"
-          class="form-control form-control-sm"
           [ngModel]="filtroDataInicio()"
           (ngModelChange)="filtroDataInicio.set($event); carregarIndicadores()"
+          class="w-full"
         />
       </div>
 
-      <!-- DATA FINAL -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
-          Data Final
-        </label>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label style="font-size: 0.75rem; font-weight: 600; color: #475569">Data Final</label>
         <input
+          pInputText
           type="date"
-          class="form-control form-control-sm"
           [ngModel]="filtroDataFim()"
           (ngModelChange)="filtroDataFim.set($event); carregarIndicadores()"
+          class="w-full"
         />
       </div>
-
-      <!-- BOTÃO ATUALIZAR -->
-      <div class="col-md-2">
-        <button
-          type="button"
-          class="btn btn-outline-primary btn-sm w-100 font-monospace rounded-1"
-          (click)="carregarIndicadores()"
-          [disabled]="carregando()"
-        >
-          <i class="bi bi-arrow-repeat me-1"></i>ATUALIZAR
-        </button>
-      </div>
     </div>
-  </div>
+  </p-card>
 
   <!-- CONTAINER DE CAPTURA DO RELATÓRIO PDF -->
-  <div
-    id="relatorio-dashboard"
-    class="bg-light p-3 rounded-2 border border-light-subtle mb-3"
-  >
+  <div id="relatorio-dashboard" style="display: flex; flex-direction: column; gap: 1.25rem">
     <!-- CABEÇALHO INSTITUCIONAL EXECUTIVO -->
     <div
-      class="p-3 mb-3 bg-white rounded-2 border border-light-subtle shadow-sm d-flex justify-content-between align-items-center"
+      style="
+        background: #ffffff;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      "
     >
-      <div class="d-flex align-items-center gap-3">
-        <div
-          class="bg-primary text-white px-2 py-1 fw-bold font-monospace small rounded-1"
-          style="letter-spacing: 1px"
-        >
-          HU-UFS / EBSERH
-        </div>
+      <div style="display: flex; align-items: center; gap: 1rem">
+        <p-tag value="HU-UFS / EBSERH" severity="primary" styleClass="font-bold font-mono" />
         <div>
-          <div class="fw-bold text-dark h5 m-0">
+          <div style="font-size: 1.125rem; font-weight: 700; color: #0f172a">
             SIGEA-GTT — Relatório Executivo de Indicadores Epidemiológicos
           </div>
-          <div class="text-secondary small font-monospace">
-            Auditoria Retrospectiva Global Trigger Tool (IHI) • Hospital
-            Universitário da UFS
+          <div style="font-size: 0.8125rem; color: #64748b; font-family: monospace">
+            Auditoria Retrospectiva Global Trigger Tool (IHI) • Hospital Universitário da UFS
           </div>
         </div>
       </div>
-      <div
-        class="text-end font-monospace text-muted"
-        style="font-size: 0.75rem"
-      >
+      <div style="text-align: right; font-family: monospace; font-size: 0.75rem; color: #64748b">
         <div><strong>EMISSÃO:</strong> {{ dataHoraEmissao() }}</div>
-        <div class="text-primary mt-1">
+        <div style="color: #0284c7; margin-top: 0.25rem">
           <strong>FILTROS:</strong> {{ textoFiltrosAtivos() }}
         </div>
       </div>
     </div>
 
-    <!-- MÉTRICAS EPIDEMIOLÓGICAS CANÔNICAS DO IHI -->
-    <div class="row g-2 mb-3">
+    <!-- MÉTRICAS EPIDEMIOLÓGICAS CANÔNICAS DO IHI (3 colunas) -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem">
       @for (m of metricasCanonicasIHI(); track m.titulo) {
-        <div class="col-md-4">
+        <p-card>
           <div
-            class="card border border-light-subtle rounded-2 shadow-sm p-3 h-100 bg-white"
+            style="
+              font-size: 0.75rem;
+              font-family: monospace;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+            "
           >
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="small font-monospace text-secondary fw-semibold">
-                {{ m.titulo }}
-              </span>
-            </div>
-            <div class="h2 fw-bold text-dark my-2 font-monospace">
-              {{ m.valor }}
-            </div>
-            <div class="text-dark small fw-medium">{{ m.subtitulo }}</div>
-            <div
-              class="text-secondary font-monospace mt-1"
-              style="font-size: 0.75rem"
-            >
-              <i class="bi bi-calculator me-1"></i>Fórmula: {{ m.formula }}
-            </div>
+            {{ m.titulo }}
           </div>
-        </div>
+          <div
+            style="
+              font-size: 2.25rem;
+              font-weight: 800;
+              color: #0f172a;
+              margin: 0.5rem 0;
+              font-family: monospace;
+            "
+          >
+            {{ m.valor }}
+          </div>
+          <div style="font-size: 0.875rem; font-weight: 500; color: #1e293b">{{ m.subtitulo }}</div>
+          <div
+            style="
+              font-size: 0.75rem;
+              color: #64748b;
+              font-family: monospace;
+              margin-top: 0.5rem;
+              border-top: 1px solid #f1f5f9;
+              padding-top: 0.5rem;
+            "
+          >
+            Fórmula: {{ m.formula }}
+          </div>
+        </p-card>
       }
     </div>
 
-    <!-- ESTATÍSTICAS OPERACIONAIS DO PROCESSO DE AUDITORIA -->
-    <div class="row g-2 mb-3">
+    <!-- ESTATÍSTICAS OPERACIONAIS (4 colunas) -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem">
       @for (op of estatisticasOperacionais(); track op.rotulo) {
-        <div class="col-6 col-md-3">
-          <div
-            class="card border border-light-subtle rounded-2 shadow-sm p-2 text-center bg-white h-100"
+        <div
+          style="
+            background: #ffffff;
+            border: 1px solid var(--p-content-border-color, #e2e8f0);
+            border-radius: 6px;
+            padding: 0.875rem;
+            text-align: center;
+          "
+        >
+          <span
+            style="
+              font-size: 0.6875rem;
+              font-weight: 700;
+              color: #64748b;
+              font-family: monospace;
+              display: block;
+            "
           >
-            <span class="text-secondary small font-monospace d-block">
-              {{ op.rotulo }}
-            </span>
-            <span class="h4 fw-bold text-dark m-0 font-monospace">{{
-              op.valor
-            }}</span>
-            <span class="text-muted" style="font-size: 0.7rem">{{
-              op.unidade
-            }}</span>
-          </div>
+            {{ op.rotulo }}
+          </span>
+          <span
+            style="
+              font-size: 1.5rem;
+              font-weight: 800;
+              color: #0f172a;
+              font-family: monospace;
+              display: block;
+              margin: 0.25rem 0;
+            "
+          >
+            {{ op.valor }}
+          </span>
+          <span style="font-size: 0.75rem; color: #94a3b8">{{ op.unidade }}</span>
         </div>
       }
     </div>
 
-    <!-- ORIGEM DO DANO & RENDIMENTO DOS GATILHOS -->
-    <div class="row g-2 mb-3">
-      <!-- ORIGEM DO DANO: INTRA-HOSPITALAR VS ADMISSÃO (P. 13 E 16 DO WHITE PAPER) -->
-      <div class="col-lg-6">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
-        >
+    <!-- ORIGEM DO DANO & RENDIMENTO DOS GATILHOS (2 colunas) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+      <!-- ORIGEM DO DANO -->
+      <p-card>
+        <ng-template #header>
           <div
-            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
+            style="
+              padding: 0.875rem 1.25rem;
+              border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
           >
             <div>
-              <span class="fw-bold text-dark small font-monospace d-block">
+              <span
+                style="
+                  font-weight: 700;
+                  color: #0f172a;
+                  font-size: 0.875rem;
+                  font-family: monospace;
+                  display: block;
+                "
+              >
                 ORIGEM DOS EVENTOS ADVERSOS
               </span>
-              <span class="text-secondary" style="font-size: 0.75rem">
-                Intra-hospitalares vs Presentes na Admissão
-              </span>
+              <span style="font-size: 0.75rem; color: #64748b"
+                >Intra-hospitalares vs Presentes na Admissão</span
+              >
             </div>
-            <span class="text-secondary font-monospace small">
-              TOTAL: {{ dadosOrigemDano().total }} EA
+            <span style="font-family: monospace; font-size: 0.75rem; color: #64748b"
+              >TOTAL: {{ dadosOrigemDano().total }} EA</span
+            >
+          </div>
+        </ng-template>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center">
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              padding: 1rem;
+            "
+          >
+            <span
+              style="
+                font-size: 1.75rem;
+                font-weight: 800;
+                color: #0284c7;
+                font-family: monospace;
+                display: block;
+              "
+            >
+              {{ dadosOrigemDano().intra }}
             </span>
+            <span style="font-weight: 600; font-size: 0.875rem; color: #1e293b; display: block"
+              >Intra-hospitalares</span
+            >
+            <span style="font-size: 0.75rem; color: #64748b; font-family: monospace"
+              >{{ dadosOrigemDano().pctIntra }}% do total</span
+            >
+            <div style="margin-top: 0.5rem">
+              <p-progressBar
+                [value]="dadosOrigemDano().pctIntra"
+                [showValue]="false"
+                [style]="{ height: '4px' }"
+              />
+            </div>
           </div>
 
-          <div class="row g-2 text-center my-auto">
-            <div class="col-6">
-              <div class="p-2 border border-light-subtle rounded-2 bg-light">
-                <span
-                  class="text-primary fw-bold d-block h4 m-0 font-monospace"
-                >
-                  {{ dadosOrigemDano().intra }}
-                </span>
-                <span class="small font-semibold text-dark d-block"
-                  >Intra-hospitalares</span
-                >
-                <span class="text-secondary small font-monospace">
-                  {{ dadosOrigemDano().pctIntra }}% do total
-                </span>
-                <div class="progress mt-2" style="height: 4px">
-                  <div
-                    class="progress-bar bg-primary"
-                    role="progressbar"
-                    [style.width.%]="dadosOrigemDano().pctIntra"
-                  ></div>
-                </div>
-              </div>
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              padding: 1rem;
+            "
+          >
+            <span
+              style="
+                font-size: 1.75rem;
+                font-weight: 800;
+                color: #d97706;
+                font-family: monospace;
+                display: block;
+              "
+            >
+              {{ dadosOrigemDano().adm }}
+            </span>
+            <span style="font-weight: 600; font-size: 0.875rem; color: #1e293b; display: block"
+              >Presentes na Admissão</span
+            >
+            <span style="font-size: 0.75rem; color: #64748b; font-family: monospace"
+              >{{ dadosOrigemDano().pctAdm }}% do total</span
+            >
+            <div style="margin-top: 0.5rem">
+              <p-progressBar
+                [value]="dadosOrigemDano().pctAdm"
+                [showValue]="false"
+                [style]="{ height: '4px' }"
+              />
             </div>
-            <div class="col-6">
-              <div class="p-2 border border-light-subtle rounded-2 bg-light">
-                <span
-                  class="text-warning-emphasis fw-bold d-block h4 m-0 font-monospace"
-                >
-                  {{ dadosOrigemDano().adm }}
-                </span>
-                <span class="small font-semibold text-dark d-block"
-                  >Presentes na Admissão</span
-                >
-                <span class="text-secondary small font-monospace">
-                  {{ dadosOrigemDano().pctAdm }}% do total
-                </span>
-                <div class="progress mt-2" style="height: 4px">
-                  <div
-                    class="progress-bar bg-warning"
-                    role="progressbar"
-                    [style.width.%]="dadosOrigemDano().pctAdm"
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="mt-2 text-muted font-monospace" style="font-size: 0.7rem">
-            * Danos externos/na admissão são computados nas taxas globais e
-            acompanhados separadamente.
           </div>
         </div>
-      </div>
+      </p-card>
 
-      <!-- EFICÁCIA E RENDIMENTO DO RASTREAMENTO -->
-      <div class="col-lg-6">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
-        >
+      <!-- EFICÁCIA DE RASTREAMENTO -->
+      <p-card>
+        <ng-template #header>
           <div
-            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
+            style="
+              padding: 0.875rem 1.25rem;
+              border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
           >
             <div>
-              <span class="fw-bold text-dark small font-monospace d-block">
+              <span
+                style="
+                  font-weight: 700;
+                  color: #0f172a;
+                  font-size: 0.875rem;
+                  font-family: monospace;
+                  display: block;
+                "
+              >
                 EFICÁCIA DE RASTREAMENTO DE GATILHOS
               </span>
-              <span class="text-secondary" style="font-size: 0.75rem">
-                Gatilhos Positivos vs Danos Clínicos Confirmados
-              </span>
+              <span style="font-size: 0.75rem; color: #64748b"
+                >Gatilhos Positivos vs Danos Clínicos Confirmados</span
+              >
             </div>
-            <span
-              class="badge bg-success-subtle text-success border border-success-subtle font-monospace px-2"
-            >
-              RENDIMENTO: {{ eficaciaRastreamento().taxaRendimentoGatilhos }}%
-            </span>
+            <p-tag
+              [value]="'RENDIMENTO: ' + eficaciaRastreamento().taxaRendimentoGatilhos + '%'"
+              severity="success"
+            />
           </div>
+        </ng-template>
 
-          <div class="row g-2 text-center my-auto">
-            <div class="col-4">
-              <div class="p-2 border border-light-subtle rounded-2 bg-light">
-                <span class="fw-bold d-block h5 m-0 font-monospace text-dark">
-                  {{ eficaciaRastreamento().totalGatilhosRastreados }}
-                </span>
-                <span class="small text-secondary font-monospace d-block"
-                  >Triggers Positivos</span
-                >
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="p-2 border border-light-subtle rounded-2 bg-light">
-                <span class="text-danger fw-bold d-block h5 m-0 font-monospace">
-                  {{ eficaciaRastreamento().totalDanosConfirmados }}
-                </span>
-                <span class="small text-secondary font-monospace d-block"
-                  >Danos Confirmados</span
-                >
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="p-2 border border-light-subtle rounded-2 bg-light">
-                <span
-                  class="text-success fw-bold d-block h5 m-0 font-monospace"
-                >
-                  {{ eficaciaRastreamento().taxaRendimentoGatilhos }}%
-                </span>
-                <span class="small text-secondary font-monospace d-block"
-                  >Taxa de Conversão</span
-                >
-              </div>
-            </div>
-          </div>
-          <div class="mt-2 text-muted font-monospace" style="font-size: 0.7rem">
-            * O trigger positivo indica apenas a presença da pista clínica; a
-            auditoria médica e consenso determinam a ocorrência de dano.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FIGURAS 1 E 2 (RUN CHART IHI E DISTRIBUIÇÃO NCC MERP) -->
-    <div class="row g-2 mb-3">
-      <!-- FIGURA 1: RUN CHART IHI (GRÁFICO DE TENDÊNCIA HISTÓRICO REAL) -->
-      <div class="col-lg-7">
         <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
+          style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            text-align: center;
+          "
         >
           <div
-            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              padding: 0.875rem;
+            "
+          >
+            <span
+              style="
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #0f172a;
+                font-family: monospace;
+                display: block;
+              "
+            >
+              {{ eficaciaRastreamento().totalGatilhosRastreados }}
+            </span>
+            <span style="font-size: 0.75rem; color: #64748b; font-family: monospace"
+              >Triggers Positivos</span
+            >
+          </div>
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              padding: 0.875rem;
+            "
+          >
+            <span
+              style="
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #ef4444;
+                font-family: monospace;
+                display: block;
+              "
+            >
+              {{ eficaciaRastreamento().totalDanosConfirmados }}
+            </span>
+            <span style="font-size: 0.75rem; color: #64748b; font-family: monospace"
+              >Danos Confirmados</span
+            >
+          </div>
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              padding: 0.875rem;
+            "
+          >
+            <span
+              style="
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #16a34a;
+                font-family: monospace;
+                display: block;
+              "
+            >
+              {{ eficaciaRastreamento().taxaRendimentoGatilhos }}%
+            </span>
+            <span style="font-size: 0.75rem; color: #64748b; font-family: monospace"
+              >Taxa de Conversão</span
+            >
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- FIGURAS 1 E 2: RUN CHART IHI & DISTRIBUIÇÃO NCC MERP -->
+    <div style="display: grid; grid-template-columns: 7fr 5fr; gap: 1rem">
+      <!-- RUN CHART -->
+      <p-card>
+        <ng-template #header>
+          <div
+            style="
+              padding: 0.875rem 1.25rem;
+              border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
           >
             <div>
-              <span class="fw-bold text-dark small font-monospace d-block">
-                GRÁFICO DE TENDÊNCIA (RUN CHART)
+              <span
+                style="
+                  font-weight: 700;
+                  color: #0f172a;
+                  font-size: 0.875rem;
+                  font-family: monospace;
+                  display: block;
+                "
+              >
+                GRÁFICO DE TENDÊNCIA (RUN CHART IHI)
               </span>
-              <span class="text-secondary" style="font-size: 0.75rem">
+              <span style="font-size: 0.75rem; color: #64748b">
                 {{
                   metricaRunChartPorMilDias()
-                    ? "Eventos adversos por 1.000 pacientes-dia"
-                    : "Eventos adversos por 100 admissões"
+                    ? 'Eventos adversos por 1.000 pacientes-dia'
+                    : 'Eventos adversos por 100 admissões'
                 }}
               </span>
             </div>
-            <div class="btn-group btn-group-sm" role="group">
-              <button
-                type="button"
-                class="btn btn-sm py-0 px-2 font-monospace rounded-1 me-1"
-                [class.btn-primary]="metricaRunChartPorMilDias()"
-                [class.btn-outline-secondary]="!metricaRunChartPorMilDias()"
-                (click)="alternarMetricaRunChart(true)"
-              >
-                1.000 DIAS
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm py-0 px-2 font-monospace rounded-1"
-                [class.btn-primary]="!metricaRunChartPorMilDias()"
-                [class.btn-outline-secondary]="metricaRunChartPorMilDias()"
-                (click)="alternarMetricaRunChart(false)"
-              >
-                100 ADMISSÕES
-              </button>
+            <div style="display: flex; gap: 0.25rem">
+              <p-button
+                label="1.000 DIAS"
+                [outlined]="!metricaRunChartPorMilDias()"
+                severity="primary"
+                size="small"
+                (onClick)="alternarMetricaRunChart(true)"
+              />
+              <p-button
+                label="100 ADMISSÕES"
+                [outlined]="metricaRunChartPorMilDias()"
+                severity="primary"
+                size="small"
+                (onClick)="alternarMetricaRunChart(false)"
+              />
             </div>
           </div>
+        </ng-template>
 
-          @if (pontosRunChart().length === 0) {
-            <div class="text-center py-5 text-muted">
-              <i class="bi bi-bar-chart fs-2 d-block text-secondary mb-2"></i>
-              Nenhum dado temporal disponível para os filtros selecionados.
-            </div>
-          } @else {
-            <svg viewBox="0 0 580 230" class="w-100">
-              <!-- Linhas de grade horizontais -->
-              <line
-                x1="45"
-                y1="35"
-                x2="560"
-                y2="35"
-                stroke="#f0f0f0"
-                stroke-width="1"
-                stroke-dasharray="2,2"
-              />
-              <line
-                x1="45"
-                y1="90"
-                x2="560"
-                y2="90"
-                stroke="#f0f0f0"
-                stroke-width="1"
-                stroke-dasharray="2,2"
-              />
-              <line
-                x1="45"
-                y1="145"
-                x2="560"
-                y2="145"
-                stroke="#f0f0f0"
-                stroke-width="1"
-                stroke-dasharray="2,2"
-              />
-              <line
-                x1="45"
-                y1="200"
-                x2="560"
-                y2="200"
-                stroke="#dee2e6"
-                stroke-width="1"
-              />
-              <!-- Eixo Y -->
-              <line
-                x1="45"
-                y1="25"
-                x2="45"
-                y2="200"
-                stroke="#dee2e6"
-                stroke-width="1"
-              />
+        @if (pontosRunChart().length === 0) {
+          <div style="text-align: center; padding: 4rem; color: #64748b">
+            <i
+              class="pi pi-chart-bar"
+              style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem; color: #94a3b8"
+            ></i>
+            Nenhum dado temporal disponível para os filtros selecionados.
+          </div>
+        } @else {
+          <svg viewBox="0 0 580 230" style="width: 100%; height: auto">
+            <!-- Linhas de grade horizontais -->
+            <line
+              x1="45"
+              y1="35"
+              x2="560"
+              y2="35"
+              stroke="#f0f0f0"
+              stroke-width="1"
+              stroke-dasharray="2,2"
+            />
+            <line
+              x1="45"
+              y1="90"
+              x2="560"
+              y2="90"
+              stroke="#f0f0f0"
+              stroke-width="1"
+              stroke-dasharray="2,2"
+            />
+            <line
+              x1="45"
+              y1="145"
+              x2="560"
+              y2="145"
+              stroke="#f0f0f0"
+              stroke-width="1"
+              stroke-dasharray="2,2"
+            />
+            <line x1="45" y1="200" x2="560" y2="200" stroke="#dee2e6" stroke-width="1" />
+            <line x1="45" y1="25" x2="45" y2="200" stroke="#dee2e6" stroke-width="1" />
 
-              <!-- Rótulos do Eixo Y -->
-              <text
-                x="38"
-                y="39"
-                font-size="9"
-                fill="#6c757d"
-                text-anchor="end"
-                font-family="monospace"
-              >
-                150
-              </text>
-              <text
-                x="38"
-                y="94"
-                font-size="9"
-                fill="#6c757d"
-                text-anchor="end"
-                font-family="monospace"
-              >
-                100
-              </text>
-              <text
-                x="38"
-                y="149"
-                font-size="9"
-                fill="#6c757d"
-                text-anchor="end"
-                font-family="monospace"
-              >
-                50
-              </text>
-              <text
-                x="38"
-                y="204"
-                font-size="9"
-                fill="#6c757d"
-                text-anchor="end"
-                font-family="monospace"
-              >
-                0
-              </text>
-
-              <!-- Linha Tracejada da Mediana Histórica Real (Regra do IHI) -->
-              <line
-                x1="45"
-                [attr.y1]="medianaY()"
-                x2="560"
-                [attr.y2]="medianaY()"
-                stroke="#fd7e14"
-                stroke-width="1.5"
-                stroke-dasharray="4,4"
-              />
-              <text
-                x="555"
-                [attr.y]="medianaY() - 5"
-                font-size="9"
-                fill="#fd7e14"
-                text-anchor="end"
-                font-family="monospace"
-                font-weight="bold"
-              >
-                MEDIANA: {{ medianaValor() }}
-              </text>
-
-              <!-- Área sombreada sob a curva -->
-              @if (caminhoAreaRunChart()) {
-                <polygon
-                  [attr.points]="caminhoAreaRunChart()"
-                  fill="#0d6efd"
-                  fill-opacity="0.08"
-                />
-              }
-
-              <!-- Linha da taxa observada -->
-              @if (caminhoLinhaRunChart()) {
-                <path
-                  [attr.d]="caminhoLinhaRunChart()"
-                  fill="none"
-                  stroke="#0d6efd"
-                  stroke-width="2.2"
-                />
-              }
-
-              <!-- Pontos de dados reais -->
-              @for (pt of pontosRunChart(); track pt.rotulo) {
-                <circle
-                  [attr.cx]="pt.x"
-                  [attr.cy]="pt.y"
-                  r="4.5"
-                  fill="#ffffff"
-                  stroke="#0d6efd"
-                  stroke-width="2"
-                />
-                <text
-                  [attr.x]="pt.x"
-                  [attr.y]="pt.y - 8"
-                  font-size="9"
-                  fill="#212529"
-                  font-weight="bold"
-                  text-anchor="middle"
-                  font-family="monospace"
-                >
-                  {{ pt.valor }}
-                </text>
-                <text
-                  [attr.x]="pt.x"
-                  y="214"
-                  font-size="9"
-                  fill="#6c757d"
-                  text-anchor="middle"
-                  font-family="monospace"
-                >
-                  {{ pt.rotulo }}
-                </text>
-              }
-            </svg>
-            <div
-              class="d-flex justify-content-center gap-4 mt-2 font-monospace text-secondary"
-              style="font-size: 0.7rem"
+            <!-- Rótulos Eixo Y -->
+            <text
+              x="38"
+              y="39"
+              font-size="9"
+              fill="#6c757d"
+              text-anchor="end"
+              font-family="monospace"
             >
-              <span
-                ><span class="text-primary fw-bold">● LINHA AZUL:</span> TAXA
-                OBSERVADA</span
-              >
-              <span
-                ><span class="text-warning-emphasis fw-bold"
-                  >- - LINHA TRACEJADA:</span
-                >
-                MEDIANA HISTÓRICA DO IHI</span
-              >
-            </div>
-          }
-        </div>
-      </div>
+              150
+            </text>
+            <text
+              x="38"
+              y="94"
+              font-size="9"
+              fill="#6c757d"
+              text-anchor="end"
+              font-family="monospace"
+            >
+              100
+            </text>
+            <text
+              x="38"
+              y="149"
+              font-size="9"
+              fill="#6c757d"
+              text-anchor="end"
+              font-family="monospace"
+            >
+              50
+            </text>
+            <text
+              x="38"
+              y="204"
+              font-size="9"
+              fill="#6c757d"
+              text-anchor="end"
+              font-family="monospace"
+            >
+              0
+            </text>
 
-      <!-- FIGURA 2: DISTRIBUIÇÃO DE GRAVIDADE NCC MERP (CATEGORIAS E A I) -->
-      <div class="col-lg-5">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white h-100"
-        >
-          <div
-            class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
-          >
-            <div>
-              <span class="fw-bold text-dark small font-monospace d-block">
-                DISTRIBUIÇÃO POR GRAVIDADE (NCC MERP)
-              </span>
-              <span class="text-secondary" style="font-size: 0.75rem">
-                Categorias E até I (Danos Físicos Reais)
-              </span>
-            </div>
-            <span class="text-dark font-monospace fw-bold small">
-              TOTAL: {{ indicadores()?.totalEventosAdversos || 0 }} EA
-            </span>
-          </div>
+            <!-- Mediana -->
+            <line
+              x1="45"
+              [attr.y1]="medianaY()"
+              x2="560"
+              [attr.y2]="medianaY()"
+              stroke="#F97316"
+              stroke-width="1.5"
+              stroke-dasharray="4,4"
+            />
+            <text
+              x="555"
+              [attr.y]="medianaY() - 5"
+              font-size="9"
+              fill="#F97316"
+              text-anchor="end"
+              font-family="monospace"
+              font-weight="bold"
+            >
+              MEDIANA: {{ medianaValor() }}
+            </text>
 
-          <svg viewBox="0 0 460 230" class="w-100">
-            <!-- Linhas de grade -->
-            <line
-              x1="35"
-              y1="25"
-              x2="35"
-              y2="200"
-              stroke="#dee2e6"
-              stroke-width="1"
-            />
-            <line
-              x1="35"
-              y1="200"
-              x2="445"
-              y2="200"
-              stroke="#dee2e6"
-              stroke-width="1"
-            />
-            <line
-              x1="35"
-              y1="65"
-              x2="445"
-              y2="65"
-              stroke="#f0f0f0"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
-            <line
-              x1="35"
-              y1="110"
-              x2="445"
-              y2="110"
-              stroke="#f0f0f0"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
-            <line
-              x1="35"
-              y1="155"
-              x2="445"
-              y2="155"
-              stroke="#f0f0f0"
-              stroke-width="1"
-              stroke-dasharray="2,2"
-            />
+            <!-- Área sombreada -->
+            @if (caminhoAreaRunChart()) {
+              <polygon [attr.points]="caminhoAreaRunChart()" fill="#0284C7" fill-opacity="0.08" />
+            }
 
-            <!-- Barras por categoria -->
-            @for (b of barrasSeveridade(); track b.categoria) {
-              <rect
-                [attr.x]="b.x"
-                [attr.y]="b.y"
-                [attr.width]="b.largura"
-                [attr.height]="b.altura"
-                [attr.fill]="b.cor"
-                rx="2"
+            <!-- Linha observada -->
+            @if (caminhoLinhaRunChart()) {
+              <path
+                [attr.d]="caminhoLinhaRunChart()"
+                fill="none"
+                stroke="#0284C7"
+                stroke-width="2.2"
+              />
+            }
+
+            <!-- Pontos -->
+            @for (pt of pontosRunChart(); track pt.rotulo) {
+              <circle
+                [attr.cx]="pt.x"
+                [attr.cy]="pt.y"
+                r="4.5"
+                fill="#ffffff"
+                stroke="#0284C7"
+                stroke-width="2"
               />
               <text
-                [attr.x]="b.x + b.largura / 2"
-                [attr.y]="b.y - 5"
+                [attr.x]="pt.x"
+                [attr.y]="pt.y - 8"
                 font-size="9"
+                fill="#0F172A"
                 font-weight="bold"
-                fill="#212529"
                 text-anchor="middle"
                 font-family="monospace"
               >
-                {{ b.total }}
+                {{ pt.valor }}
               </text>
               <text
-                [attr.x]="b.x + b.largura / 2"
-                y="213"
+                [attr.x]="pt.x"
+                y="214"
                 font-size="9"
-                font-weight="bold"
-                fill="#212529"
+                fill="#64748B"
                 text-anchor="middle"
                 font-family="monospace"
               >
-                {{ b.rotulo }}
-              </text>
-              <text
-                [attr.x]="b.x + b.largura / 2"
-                y="224"
-                font-size="8"
-                fill="#6c757d"
-                text-anchor="middle"
-                font-family="monospace"
-              >
-                {{ b.porcentagem }}%
+                {{ pt.rotulo }}
               </text>
             }
           </svg>
           <div
-            class="d-flex justify-content-center gap-2 mt-2 font-monospace text-secondary"
-            style="font-size: 0.68rem"
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 2rem;
+              font-family: monospace;
+              font-size: 0.75rem;
+              color: #64748b;
+              margin-top: 0.5rem;
+            "
           >
-            <span>E: Intervenção</span> &bull;
-            <span>F: Prolongamento</span> &bull;
-            <span>G: Permanente</span> &bull;
-            <span>H: Vida (&lt;1h)</span> &bull;
-            <span>I: Óbito</span>
+            <span><strong style="color: #0284c7">● LINHA AZUL:</strong> TAXA OBSERVADA</span>
+            <span
+              ><strong style="color: #f97316">- - LINHA TRACEJADA:</strong> MEDIANA HISTÓRICA DO
+              IHI</span
+            >
           </div>
+        }
+      </p-card>
+
+      <!-- DISTRIBUIÇÃO POR GRAVIDADE NCC MERP -->
+      <p-card>
+        <ng-template #header>
+          <div
+            style="
+              padding: 0.875rem 1.25rem;
+              border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <div>
+              <span
+                style="
+                  font-weight: 700;
+                  color: #0f172a;
+                  font-size: 0.875rem;
+                  font-family: monospace;
+                  display: block;
+                "
+              >
+                DISTRIBUIÇÃO POR GRAVIDADE (NCC MERP)
+              </span>
+              <span style="font-size: 0.75rem; color: #64748b"
+                >Categorias E até I (Danos Físicos Reais)</span
+              >
+            </div>
+            <p-tag
+              [value]="'TOTAL: ' + (indicadores()?.totalEventosAdversos || 0) + ' EA'"
+              severity="contrast"
+            />
+          </div>
+        </ng-template>
+
+        <svg viewBox="0 0 460 230" style="width: 100%; height: auto">
+          <line x1="35" y1="25" x2="35" y2="200" stroke="#dee2e6" stroke-width="1" />
+          <line x1="35" y1="200" x2="445" y2="200" stroke="#dee2e6" stroke-width="1" />
+          <line
+            x1="35"
+            y1="65"
+            x2="445"
+            y2="65"
+            stroke="#f0f0f0"
+            stroke-width="1"
+            stroke-dasharray="2,2"
+          />
+          <line
+            x1="35"
+            y1="110"
+            x2="445"
+            y2="110"
+            stroke="#f0f0f0"
+            stroke-width="1"
+            stroke-dasharray="2,2"
+          />
+          <line
+            x1="35"
+            y1="155"
+            x2="445"
+            y2="155"
+            stroke="#f0f0f0"
+            stroke-width="1"
+            stroke-dasharray="2,2"
+          />
+
+          @for (b of barrasSeveridade(); track b.categoria) {
+            <rect
+              [attr.x]="b.x"
+              [attr.y]="b.y"
+              [attr.width]="b.largura"
+              [attr.height]="b.altura"
+              [attr.fill]="b.cor"
+              rx="3"
+            />
+            <text
+              [attr.x]="b.x + b.largura / 2"
+              [attr.y]="b.y - 5"
+              font-size="9"
+              font-weight="bold"
+              fill="#0F172A"
+              text-anchor="middle"
+              font-family="monospace"
+            >
+              {{ b.total }}
+            </text>
+            <text
+              [attr.x]="b.x + b.largura / 2"
+              y="213"
+              font-size="9"
+              font-weight="bold"
+              fill="#0F172A"
+              text-anchor="middle"
+              font-family="monospace"
+            >
+              {{ b.rotulo }}
+            </text>
+            <text
+              [attr.x]="b.x + b.largura / 2"
+              y="224"
+              font-size="8"
+              fill="#64748B"
+              text-anchor="middle"
+              font-family="monospace"
+            >
+              {{ b.porcentagem }}%
+            </text>
+          }
+        </svg>
+        <div
+          style="
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            font-family: monospace;
+            font-size: 0.6875rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+          "
+        >
+          <span>E: Intervenção</span> • <span>F: Prolongamento</span> • <span>G: Permanente</span> •
+          <span>H: Vida (&lt;1h)</span> •
+          <span>I: Óbito</span>
         </div>
-      </div>
+      </p-card>
     </div>
 
-    <!-- DISTRIBUIÇÃO POR MÓDULOS DE TRIGGERS DO IHI -->
-    <div
-      class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white mb-3"
-    >
-      <div
-        class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-light-subtle"
-      >
-        <div>
-          <span class="fw-bold text-dark small font-monospace d-block">
-            DISTRIBUIÇÃO DE EVENTOS ADVERSOS POR MÓDULO GTT
-          </span>
-          <span class="text-secondary" style="font-size: 0.75rem">
-            Módulos: Cuidados, Medicamentos, Cirúrgico, CTI, Perinatal e
-            Urgência
-          </span>
-        </div>
-        <a
-          routerLink="/indicadores/gatilhos"
-          class="btn btn-outline-secondary btn-sm py-0 px-2 font-monospace rounded-1"
+    <!-- DISTRIBUIÇÃO POR MÓDULOS DE GATILHOS -->
+    <p-card>
+      <ng-template #header>
+        <div
+          style="
+            padding: 0.875rem 1.25rem;
+            border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
         >
-          VER DETALHES DOS GATILHOS &rarr;
-        </a>
-      </div>
-
-      <div class="row g-2">
-        @for (mod of modulosGTT(); track mod.codigo) {
-          <div class="col-6 col-md-4 col-lg-2">
-            <div
-              class="p-2 border border-light-subtle rounded-2 bg-light text-center h-100"
+          <div>
+            <span
+              style="
+                font-weight: 700;
+                color: #0f172a;
+                font-size: 0.875rem;
+                font-family: monospace;
+                display: block;
+              "
             >
-              <i
-                class="bi {{ mod.icone }} fs-4 text-{{ mod.cor }} d-block mb-1"
-              ></i>
-              <span class="fw-bold d-block h5 m-0 font-monospace text-dark">{{
-                mod.total
-              }}</span>
-              <span
-                class="text-secondary small font-monospace d-block"
-                style="font-size: 0.72rem"
-              >
-                {{ mod.rotulo }}
-              </span>
-              <span
-                class="badge bg-white border border-light-subtle text-secondary font-monospace mt-1 px-1"
-              >
-                {{ mod.porcentagem }}%
-              </span>
-            </div>
+              DISTRIBUIÇÃO DE EVENTOS ADVERSOS POR MÓDULO GTT
+            </span>
+            <span style="font-size: 0.75rem; color: #64748b"
+              >Módulos: Cuidados, Medicamentos, Cirúrgico, CTI, Perinatal e Urgência</span
+            >
+          </div>
+          <p-button
+            label="VER DETALHES DOS GATILHOS"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            [text]="true"
+            size="small"
+            routerLink="/indicadores/gatilhos"
+          />
+        </div>
+      </ng-template>
+
+      <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem">
+        @for (mod of modulosGTT(); track mod.codigo) {
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 6px;
+              padding: 1rem;
+              text-align: center;
+            "
+          >
+            <i
+              [class]="mod.icone"
+              [style.color]="mod.cor"
+              style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem"
+            ></i>
+            <span
+              style="
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: #0f172a;
+                font-family: monospace;
+                display: block;
+              "
+            >
+              {{ mod.total }}
+            </span>
+            <span
+              style="
+                font-size: 0.75rem;
+                color: #64748b;
+                font-family: monospace;
+                display: block;
+                margin: 0.25rem 0;
+              "
+            >
+              {{ mod.rotulo }}
+            </span>
+            <p-tag [value]="mod.porcentagem + '%'" severity="secondary" />
           </div>
         }
       </div>
-    </div>
+    </p-card>
 
     <!-- TABELA EXPLICATIVA DA CLASSIFICAÇÃO NCC MERP -->
     <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+      style="
+        background: #ffffff;
+        border-radius: 6px;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        overflow: hidden;
+      "
     >
-      <div class="p-2 border-bottom border-light-subtle bg-light">
-        <span class="fw-bold text-dark small font-monospace">
-          DEFINIÇÕES OPERACIONAIS DE GRAVIDADE (NCC MERP)
-        </span>
+      <div
+        style="
+          padding: 0.75rem 1.25rem;
+          background: #f8fafc;
+          border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+          font-size: 0.8125rem;
+          font-weight: 700;
+          font-family: monospace;
+          color: #0f172a;
+        "
+      >
+        DEFINIÇÕES OPERACIONAIS DE GRAVIDADE (NCC MERP)
       </div>
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-        >
-          <tr>
-            <th scope="col" class="py-2 px-3">CATEGORIA</th>
-            <th scope="col" class="py-2 px-2">CLASSIFICAÇÃO DO DANO</th>
-            <th scope="col" class="py-2 px-2 text-center">TOTAL</th>
-            <th scope="col" class="py-2 px-2 text-center">PROPORÇÃO</th>
-            <th scope="col" class="py-2 px-3">CRITÉRIO CLÍNICO METODOLÓGICO</th>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem">
+        <thead>
+          <tr
+            style="
+              border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+              color: #64748b;
+              font-family: monospace;
+              font-size: 0.75rem;
+              text-align: left;
+            "
+          >
+            <th style="padding: 0.75rem 1rem">CATEGORIA</th>
+            <th style="padding: 0.75rem 1rem">CLASSIFICAÇÃO DO DANO</th>
+            <th style="padding: 0.75rem 1rem; text-align: center">TOTAL</th>
+            <th style="padding: 0.75rem 1rem; text-align: center">PROPORÇÃO</th>
+            <th style="padding: 0.75rem 1rem">CRITÉRIO CLÍNICO METODOLÓGICO</th>
           </tr>
         </thead>
-        <tbody class="small font-monospace bg-white">
+        <tbody>
           @for (b of barrasSeveridade(); track b.categoria) {
-            <tr class="bg-white">
-              <td class="py-2 px-3 fw-bold text-dark bg-white">
-                <span class="badge" [style.background-color]="b.cor">{{
-                  b.rotulo
-                }}</span>
+            <tr style="border-bottom: 1px solid var(--p-content-border-color, #f1f5f9)">
+              <td style="padding: 0.75rem 1rem; font-weight: 700">
+                <span
+                  [style.background-color]="b.cor"
+                  style="
+                    color: #ffffff;
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-family: monospace;
+                    font-size: 0.75rem;
+                  "
+                >
+                  {{ b.rotulo }}
+                </span>
               </td>
-              <td
-                class="py-2 px-2 font-sans-serif fw-semibold text-dark bg-white"
-              >
+              <td style="padding: 0.75rem 1rem; font-weight: 600; color: #0f172a">
                 {{ b.nome }}
               </td>
-              <td class="py-2 px-2 text-center fw-bold text-dark bg-white">
+              <td
+                style="
+                  padding: 0.75rem 1rem;
+                  text-align: center;
+                  font-weight: 700;
+                  font-family: monospace;
+                "
+              >
                 {{ b.total }}
               </td>
-              <td class="py-2 px-2 text-center text-primary fw-bold bg-white">
+              <td
+                style="
+                  padding: 0.75rem 1rem;
+                  text-align: center;
+                  font-weight: 700;
+                  color: #0284c7;
+                  font-family: monospace;
+                "
+              >
                 {{ b.porcentagem }}%
               </td>
-              <td class="py-2 px-3 font-sans-serif text-secondary bg-white">
+              <td style="padding: 0.75rem 1rem; color: #64748b">
                 {{ b.definicao }}
               </td>
             </tr>
@@ -913,15 +1053,22 @@
 
     <!-- RODAPÉ INSTITUCIONAL EXECUTIVO -->
     <div
-      class="d-flex justify-content-between align-items-center text-muted px-3 py-2 mt-3 bg-white rounded-2 border border-light-subtle font-monospace"
-      style="font-size: 0.7rem"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: #ffffff;
+        border-radius: 6px;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        font-family: monospace;
+        font-size: 0.6875rem;
+        color: #64748b;
+      "
     >
-      <span
-        >SIGEA-GTT v2.0 • Plataforma de Gestão de Riscos e Auditoria
-        Clínica</span
-      >
+      <span>SIGEA-GTT v2.0 • Plataforma de Gestão de Riscos e Auditoria Clínica</span>
       <span>Metodologia: IHI Global Trigger Tool (White Paper 2ª Edição)</span>
-      <span class="fw-bold text-dark">Relatório Executivo Oficial</span>
+      <span style="font-weight: 700; color: #0f172a">Relatório Executivo Oficial</span>
     </div>
   </div>
 </div>

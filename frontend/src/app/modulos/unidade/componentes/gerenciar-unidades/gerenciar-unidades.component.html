@@ -1,192 +1,121 @@
 <div>
-  <!-- CABEÇALHO DA LISTAGEM -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
+  <!-- CABEÇALHO -->
+  <div class="page-header">
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Unidades Hospitalares (HU-UFS)</h1>
-      <span class="text-secondary small">
-        Total cadastrado: {{ totalUnidades() }} unidades hospitalares no
-        SIGEA-GTT
-      </span>
+      <h1 class="page-title">Unidades Hospitalares HU-UFS</h1>
+      <span class="page-subtitle"
+        >Total cadastrado: {{ totalUnidades() }} unidades vinculadas ao sistema</span
+      >
     </div>
     <button
+      pButton
       type="button"
-      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      label="NOVA UNIDADE"
+      icon="pi pi-plus"
       (click)="navegarParaNovo()"
-    >
-      <i class="bi bi-plus-circle-fill"></i>
-      <span>NOVA UNIDADE</span>
-    </button>
+    ></button>
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
+  <!-- BARRA DE FILTROS -->
+  <div class="filter-card">
+    <input
+      pInputText
+      type="text"
+      [ngModel]="termoBusca()"
+      (ngModelChange)="termoBusca.set($event)"
+      placeholder="Filtrar por nome ou sigla da unidade..."
+      class="search-input"
+    />
+    <p-select
+      [options]="opcoesStatus"
+      [ngModel]="filtroStatus()"
+      (ngModelChange)="filtroStatus.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      class="filter-select"
+    />
+  </div>
 
-  @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
-  <!-- BARRA DE FILTROS E BUSCA -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  <!-- TABELA PRIMENG COMPACTA -->
+  <p-table
+    [value]="unidadesLinhasFiltradas()"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm p-datatable-striped"
+    [paginator]="true"
+    [rows]="15"
+    [rowsPerPageOptions]="[15, 25, 50]"
+    [loading]="carregando()"
   >
-    <div class="row g-2 align-items-center">
-      <div class="col-md-8">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-secondary border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control border-start-0"
-            [ngModel]="termoBusca()"
-            (ngModelChange)="atualizarBusca($event)"
-            placeholder="Filtrar por nome ou sigla da unidade hospitalar..."
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="sigla" style="width: 20%">Sigla <p-sortIcon field="sigla" /></th>
+        <th pSortableColumn="nome" style="width: 55%">
+          Nome da Unidade Hospitalar <p-sortIcon field="nome" />
+        </th>
+        <th style="width: 12%">Status</th>
+        <th style="width: 13%; text-align: right">Ações</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-u>
+      <tr>
+        <td>
+          <span style="font-weight: 700; color: #0f172a">{{ u.sigla }}</span>
+        </td>
+        <td>{{ u.nome }}</td>
+        <td>
+          <p-tag
+            [value]="u.ativa ? 'ATIVA' : 'INATIVA'"
+            [severity]="u.ativa ? 'success' : 'danger'"
           />
-          @if (termoBusca()) {
+        </td>
+        <td>
+          <div class="actions-cell">
             <button
-              class="btn btn-outline-secondary"
+              pButton
               type="button"
-              (click)="atualizarBusca('')"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <select
-          class="form-select form-select-sm"
-          [ngModel]="filtroStatus()"
-          (ngModelChange)="atualizarFiltroStatus($event)"
-        >
-          <option value="TODOS">Todos os Status</option>
-          <option value="ATIVAS">Ativas</option>
-          <option value="INATIVAS">Inativas</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- TABELA DE UNIDADES COM FUNDO BRANCO PURO E SEM BADGES -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
-  >
-    <div class="table-responsive bg-white">
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-        >
-          <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">SIGLA</th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              NOME DA UNIDADE HOSPITALAR
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              STATUS
-            </th>
-            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
-              AÇÕES
-            </th>
-          </tr>
-        </thead>
-        <tbody class="small font-monospace bg-white">
-          @for (u of unidadesLinhasPaginadas(); track u.id) {
-            <tr class="bg-white">
-              <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
-                {{ u.sigla }}
-              </td>
-              <td
-                class="py-2 px-2 font-sans-serif fw-semibold text-dark bg-white"
-              >
-                {{ u.nome }}
-              </td>
-              <td
-                class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="u.ativa"
-                [class.text-muted]="!u.ativa"
-              >
-                {{ u.status }}
-              </td>
-              <td class="py-2 px-3 text-end text-nowrap bg-white">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="navegarParaEditar(u.original)"
-                  title="Editar Unidade"
-                >
-                  EDITAR
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm py-0 px-2 me-1 rounded-1"
-                  [class.btn-outline-secondary]="u.ativa"
-                  [class.btn-outline-success]="!u.ativa"
-                  (click)="alternarStatus(u.original)"
-                  [title]="u.ativa ? 'Inativar Unidade' : 'Ativar Unidade'"
-                >
-                  {{ u.ativa ? "INATIVAR" : "ATIVAR" }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                  (click)="excluir(u.original)"
-                  title="Excluir Unidade"
-                >
-                  EXCLUIR
-                </button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="4" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-building fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma unidade hospitalar encontrada com os filtros
-                selecionados.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- PAGINAÇÃO INTEGRADA -->
-    <app-paginacao
-      [totalItens]="totalFiltrados()"
-      [itensPorPagina]="itensPorPagina"
-      [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)"
-    >
-    </app-paginacao>
-  </div>
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              (click)="navegarParaEditar(u.original)"
+              pTooltip="Editar Unidade"
+              tooltipPosition="top"
+              aria-label="Editar Unidade"
+            ></button>
+            <button
+              pButton
+              type="button"
+              [icon]="u.ativa ? 'pi pi-ban' : 'pi pi-check'"
+              [text]="true"
+              [severity]="u.ativa ? 'warn' : 'success'"
+              size="small"
+              (click)="alternarStatus(u.original)"
+              [pTooltip]="u.ativa ? 'Inativar Unidade' : 'Reativar Unidade'"
+              tooltipPosition="top"
+              [attr.aria-label]="u.ativa ? 'Inativar Unidade' : 'Reativar Unidade'"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              [text]="true"
+              severity="danger"
+              size="small"
+              (click)="excluir(u.original)"
+              pTooltip="Excluir Unidade"
+              tooltipPosition="top"
+              aria-label="Excluir Unidade"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4" style="text-align: center; padding: 24px; color: #64748b">
+          Nenhuma unidade hospitalar encontrada.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>

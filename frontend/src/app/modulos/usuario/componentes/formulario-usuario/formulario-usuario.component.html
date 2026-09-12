@@ -1,272 +1,114 @@
 <div>
-  <!-- CABEÇALHO DO FORMULÁRIO -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
+  <!-- CABEÇALHO -->
+  <div class="form-header">
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
-      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+      <h1 class="form-title">{{ tituloPagina() }}</h1>
+      <span class="form-subtitle">{{ subtituloPagina() }}</span>
     </div>
     <button
+      pButton
       type="button"
-      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      label="VOLTAR PARA USUÁRIOS"
+      icon="pi pi-arrow-left"
+      [outlined]="true"
+      severity="secondary"
       (click)="voltarParaListagem()"
-    >
-      <i class="bi bi-arrow-left"></i>
-      <span>VOLTAR PARA USUÁRIOS</span>
-    </button>
+    ></button>
   </div>
 
-  <!-- FEEDBACKS -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-    </div>
-  }
-
   @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
+    <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full mb-3" />
   }
 
-  <!-- ESTADO DE CARREGAMENTO -->
-  @if (carregando()) {
-    <div
-      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
-    >
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Carregando...</span>
-      </div>
-      <p class="text-secondary small mt-2 mb-0">
-        Carregando dados do usuário...
-      </p>
-    </div>
-  } @else {
-    <!-- CARD DO FORMULÁRIO -->
-    <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
-    >
-      <div
-        class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
-      >
-        <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-person-gear me-1"></i> Informações Cadastrais
-        </span>
-      </div>
+  <p-card>
+    <form (ngSubmit)="salvar()">
+      <div class="form-grid">
+        <!-- NOME COMPLETO -->
+        <div class="field">
+          <label for="nomeCompleto">Nome Completo *</label>
+          <input
+            pInputText
+            id="nomeCompleto"
+            type="text"
+            [(ngModel)]="formulario.nomeCompleto"
+            name="nomeCompleto"
+            required
+            maxlength="150"
+            placeholder="Ex.: Maria Souza Santos"
+            class="w-full"
+          />
+          <span class="field-hint">Nome social ou civil do usuário.</span>
+        </div>
 
-      <div class="card-body p-4">
-        <form (ngSubmit)="salvar()">
-          <div class="row g-3">
-            <!-- NOME COMPLETO -->
-            <div class="col-md-7">
-              <label
-                for="nomeCompleto"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Nome Completo <span class="text-danger">*</span>
-              </label>
-              <input
-                id="nomeCompleto"
-                type="text"
-                class="form-control"
-                [(ngModel)]="formulario.nomeCompleto"
-                name="nomeCompleto"
-                required
-                maxlength="150"
-                placeholder="Ex.: Maria Souza Santos"
-              />
-              <div class="form-text text-muted small">
-                Nome social ou civil do usuário.
-              </div>
-            </div>
+        <!-- PERFIL DE ACESSO -->
+        <div class="field">
+          <label for="perfil">Perfil Institucional *</label>
+          <p-select
+            id="perfil"
+            [options]="opcoesPerfil"
+            [(ngModel)]="formulario.perfil"
+            name="perfil"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="ajustarPerfil()"
+            styleClass="w-full"
+          />
+          <span class="field-hint">Define o nível de privilégio e módulos liberados.</span>
+        </div>
 
-            <!-- PERFIL DE ACESSO -->
-            <div class="col-md-5">
-              <label
-                for="perfil"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Perfil de Acesso <span class="text-danger">*</span>
-              </label>
-              <select
-                id="perfil"
-                class="form-select"
-                [(ngModel)]="formulario.perfil"
-                name="perfil"
-                (change)="ajustarPerfil()"
-                required
-              >
-                <option value="ADMINISTRADOR">
-                  ADMINISTRADOR (Gestão Global)
-                </option>
-                <option value="PROFESSOR">
-                  PROFESSOR (Docente Responsável)
-                </option>
-                <option value="ALUNO">ALUNO (Discente / Auditor)</option>
-              </select>
-              <div class="form-text text-muted small">
-                Define o nível de permissões no sistema.
-              </div>
-            </div>
+        <!-- E-MAIL INSTITUCIONAL -->
+        <div class="field">
+          <label for="email">E-mail Institucional (&#64;academico.ufs.br) *</label>
+          <input
+            pInputText
+            id="email"
+            type="email"
+            [(ngModel)]="formulario.email"
+            name="email"
+            required
+            placeholder="usuario@academico.ufs.br"
+            class="w-full"
+          />
+          <span class="field-hint">Obrigatório endereço do domínio &#64;academico.ufs.br.</span>
+        </div>
 
-            <!-- E-MAIL INSTITUCIONAL -->
-            <div class="col-md-7">
-              <label
-                for="email"
-                class="form-label small fw-semibold text-secondary"
-              >
-                E-mail Institucional <span class="text-danger">*</span>
-              </label>
-              <div class="input-group">
-                <span
-                  class="input-group-text bg-light text-secondary border-end-0"
-                >
-                  <i class="bi bi-envelope"></i>
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  class="form-control font-monospace border-start-0"
-                  [(ngModel)]="formulario.email"
-                  name="email"
-                  required
-                  maxlength="150"
-                  placeholder="nome.sobrenome@academico.ufs.br"
-                />
-              </div>
-              <div
-                class="form-text small"
-                [class.text-danger]="
-                  formulario.email &&
-                  !formulario.email.endsWith('@academico.ufs.br')
-                "
-              >
-                <i class="bi bi-info-circle me-1"></i>
-                Obrigatório domínio <strong>&#64;academico.ufs.br</strong> para
-                todos os usuários.
-              </div>
-            </div>
-
-            <!-- MATRÍCULA SIGAA -->
-            <div class="col-md-5">
-              <label
-                for="matriculaSigaa"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Matrícula SIGAA
-                @if (formulario.perfil === "ALUNO") {
-                  <span class="text-danger">* (Obrigatório - 12 dígitos)</span>
-                } @else {
-                  <span class="text-muted">(Não aplicável)</span>
-                }
-              </label>
-              <div class="input-group">
-                <span
-                  class="input-group-text bg-light text-secondary border-end-0"
-                >
-                  <i class="bi bi-card-heading"></i>
-                </span>
-                <input
-                  id="matriculaSigaa"
-                  type="text"
-                  class="form-control font-monospace border-start-0"
-                  [value]="formulario.matriculaSigaa || ''"
-                  (input)="aplicarMascaraMatricula($event)"
-                  name="matriculaSigaa"
-                  [disabled]="formulario.perfil !== 'ALUNO'"
-                  [required]="formulario.perfil === 'ALUNO'"
-                  maxlength="12"
-                  placeholder="Ex.: 202600123456"
-                />
-              </div>
-              @if (formulario.perfil === "ALUNO") {
-                <div
-                  class="form-text small"
-                  [class.text-danger]="
-                    formulario.matriculaSigaa &&
-                    formulario.matriculaSigaa.length !== 12
-                  "
-                >
-                  <i class="bi bi-shield-check me-1"></i>
-                  Exatamente 12 dígitos numéricos ({{
-                    formulario.matriculaSigaa
-                      ? formulario.matriculaSigaa.length
-                      : 0
-                  }}/12).
-                </div>
-              } @else {
-                <div class="form-text text-muted small">
-                  Disponível apenas para usuários com perfil ALUNO.
-                </div>
-              }
-            </div>
+        <!-- MATRÍCULA SIGAA (SE ALUNO) -->
+        @if (formulario.perfil === 'ALUNO') {
+          <div class="field">
+            <label for="matriculaSigaa">Matrícula SIGAA (12 dígitos) *</label>
+            <p-inputMask
+              id="matriculaSigaa"
+              mask="999999999999"
+              [(ngModel)]="formulario.matriculaSigaa"
+              name="matriculaSigaa"
+              placeholder="Ex.: 202400012345"
+              styleClass="w-full"
+            />
+            <span class="field-hint"
+              >Código numérico de matrícula do SIGAA (exatamente 12 dígitos).</span
+            >
           </div>
-
-          <!-- AVISO DE SENHA INICIAL SE CADASTRO -->
-          @if (!modoEdicao()) {
-            <div
-              class="mt-4 p-3 bg-light rounded-2 border border-light-subtle d-flex align-items-center gap-3"
-            >
-              <i class="bi bi-key text-primary fs-4"></i>
-              <div class="small text-secondary">
-                <strong>Credenciais Iniciais:</strong> O usuário será criado com
-                a senha provisória padrão <code>Sigea&#64;123</code> e status de
-                <strong>Primeiro Acesso Pendente</strong>. No primeiro login,
-                será exigida a redefinição de senha pessoal.
-              </div>
-            </div>
-          }
-
-          <!-- BOTÕES DE SUBMISSÃO -->
-          <div
-            class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
-          >
-            <button
-              type="button"
-              class="btn btn-outline-secondary px-3"
-              (click)="voltarParaListagem()"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
-              [disabled]="salvando()"
-            >
-              @if (salvando()) {
-                <span
-                  class="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                <span>Salvando...</span>
-              } @else {
-                <i class="bi bi-check-lg"></i>
-                <span>{{
-                  modoEdicao() ? "Salvar Alterações" : "Cadastrar Usuário"
-                }}</span>
-              }
-            </button>
-          </div>
-        </form>
+        }
       </div>
-    </div>
-  }
+
+      <!-- BOTÕES DE AÇÃO -->
+      <div class="form-actions">
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [text]="true"
+          (click)="voltarParaListagem()"
+        ></button>
+        <button
+          pButton
+          type="submit"
+          label="Salvar Usuário"
+          icon="pi pi-check"
+          [loading]="salvando()"
+        ></button>
+      </div>
+    </form>
+  </p-card>
 </div>

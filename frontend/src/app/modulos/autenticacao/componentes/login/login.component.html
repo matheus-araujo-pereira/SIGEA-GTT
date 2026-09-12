@@ -1,69 +1,57 @@
-<div
-  class="d-flex align-items-center justify-content-center min-vh-100 bg-light p-3"
->
-  <div class="bg-white b-1 p-4" style="width: 100%; max-width: 420px">
-    <div class="mb-4 pb-2 b-b">
-      <h1 class="h5 fw-bold text-dark m-0 font-monospace">SIGEA-GTT</h1>
-      <span class="text-secondary small"
-        >Sistema Inteligente de Gestão de Eventos Adversos – Global Trigger
-        Tool</span
-      >
-    </div>
+<div class="login-wrapper">
+  <p-card styleClass="login-card">
+    <ng-template #header>
+      <div class="login-header">
+        <h1 class="login-title">SIGEA-GTT</h1>
+        <p class="login-subtitle">
+          Sistema Inteligente de Gestão de Eventos Adversos – Global Trigger Tool
+        </p>
+        <span class="login-hospital">Hospital Universitário HU-UFS</span>
+      </div>
+    </ng-template>
 
     @if (mensagemErro()) {
-      <div
-        class="p-2 mb-3 bg-white b-1 border-danger text-danger small d-flex justify-content-between"
-      >
-        <span>{{ mensagemErro() }}</span>
-        <button
-          type="button"
-          class="btn btn-sm p-0 text-danger"
-          (click)="mensagemErro.set(null)"
-        >
-          [X]
-        </button>
-      </div>
+      <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full mb-3" />
     }
 
-    <form (ngSubmit)="entrar()">
-      <div class="mb-3">
-        <label for="identificador" class="form-label small text-secondary m-0"
-          >E-mail Institucional (&#64;academico.ufs.br)</label
-        >
+    <form (ngSubmit)="entrar()" class="login-form">
+      <div class="form-field">
+        <label for="identificador">E-mail Institucional (&#64;academico.ufs.br)</label>
         <input
+          pInputText
           id="identificador"
           type="email"
-          class="form-control form-control-sm font-monospace"
           [(ngModel)]="identificador"
           name="identificador"
           autocomplete="username"
           placeholder="usuario@academico.ufs.br"
           required
+          class="w-full"
         />
       </div>
 
-      <div class="mb-3">
-        <label for="senha" class="form-label small text-secondary m-0"
-          >Senha</label
-        >
-        <input
+      <div class="form-field">
+        <label for="senha">Senha</label>
+        <p-password
           id="senha"
-          type="password"
-          class="form-control form-control-sm font-monospace"
           [(ngModel)]="senha"
           name="senha"
+          [feedback]="false"
+          [toggleMask]="true"
           autocomplete="current-password"
           required
+          styleClass="w-full"
+          inputStyleClass="w-full"
         />
       </div>
 
-      <button
+      <p-button
         type="submit"
-        class="btn btn-primary btn-sm w-100 py-2 font-monospace"
-        [disabled]="carregando()"
-      >
-        {{ textoBotao() }}
-      </button>
+        [label]="textoBotao()"
+        icon="pi pi-sign-in"
+        [loading]="carregando()"
+        styleClass="w-full mt-2"
+      />
     </form>
-  </div>
+  </p-card>
 </div>

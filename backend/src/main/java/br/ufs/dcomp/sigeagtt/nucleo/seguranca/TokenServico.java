@@ -1,17 +1,16 @@
 package br.ufs.dcomp.sigeagtt.nucleo.seguranca;
 
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
-
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.Base64;
 
 @Service
 public class TokenServico {
@@ -20,11 +19,14 @@ public class TokenServico {
     private final ObjectMapper objectMapper;
     private static final long TEMPO_EXPIRACAO_SEGUNDOS = 86400L * 7L; // 7 dias
     private static final String HEADER_JSON = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
-    private static final String HEADER_BASE64 = Base64.getUrlEncoder().withoutPadding()
-            .encodeToString(HEADER_JSON.getBytes(StandardCharsets.UTF_8));
+    private static final String HEADER_BASE64 =
+            Base64.getUrlEncoder()
+                    .withoutPadding()
+                    .encodeToString(HEADER_JSON.getBytes(StandardCharsets.UTF_8));
 
     public TokenServico(
-            @Value("${app.jwt-secret:sigea-gtt-super-secret-key-change-in-production-2026!#*}") String segredo,
+            @Value("${app.jwt-secret:sigea-gtt-super-secret-key-change-in-production-2026!#*}")
+                    String segredo,
             ObjectMapper objectMapper) {
         this.segredo = segredo;
         this.objectMapper = objectMapper;
@@ -101,7 +103,8 @@ public class TokenServico {
 
     private String assinarHmacSha256(String conteudo) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKey = new SecretKeySpec(segredo.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        SecretKeySpec secretKey =
+                new SecretKeySpec(segredo.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         mac.init(secretKey);
         byte[] hmacBytes = mac.doFinal(conteudo.getBytes(StandardCharsets.UTF_8));
         return base64UrlEncode(hmacBytes);
@@ -111,6 +114,5 @@ public class TokenServico {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    public record DadosToken(Long id, String email, String perfil) {
-    }
+    public record DadosToken(Long id, String email, String perfil) {}
 }

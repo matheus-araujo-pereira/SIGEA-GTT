@@ -1,13 +1,12 @@
 package br.ufs.dcomp.sigeagtt.modulos.turma.modelo;
 
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "turmas")
@@ -57,9 +56,7 @@ public class Turma {
 
     @PrePersist
     protected void aoCriar() {
-        if (this.criadaEm == null)
-            this.criadaEm = LocalDateTime.now();
-        if (this.ativa == null)
-            this.ativa = true;
+        if (this.criadaEm == null) this.criadaEm = LocalDateTime.now();
+        if (this.ativa == null) this.ativa = true;
     }
 }

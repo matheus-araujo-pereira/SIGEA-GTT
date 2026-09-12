@@ -12,5 +12,4 @@ public record SalvarAtividadeDTO(
         @NotNull LocalDateTime dataInicio,
         @NotNull LocalDateTime dataFim,
         @NotNull Integer tempoLimiteMinutos,
-        Boolean ativa) {
-}
+        Boolean ativa) {}

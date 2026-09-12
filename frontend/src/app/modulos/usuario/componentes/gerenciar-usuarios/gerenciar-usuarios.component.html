@@ -1,230 +1,142 @@
 <div>
-  <!-- CABEÇALHO DA LISTAGEM -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
+  <!-- CABEÇALHO -->
+  <div class="page-header">
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Controle de Usuários</h1>
-      <span class="text-secondary small"
+      <h1 class="page-title">Controle de Usuários</h1>
+      <span class="page-subtitle"
         >Total cadastrado: {{ totalUsuarios() }} usuários no SIGEA-GTT</span
       >
     </div>
     <button
+      pButton
       type="button"
-      class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      label="NOVO USUÁRIO"
+      icon="pi pi-plus"
       (click)="navegarParaNovo()"
-    >
-      <i class="bi bi-plus-circle-fill"></i>
-      <span>NOVO USUÁRIO</span>
-    </button>
+    ></button>
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
+  <!-- BARRA DE FILTROS -->
+  <div class="filter-card">
+    <input
+      pInputText
+      type="text"
+      [ngModel]="termoBusca()"
+      (ngModelChange)="termoBusca.set($event)"
+      placeholder="Filtrar por nome, e-mail institucional ou matrícula..."
+      class="search-input"
+    />
+    <p-select
+      [options]="opcoesPerfil"
+      [ngModel]="filtroPerfil()"
+      (ngModelChange)="filtroPerfil.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      class="filter-select"
+    />
+    <p-select
+      [options]="opcoesStatus"
+      [ngModel]="filtroStatus()"
+      (ngModelChange)="filtroStatus.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      class="filter-select"
+    />
+  </div>
 
-  @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
-  <!-- BARRA DE FILTROS E BUSCA -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  <!-- TABELA PRIMENG COMPACTA -->
+  <p-table
+    [value]="usuariosLinhasFiltradas()"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm p-datatable-striped"
+    [paginator]="true"
+    [rows]="15"
+    [rowsPerPageOptions]="[15, 25, 50]"
+    [loading]="carregando()"
   >
-    <div class="row g-2 align-items-center">
-      <div class="col-md-6">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-secondary border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control border-start-0"
-            [ngModel]="termoBusca()"
-            (ngModelChange)="atualizarBusca($event)"
-            placeholder="Filtrar por nome, e-mail institucional ou matrícula..."
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="nome" style="width: 25%">Nome <p-sortIcon field="nome" /></th>
+        <th pSortableColumn="matricula" style="width: 15%">
+          Matrícula <p-sortIcon field="matricula" />
+        </th>
+        <th pSortableColumn="email" style="width: 25%">
+          E-mail Institucional <p-sortIcon field="email" />
+        </th>
+        <th pSortableColumn="perfil" style="width: 12%">Perfil <p-sortIcon field="perfil" /></th>
+        <th style="width: 10%">Status</th>
+        <th style="width: 13%; text-align: right">Ações</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-u>
+      <tr>
+        <td>
+          <span style="font-weight: 600; color: #0f172a">{{ u.nome }}</span>
+          @if (u.ehVoce) {
+            <p-tag value="Você" severity="info" styleClass="ml-2" />
+          }
+        </td>
+        <td>
+          <code>{{ u.matricula }}</code>
+        </td>
+        <td>{{ u.email }}</td>
+        <td>
+          <p-tag [value]="u.perfil" [severity]="getPerfilSeverity(u.perfil)" />
+        </td>
+        <td>
+          <p-tag
+            [value]="u.ativo ? 'ATIVO' : 'INATIVO'"
+            [severity]="u.ativo ? 'success' : 'danger'"
           />
-          @if (termoBusca()) {
+        </td>
+        <td>
+          <div class="actions-cell">
             <button
-              class="btn btn-outline-secondary"
+              pButton
               type="button"
-              (click)="atualizarBusca('')"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <select
-          class="form-select form-select-sm"
-          [ngModel]="filtroPerfil()"
-          (ngModelChange)="atualizarFiltroPerfil($event)"
-        >
-          <option value="TODOS">Todos os Perfis</option>
-          <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-          <option value="PROFESSOR">PROFESSOR</option>
-          <option value="ALUNO">ALUNO</option>
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <select
-          class="form-select form-select-sm"
-          [ngModel]="filtroStatus()"
-          (ngModelChange)="atualizarFiltroStatus($event)"
-        >
-          <option value="TODOS">Todos os Status</option>
-          <option value="ATIVOS">Ativos</option>
-          <option value="INATIVOS">Inativos</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- TABELA DE USUÁRIOS COM FUNDO BRANCO E SEM BADGES DESNECESSÁRIOS -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
-  >
-    <div class="table-responsive bg-white">
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-        >
-          <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              NOME COMPLETO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              MATRÍCULA
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              E-MAIL INSTITUCIONAL
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PERFIL
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              1º ACESSO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              STATUS
-            </th>
-            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
-              AÇÕES
-            </th>
-          </tr>
-        </thead>
-        <tbody class="small font-monospace bg-white">
-          @for (u of usuariosLinhasPaginadas(); track u.id) {
-            <tr class="bg-white">
-              <td
-                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
-              >
-                {{ u.nome }}
-                @if (u.ehVoce) {
-                  <span class="text-primary fw-bold ms-1">(Você)</span>
-                }
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                {{ u.matricula }}
-              </td>
-              <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                {{ u.email }}
-              </td>
-              <td class="py-2 px-2 fw-semibold text-dark bg-white">
-                {{ u.perfil }}
-              </td>
-              <td
-                class="py-2 px-2 bg-white"
-                [class.text-warning]="u.primeiroAcesso.includes('PENDENTE')"
-                [class.text-secondary]="!u.primeiroAcesso.includes('PENDENTE')"
-              >
-                {{ u.primeiroAcesso.includes("PENDENTE") ? "PENDENTE" : "OK" }}
-              </td>
-              <td
-                class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="u.ativo"
-                [class.text-muted]="!u.ativo"
-              >
-                {{ u.ativo ? "ATIVO" : "INATIVO" }}
-              </td>
-              <td class="py-2 px-3 text-end text-nowrap bg-white">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="navegarParaEditar(u.original)"
-                  title="Editar Usuário"
-                >
-                  EDITAR
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="solicitarResetSenha(u.original)"
-                  title="Resetar Senha para Padrão"
-                >
-                  RESET
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm py-0 px-2 rounded-1"
-                  [class.btn-outline-danger]="u.ativo"
-                  [class.btn-outline-success]="!u.ativo"
-                  [disabled]="u.ehVoce"
-                  (click)="alternarAtivacao(u.original)"
-                >
-                  {{ u.ativo ? "INATIVAR" : "REATIVAR" }}
-                </button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="7" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-people fs-2 d-block text-secondary mb-2"></i>
-                Nenhum usuário encontrado com os filtros selecionados.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
-    <app-paginacao
-      [totalItens]="totalFiltrados()"
-      [itensPorPagina]="itensPorPagina"
-      [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)"
-    >
-    </app-paginacao>
-  </div>
+              icon="pi pi-pencil"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              (click)="navegarParaEditar(u.original)"
+              pTooltip="Editar Usuário"
+              tooltipPosition="top"
+              aria-label="Editar Usuário"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-key"
+              [text]="true"
+              severity="warn"
+              size="small"
+              (click)="solicitarResetSenha(u.original)"
+              pTooltip="Resetar Senha para Sigea@123"
+              tooltipPosition="top"
+              aria-label="Resetar Senha"
+            ></button>
+            <button
+              pButton
+              type="button"
+              [icon]="u.ativo ? 'pi pi-ban' : 'pi pi-check'"
+              [text]="true"
+              [severity]="u.ativo ? 'danger' : 'success'"
+              size="small"
+              (click)="alternarAtivacao(u.original)"
+              [pTooltip]="u.ativo ? 'Inativar Usuário' : 'Reativar Usuário'"
+              tooltipPosition="top"
+              [attr.aria-label]="u.ativo ? 'Inativar Usuário' : 'Reativar Usuário'"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 24px; color: #64748b">
+          Nenhum usuário encontrado com os filtros informados.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>

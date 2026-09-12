@@ -2,13 +2,21 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TableModule } from 'primeng/table';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import {
   IndicadoresService,
   IndicadoresIHI,
   FiltrosIndicadores,
-  SerieTemporalPonto,
 } from '../../servicos/indicadores.service';
 import { TurmaService } from '../../../turma/servicos/turma.service';
 import { EducacionalService } from '../../../educacional/servicos/educacional.service';
@@ -51,8 +59,20 @@ export interface BarraSeveridade {
 
 @Component({
   selector: 'app-indicadores',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    CardModule,
+    ButtonModule,
+    SelectModule,
+    InputTextModule,
+    TagModule,
+    TooltipModule,
+    ProgressBarModule,
+    ProgressSpinnerModule,
+    TableModule,
+  ],
   templateUrl: './indicadores.component.html',
   styles: [
     `
@@ -69,7 +89,7 @@ export interface BarraSeveridade {
         header,
         nav,
         aside,
-        .btn,
+        button,
         select,
         input {
           display: none !important;
@@ -112,7 +132,7 @@ export class IndicadoresComponent implements OnInit {
   readonly filtroDataInicio = signal<string>('');
   readonly filtroDataFim = signal<string>('');
 
-  // Períodos desduplicados e ordenados decrescente (resolvendo a duplicação)
+  // Períodos desduplicados
   readonly periodosDisponiveis = computed(() => {
     const periodos = this.turmas()
       .map((t) => t.periodoLetivo)
@@ -120,7 +140,7 @@ export class IndicadoresComponent implements OnInit {
     return Array.from(new Set(periodos)).sort().reverse();
   });
 
-  // Turmas filtradas pelo período selecionado (se aplicável)
+  // Turmas filtradas pelo período selecionado
   readonly turmasFiltradas = computed(() => {
     const periodo = this.filtroPeriodoLetivo();
     if (!periodo || periodo === 'TODOS') {
@@ -128,6 +148,52 @@ export class IndicadoresComponent implements OnInit {
     }
     return this.turmas().filter((t) => t.periodoLetivo === periodo);
   });
+
+  readonly periodosOpcoes = computed(() => [
+    { label: 'Todos os Períodos', value: 'TODOS' },
+    ...this.periodosDisponiveis().map((p) => ({ label: p, value: p })),
+  ]);
+
+  readonly turmasOpcoes = computed(() => [
+    { label: 'Todas as Turmas', value: 'TODOS' },
+    ...this.turmasFiltradas().map((t) => ({
+      label: `${t.codigoDisciplina} (${t.periodoLetivo})`,
+      value: String(t.id),
+    })),
+  ]);
+
+  readonly unidadesOpcoes = computed(() => [
+    { label: 'Todas as Unidades', value: 'TODOS' },
+    ...this.unidades().map((u) => ({
+      label: `${u.sigla} - ${u.nome}`,
+      value: String(u.id),
+    })),
+  ]);
+
+  readonly modulosOpcoes = [
+    { label: 'Todos os Módulos', value: 'TODOS' },
+    { label: 'Cuidados Gerais (C)', value: 'CUIDADOS' },
+    { label: 'Medicamentos (M)', value: 'MEDICACAO' },
+    { label: 'Cirúrgico (S)', value: 'CIRURGICO' },
+    { label: 'Terapia Intensiva (I)', value: 'TERAPIA_INTENSIVA' },
+    { label: 'Perinatal (P)', value: 'PERINATAL' },
+    { label: 'Pronto Atendimento (E)', value: 'URGENCIA' },
+  ];
+
+  readonly origemOpcoes = [
+    { label: 'Todas as Origens', value: 'TODOS' },
+    { label: 'Intra-hospitalar (Internação)', value: 'HOSPITALAR' },
+    { label: 'Presente na Admissão (POA)', value: 'ADMISSAO' },
+  ];
+
+  readonly gravidadeOpcoes = [
+    { label: 'Todas as Gravidades', value: 'TODOS' },
+    { label: 'Categoria E (Intervenção)', value: 'CATEGORIA_E' },
+    { label: 'Categoria F (Prolongamento)', value: 'CATEGORIA_F' },
+    { label: 'Categoria G (Dano Permanente)', value: 'CATEGORIA_G' },
+    { label: 'Categoria H (Ameaça à Vida)', value: 'CATEGORIA_H' },
+    { label: 'Categoria I (Óbito Contribuinte)', value: 'CATEGORIA_I' },
+  ];
 
   readonly textoFiltrosAtivos = computed(() => {
     const partes: string[] = [];
@@ -139,16 +205,12 @@ export class IndicadoresComponent implements OnInit {
     }
 
     if (this.filtroTurmaId() !== 'TODOS') {
-      const t = this.turmas().find(
-        (item) => item.id === Number(this.filtroTurmaId()),
-      );
+      const t = this.turmas().find((item) => item.id === Number(this.filtroTurmaId()));
       partes.push(`Turma: ${t ? t.codigoDisciplina : this.filtroTurmaId()}`);
     }
 
     if (this.filtroUnidadeId() !== 'TODOS') {
-      const u = this.unidades().find(
-        (item) => item.id === Number(this.filtroUnidadeId()),
-      );
+      const u = this.unidades().find((item) => item.id === Number(this.filtroUnidadeId()));
       partes.push(`Unidade: ${u ? u.sigla : this.filtroUnidadeId()}`);
     }
 
@@ -158,16 +220,12 @@ export class IndicadoresComponent implements OnInit {
 
     if (this.filtroOrigemDano() !== 'TODOS') {
       partes.push(
-        this.filtroOrigemDano() === 'ADMISSAO'
-          ? 'Origem: Na Admissão'
-          : 'Origem: Intra-hospitalar',
+        this.filtroOrigemDano() === 'ADMISSAO' ? 'Origem: Na Admissão' : 'Origem: Intra-hospitalar',
       );
     }
 
     if (this.filtroGravidade() !== 'TODOS') {
-      partes.push(
-        `Gravidade: ${this.filtroGravidade().replace('CATEGORIA_', 'Cat. ')}`,
-      );
+      partes.push(`Gravidade: ${this.filtroGravidade().replace('CATEGORIA_', 'Cat. ')}`);
     }
 
     if (this.filtroDataInicio() || this.filtroDataFim()) {
@@ -244,7 +302,6 @@ export class IndicadoresComponent implements OnInit {
     ];
   });
 
-  // Origem do Dano (Seção II-D, p. 13 e 16 do White Paper do IHI)
   readonly dadosOrigemDano = computed(() => {
     const ind = this.indicadores();
     const total = ind?.totalEventosAdversos || 0;
@@ -255,7 +312,6 @@ export class IndicadoresComponent implements OnInit {
     return { total, intra, adm, pctIntra, pctAdm };
   });
 
-  // Rendimento dos Gatilhos (Seção III e FAQ p. 29-30)
   readonly eficaciaRastreamento = computed(() => {
     return (
       this.indicadores()?.eficaciaGatilhos ?? {
@@ -266,7 +322,6 @@ export class IndicadoresComponent implements OnInit {
     );
   });
 
-  // Run Chart IHI (Série Temporal Real com Mediana)
   readonly pontosRunChart = computed<PontoPlotagem[]>(() => {
     const ind = this.indicadores();
     const serie = ind?.serieTemporal || [];
@@ -277,14 +332,13 @@ export class IndicadoresComponent implements OnInit {
     const xFim = 550;
     const yBase = 200;
     const yTopo = 35;
-    const yMax = 150; // Teto visual da escala Y
+    const yMax = 150;
 
     const passo = serie.length > 1 ? (xFim - xInicio) / (serie.length - 1) : 0;
 
     return serie.map((p, idx) => {
       const valor = porMil ? p.taxaPorMilDias : p.taxaPorCemAdmissoes;
-      const x =
-        serie.length === 1 ? (xInicio + xFim) / 2 : xInicio + idx * passo;
+      const x = serie.length === 1 ? (xInicio + xFim) / 2 : xInicio + idx * passo;
       const proporcao = Math.min(1, Math.max(0, valor / yMax));
       const y = yBase - proporcao * (yBase - yTopo);
       return {
@@ -319,10 +373,7 @@ export class IndicadoresComponent implements OnInit {
   readonly caminhoLinhaRunChart = computed(() => {
     const pts = this.pontosRunChart();
     if (pts.length === 0) return '';
-    return pts.reduce(
-      (acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`,
-      '',
-    );
+    return pts.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`, '');
   });
 
   readonly caminhoAreaRunChart = computed(() => {
@@ -334,7 +385,6 @@ export class IndicadoresComponent implements OnInit {
     return `${primeiraX},200 ${linha} ${ultimaX},200`;
   });
 
-  // Distribuição de Severidade NCC MERP (Categorias E a I)
   readonly barrasSeveridade = computed<BarraSeveridade[]>(() => {
     const ind = this.indicadores();
     const sev = ind?.distribuicaoSeveridade;
@@ -346,7 +396,7 @@ export class IndicadoresComponent implements OnInit {
         rotulo: 'Cat. E',
         nome: 'Dano Temporário (Intervenção)',
         total: sev?.CATEGORIA_E || 0,
-        cor: '#0d6efd',
+        cor: '#0284C7',
         definicao: 'Dano temporário ao paciente e necessidade de intervenção.',
       },
       {
@@ -354,7 +404,7 @@ export class IndicadoresComponent implements OnInit {
         rotulo: 'Cat. F',
         nome: 'Dano Temporário (Hospitalização)',
         total: sev?.CATEGORIA_F || 0,
-        cor: '#0dcaf0',
+        cor: '#06B6D4',
         definicao:
           'Dano temporário ao paciente e necessidade de iniciar ou prolongar a internação.',
       },
@@ -363,27 +413,24 @@ export class IndicadoresComponent implements OnInit {
         rotulo: 'Cat. G',
         nome: 'Dano Permanente',
         total: sev?.CATEGORIA_G || 0,
-        cor: '#ffc107',
-        definicao:
-          'Dano permanente ao paciente que causa prejuízo funcional duradouro.',
+        cor: '#EAB308',
+        definicao: 'Dano permanente ao paciente que causa prejuízo funcional duradouro.',
       },
       {
         cat: 'CATEGORIA_H',
         rotulo: 'Cat. H',
         nome: 'Ameaça à Vida (< 1h)',
         total: sev?.CATEGORIA_H || 0,
-        cor: '#fd7e14',
-        definicao:
-          'Necessidade de intervenção que salva vidas em 1 hora ou menos.',
+        cor: '#F97316',
+        definicao: 'Necessidade de intervenção que salva vidas em 1 hora ou menos.',
       },
       {
         cat: 'CATEGORIA_I',
         rotulo: 'Cat. I',
         nome: 'Óbito Contribuinte',
         total: sev?.CATEGORIA_I || 0,
-        cor: '#dc3545',
-        definicao:
-          'Morte do paciente onde o cuidado de saúde foi fator contribuinte.',
+        cor: '#EF4444',
+        definicao: 'Morte do paciente onde o cuidado de saúde foi fator contribuinte.',
       },
     ];
 
@@ -416,7 +463,6 @@ export class IndicadoresComponent implements OnInit {
     });
   });
 
-  // Distribuição por Módulo GTT do IHI
   readonly modulosGTT = computed(() => {
     const ind = this.indicadores();
     const mod = ind?.distribuicaoModulos;
@@ -427,48 +473,48 @@ export class IndicadoresComponent implements OnInit {
         codigo: 'CUIDADOS',
         rotulo: 'Cuidados Gerais (C)',
         total: mod?.CUIDADOS || 0,
-        icone: 'bi-heart-pulse',
-        cor: 'primary',
+        icone: 'pi pi-heart',
+        cor: '#0284C7',
         porcentagem: (((mod?.CUIDADOS || 0) / total) * 100).toFixed(1),
       },
       {
         codigo: 'MEDICACAO',
         rotulo: 'Medicamentos (M)',
         total: mod?.MEDICACAO || 0,
-        icone: 'bi-capsule',
-        cor: 'info',
+        icone: 'pi pi-check-circle',
+        cor: '#06B6D4',
         porcentagem: (((mod?.MEDICACAO || 0) / total) * 100).toFixed(1),
       },
       {
         codigo: 'CIRURGICO',
         rotulo: 'Cirúrgico (S)',
         total: mod?.CIRURGICO || 0,
-        icone: 'bi-scissors',
-        cor: 'warning',
+        icone: 'pi pi-wrench',
+        cor: '#EAB308',
         porcentagem: (((mod?.CIRURGICO || 0) / total) * 100).toFixed(1),
       },
       {
         codigo: 'TERAPIA_INTENSIVA',
         rotulo: 'Terapia Intensiva (I)',
         total: mod?.TERAPIA_INTENSIVA || 0,
-        icone: 'bi-activity',
-        cor: 'danger',
+        icone: 'pi pi-chart-line',
+        cor: '#EF4444',
         porcentagem: (((mod?.TERAPIA_INTENSIVA || 0) / total) * 100).toFixed(1),
       },
       {
         codigo: 'PERINATAL',
         rotulo: 'Perinatal (P)',
         total: mod?.PERINATAL || 0,
-        icone: 'bi-gender-female',
-        cor: 'success',
+        icone: 'pi pi-users',
+        cor: '#16A34A',
         porcentagem: (((mod?.PERINATAL || 0) / total) * 100).toFixed(1),
       },
       {
         codigo: 'URGENCIA',
         rotulo: 'Pronto Atendimento (E)',
         total: mod?.URGENCIA || 0,
-        icone: 'bi-hospital',
-        cor: 'secondary',
+        icone: 'pi pi-building',
+        cor: '#64748B',
         porcentagem: (((mod?.URGENCIA || 0) / total) * 100).toFixed(1),
       },
     ];
@@ -586,10 +632,7 @@ export class IndicadoresComponent implements OnInit {
       const larguraUtil = pdfLargura - margem * 2;
       const alturaUtil = pdfAltura - margem * 2;
 
-      const alturaTotalMm = (canvas.height * larguraUtil) / canvas.width;
-      const alturaPaginaPx = Math.floor(
-        (alturaUtil * canvas.width) / larguraUtil,
-      );
+      const alturaPaginaPx = Math.floor((alturaUtil * canvas.width) / larguraUtil);
 
       let yOffsetPx = 0;
       let paginaAtual = 1;
@@ -599,10 +642,7 @@ export class IndicadoresComponent implements OnInit {
           pdf.addPage();
         }
 
-        const alturaChunkPx = Math.min(
-          alturaPaginaPx,
-          canvas.height - yOffsetPx,
-        );
+        const alturaChunkPx = Math.min(alturaPaginaPx, canvas.height - yOffsetPx);
         const chunkCanvas = document.createElement('canvas');
         chunkCanvas.width = canvas.width;
         chunkCanvas.height = alturaChunkPx;

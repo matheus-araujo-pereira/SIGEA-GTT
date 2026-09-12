@@ -1,19 +1,38 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { EducacionalService } from '../../../servicos/educacional.service';
-import {
-  PainelAtividade,
-  AlunoProgresso,
-  CasoClinico,
-} from '../../../modelos/educacional.modelos';
-import { PaginacaoComponent } from '../../../../../compartilhado/componentes/paginacao/paginacao.component';
+import { PainelAtividade, AlunoProgresso, CasoClinico } from '../../../modelos/educacional.modelos';
 
 @Component({
   selector: 'app-painel-atividade',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DecimalPipe,
+    DatePipe,
+    CardModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+    DialogModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './painel-atividade.component.html',
 })
 export class PainelAtividadeComponent implements OnInit {
@@ -28,14 +47,19 @@ export class PainelAtividadeComponent implements OnInit {
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
 
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
+  readonly statusOptions = [
+    { label: 'Todos os Status', value: 'TODOS' },
+    { label: 'Aguardando Correção', value: 'PENDENTE_CORRECAO' },
+    { label: 'Avaliadas / Com Nota', value: 'AVALIADA' },
+    { label: 'Em Andamento', value: 'EM_ANDAMENTO' },
+    { label: 'Não Iniciadas', value: 'NAO_INICIADA' },
+  ];
 
   // Modal de visualização do prontuário
   readonly casoModal = signal<CasoClinico | null>(null);
-  readonly abaModal = signal<
-    'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'
-  >('sumario');
+  readonly abaModal = signal<'sumario' | 'prescricoes' | 'exames' | 'evolucoes' | 'cirurgico'>(
+    'sumario',
+  );
 
   readonly alunosFiltrados = computed<AlunoProgresso[]>(() => {
     const dados = this.painel()?.alunos || [];
@@ -62,13 +86,6 @@ export class PainelAtividadeComponent implements OnInit {
       .sort((a, b) => a.alunoNome.localeCompare(b.alunoNome, 'pt-BR'));
   });
 
-  readonly totalFiltrados = computed(() => this.alunosFiltrados().length);
-
-  readonly alunosPaginados = computed<AlunoProgresso[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.alunosFiltrados().slice(inicio, inicio + this.itensPorPagina);
-  });
-
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
@@ -85,8 +102,7 @@ export class PainelAtividadeComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar painel da atividade: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar painel da atividade: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -117,19 +133,5 @@ export class PainelAtividadeComponent implements OnInit {
 
   voltar(): void {
     this.router.navigate(['/atividades']);
-  }
-
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  atualizarFiltroStatus(status: string): void {
-    this.filtroStatus.set(status);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
   }
 }

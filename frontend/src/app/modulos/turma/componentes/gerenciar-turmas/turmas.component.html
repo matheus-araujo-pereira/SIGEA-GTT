@@ -1,226 +1,161 @@
 <div>
   <!-- CABEÇALHO DA LISTAGEM -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
+  <div class="page-header">
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Controle de Turmas Acadêmicas</h1>
-      <span class="text-secondary small">
-        Total cadastrado: {{ totalTurmas() }} turmas no SIGEA-GTT
-      </span>
+      <h1 class="page-title">Controle de Turmas Acadêmicas</h1>
+      <span class="page-subtitle">Total cadastrado: {{ totalTurmas() }} turmas no SIGEA-GTT</span>
     </div>
     @if (ehAdministrador()) {
       <button
+        pButton
         type="button"
-        class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
+        label="NOVA TURMA"
+        icon="pi pi-plus"
         (click)="navegarParaNovo()"
-      >
-        <i class="bi bi-plus-circle-fill"></i>
-        <span>NOVA TURMA</span>
-      </button>
+      ></button>
     }
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
+  <!-- BARRA DE FILTROS -->
+  <div class="filter-card">
+    <input
+      pInputText
+      type="text"
+      [ngModel]="termoBusca()"
+      (ngModelChange)="termoBusca.set($event)"
+      placeholder="Filtrar por código de disciplina, período letivo ou docente..."
+      class="search-input"
+    />
+    <p-select
+      [options]="opcoesStatus"
+      [ngModel]="filtroStatus()"
+      (ngModelChange)="filtroStatus.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      class="filter-select"
+    />
+  </div>
 
-  @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
-  <!-- BARRA DE FILTROS E BUSCA -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  <!-- TABELA PRIMENG COMPACTA -->
+  <p-table
+    [value]="turmasLinhasFiltradas()"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm p-datatable-striped"
+    [paginator]="true"
+    [rows]="15"
+    [rowsPerPageOptions]="[15, 25, 50]"
+    [loading]="carregando()"
   >
-    <div class="row g-2 align-items-center">
-      <div class="col-md-8">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-secondary border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control border-start-0"
-            [ngModel]="termoBusca()"
-            (ngModelChange)="atualizarBusca($event)"
-            placeholder="Filtrar por código de disciplina, período letivo ou docente..."
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="codigo" style="width: 20%">
+          Disciplina <p-sortIcon field="codigo" />
+        </th>
+        <th pSortableColumn="periodo" style="width: 15%">
+          Período Letivo <p-sortIcon field="periodo" />
+        </th>
+        <th pSortableColumn="professor" style="width: 25%">
+          Docente Responsável <p-sortIcon field="professor" />
+        </th>
+        <th pSortableColumn="totalAlunos" style="width: 15%">
+          Discentes <p-sortIcon field="totalAlunos" />
+        </th>
+        <th style="width: 10%">Status</th>
+        <th style="width: 15%; text-align: right">Ações</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-t>
+      <tr>
+        <td>
+          <span style="font-weight: 600; color: #0f172a">{{ t.codigo }}</span>
+        </td>
+        <td>
+          <code>{{ t.periodo }}</code>
+        </td>
+        <td>{{ t.professor }}</td>
+        <td>
+          <p-tag [value]="t.totalAlunos + ' aluno(s)'" severity="info" />
+        </td>
+        <td>
+          <p-tag
+            [value]="t.ativa ? 'ATIVA' : 'INATIVA'"
+            [severity]="t.ativa ? 'success' : 'danger'"
           />
-          @if (termoBusca()) {
+        </td>
+        <td>
+          <div class="actions-cell">
             <button
-              class="btn btn-outline-secondary"
+              pButton
               type="button"
-              (click)="atualizarBusca('')"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <select
-          class="form-select form-select-sm"
-          [ngModel]="filtroStatus()"
-          (ngModelChange)="atualizarFiltroStatus($event)"
-        >
-          <option value="TODOS">Todos os Status</option>
-          <option value="ATIVAS">Ativas</option>
-          <option value="INATIVAS">Inativas</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- TABELA DE TURMAS COM FUNDO BRANCO E SEM BADGES -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
-  >
-    <div class="table-responsive bg-white">
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-        >
-          <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              CÓDIGO DA DISCIPLINA
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PERÍODO LETIVO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              DOCENTE RESPONSÁVEL
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TOTAL ALUNOS
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              STATUS
-            </th>
-            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
-              AÇÕES
-            </th>
-          </tr>
-        </thead>
-        <tbody class="small font-monospace bg-white">
-          @for (t of turmasLinhasPaginadas(); track t.id) {
-            <tr class="bg-white">
-              <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
-                {{ t.codigo }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                {{ t.periodo }}
-              </td>
-              <td
-                class="py-2 px-2 font-sans-serif fw-semibold text-dark bg-white"
-              >
-                {{ t.professor }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                {{ t.totalAlunosStr }}
-              </td>
-              <td
-                class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="t.ativa"
-                [class.text-muted]="!t.ativa"
-              >
-                {{ t.status }}
-              </td>
-              <td class="py-2 px-3 text-end text-nowrap bg-white">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="navegarParaAlunos(t.original)"
-                  title="Gerenciar Alunos da Turma"
-                >
-                  ALUNOS
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="navegarParaAtividades(t.original)"
-                  title="Ver Atividades da Turma"
-                >
-                  ATIVIDADES
-                </button>
-                @if (ehAdministrador()) {
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                    (click)="navegarParaEditar(t.original)"
-                    title="Editar Turma"
-                  >
-                    EDITAR
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm py-0 px-2 me-1 rounded-1"
-                    [class.btn-outline-secondary]="t.ativa"
-                    [class.btn-outline-success]="!t.ativa"
-                    (click)="alternarStatus(t.original)"
-                    [title]="t.ativa ? 'Inativar Turma' : 'Ativar Turma'"
-                  >
-                    {{ t.ativa ? "INATIVAR" : "ATIVAR" }}
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                    (click)="excluir(t.original)"
-                    title="Excluir Turma"
-                  >
-                    EXCLUIR
-                  </button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="text-center py-5 text-muted bg-white">
-                <i
-                  class="bi bi-mortarboard fs-2 d-block text-secondary mb-2"
-                ></i>
-                Nenhuma turma encontrada com os filtros selecionados.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
-    <app-paginacao
-      [totalItens]="totalFiltrados()"
-      [itensPorPagina]="itensPorPagina"
-      [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)"
-    >
-    </app-paginacao>
-  </div>
+              icon="pi pi-users"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              (click)="navegarParaAlunos(t.original)"
+              pTooltip="Gerenciar Alunos Matrículados"
+              tooltipPosition="top"
+              aria-label="Gerenciar Alunos"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-calendar"
+              [text]="true"
+              severity="info"
+              size="small"
+              (click)="navegarParaAtividades(t.original)"
+              pTooltip="Ver Atividades da Turma"
+              tooltipPosition="top"
+              aria-label="Ver Atividades"
+            ></button>
+            @if (ehAdministrador()) {
+              <button
+                pButton
+                type="button"
+                icon="pi pi-pencil"
+                [text]="true"
+                severity="secondary"
+                size="small"
+                (click)="navegarParaEditar(t.original)"
+                pTooltip="Editar Dados da Turma"
+                tooltipPosition="top"
+                aria-label="Editar Turma"
+              ></button>
+              <button
+                pButton
+                type="button"
+                [icon]="t.ativa ? 'pi pi-ban' : 'pi pi-check'"
+                [text]="true"
+                [severity]="t.ativa ? 'warn' : 'success'"
+                size="small"
+                (click)="alternarStatus(t.original)"
+                [pTooltip]="t.ativa ? 'Inativar Turma' : 'Reativar Turma'"
+                tooltipPosition="top"
+                [attr.aria-label]="t.ativa ? 'Inativar Turma' : 'Reativar Turma'"
+              ></button>
+              <button
+                pButton
+                type="button"
+                icon="pi pi-trash"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (click)="excluir(t.original)"
+                pTooltip="Excluir Turma Definitivamente"
+                tooltipPosition="top"
+                aria-label="Excluir Turma"
+              ></button>
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 24px; color: #64748b">
+          Nenhuma turma encontrada com os filtros informados.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>

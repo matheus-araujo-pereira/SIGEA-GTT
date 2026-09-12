@@ -8,10 +8,9 @@ import br.ufs.dcomp.sigeagtt.modulos.unidade.modelo.UnidadeHospitalar;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.repositorio.UnidadeHospitalarRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class CasoClinicoServico {
@@ -19,7 +18,9 @@ public class CasoClinicoServico {
     private final CasoClinicoRepositorio casoRepositorio;
     private final UnidadeHospitalarRepositorio unidadeRepositorio;
 
-    public CasoClinicoServico(CasoClinicoRepositorio casoRepositorio, UnidadeHospitalarRepositorio unidadeRepositorio) {
+    public CasoClinicoServico(
+            CasoClinicoRepositorio casoRepositorio,
+            UnidadeHospitalarRepositorio unidadeRepositorio) {
         this.casoRepositorio = casoRepositorio;
         this.unidadeRepositorio = unidadeRepositorio;
     }
@@ -30,22 +31,34 @@ public class CasoClinicoServico {
         if (usuarioLogado.getPerfil() == PerfilUsuario.ADMINISTRADOR) {
             casos = casoRepositorio.findAllByOrderByCriadoEmDesc();
         } else {
-            casos = casoRepositorio.findByProfessorCriadorIdOrderByCriadoEmDesc(usuarioLogado.getId());
+            casos =
+                    casoRepositorio.findByProfessorCriadorIdOrderByCriadoEmDesc(
+                            usuarioLogado.getId());
         }
         return casos.stream().map(CasoClinicoDTO::deEntidade).toList();
     }
 
     @Transactional(readOnly = true)
     public CasoClinicoDTO buscarPorId(Long id) {
-        CasoClinico caso = casoRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado (ID: " + id + ")"));
+        CasoClinico caso =
+                casoRepositorio
+                        .findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Caso clínico não encontrado (ID: " + id + ")"));
         return CasoClinicoDTO.deEntidade(caso);
     }
 
     @Transactional
     public CasoClinicoDTO salvar(SalvarCasoClinicoDTO dto, Usuario professorLogado) {
-        UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
-                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada"));
+        UnidadeHospitalar unidade =
+                unidadeRepositorio
+                        .findById(dto.unidadeHospitalarId())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Unidade hospitalar não encontrada"));
 
         CasoClinico c = new CasoClinico();
         c.setProfessorCriador(professorLogado);
@@ -58,16 +71,27 @@ public class CasoClinicoServico {
 
     @Transactional
     public CasoClinicoDTO atualizar(Long id, SalvarCasoClinicoDTO dto, Usuario usuarioLogado) {
-        CasoClinico c = casoRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado (ID: " + id + ")"));
+        CasoClinico c =
+                casoRepositorio
+                        .findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Caso clínico não encontrado (ID: " + id + ")"));
 
-        if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-                !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
-            throw new IllegalArgumentException("Você não tem permissão para editar este caso clínico.");
+        if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR
+                && !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
+            throw new IllegalArgumentException(
+                    "Você não tem permissão para editar este caso clínico.");
         }
 
-        UnidadeHospitalar unidade = unidadeRepositorio.findById(dto.unidadeHospitalarId())
-                .orElseThrow(() -> new IllegalArgumentException("Unidade hospitalar não encontrada"));
+        UnidadeHospitalar unidade =
+                unidadeRepositorio
+                        .findById(dto.unidadeHospitalarId())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Unidade hospitalar não encontrada"));
 
         c.setUnidadeHospitalar(unidade);
         aplicarDados(c, dto);
@@ -78,12 +102,16 @@ public class CasoClinicoServico {
 
     @Transactional
     public void excluir(Long id, Usuario usuarioLogado) {
-        CasoClinico c = casoRepositorio.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Caso clínico não encontrado"));
+        CasoClinico c =
+                casoRepositorio
+                        .findById(id)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("Caso clínico não encontrado"));
 
-        if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR &&
-                !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
-            throw new IllegalArgumentException("Você não tem permissão para excluir este caso clínico.");
+        if (usuarioLogado.getPerfil() != PerfilUsuario.ADMINISTRADOR
+                && !c.getProfessorCriador().getId().equals(usuarioLogado.getId())) {
+            throw new IllegalArgumentException(
+                    "Você não tem permissão para excluir este caso clínico.");
         }
 
         casoRepositorio.delete(c);

@@ -6,13 +6,12 @@ import br.ufs.dcomp.sigeagtt.modulos.educacional.dto.SalvarAtividadeDTO;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.servico.AtividadeEducacionalServico;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/atividades-educacionais")
@@ -26,7 +25,8 @@ public class AtividadeEducacionalControlador {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
-    public ResponseEntity<List<AtividadeEducacionalDTO>> listar(@AuthenticationPrincipal Usuario usuarioLogado) {
+    public ResponseEntity<List<AtividadeEducacionalDTO>> listar(
+            @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(atividadeServico.listar(usuarioLogado));
     }
 
@@ -39,8 +39,7 @@ public class AtividadeEducacionalControlador {
     @GetMapping("/{id}/painel")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<PainelAtividadeDTO> buscarPainel(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Usuario usuarioLogado) {
+            @PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(atividadeServico.buscarPainelAtividade(id, usuarioLogado));
     }
 
@@ -65,8 +64,7 @@ public class AtividadeEducacionalControlador {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESSOR')")
     public ResponseEntity<Void> excluir(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Usuario usuarioLogado) {
+            @PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogado) {
         atividadeServico.excluir(id, usuarioLogado);
         return ResponseEntity.noContent().build();
     }

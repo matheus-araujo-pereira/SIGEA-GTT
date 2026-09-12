@@ -6,11 +6,10 @@ import br.ufs.dcomp.sigeagtt.modulos.autenticacao.dto.PrimeiroAcessoRequisicaoDT
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.repositorio.UsuarioRepositorio;
 import br.ufs.dcomp.sigeagtt.nucleo.seguranca.TokenServico;
-
+import java.util.NoSuchElementException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.NoSuchElementException;
 
 @Service
 public class AutenticacaoServico {
@@ -32,9 +31,13 @@ public class AutenticacaoServico {
     public LoginRespostaDTO autenticar(LoginRequisicaoDTO dto) {
         String emailLimpo = dto.email() != null ? dto.email().trim().toLowerCase() : "";
 
-        Usuario usuario = usuarioRepositorio.findByEmail(emailLimpo)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Credenciais inválidas: e-mail institucional não localizado."));
+        Usuario usuario =
+                usuarioRepositorio
+                        .findByEmail(emailLimpo)
+                        .orElseThrow(
+                                () ->
+                                        new IllegalArgumentException(
+                                                "Credenciais inválidas: e-mail institucional não localizado."));
 
         if (!Boolean.TRUE.equals(usuario.getAtivo())) {
             throw new IllegalStateException("A conta deste usuário está inativa no sistema.");
@@ -50,11 +53,17 @@ public class AutenticacaoServico {
 
     @Transactional
     public LoginRespostaDTO redefinirSenhaPrimeiroAcesso(PrimeiroAcessoRequisicaoDTO dto) {
-        Usuario usuario = usuarioRepositorio.findById(dto.usuarioId())
-                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado: " + dto.usuarioId()));
+        Usuario usuario =
+                usuarioRepositorio
+                        .findById(dto.usuarioId())
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                "Usuário não encontrado: " + dto.usuarioId()));
 
         if (!passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha())) {
-            throw new IllegalArgumentException("A senha temporária atual informada está incorreta.");
+            throw new IllegalArgumentException(
+                    "A senha temporária atual informada está incorreta.");
         }
 
         if (!dto.novaSenha().equals(dto.confirmacaoNovaSenha())) {
@@ -62,7 +71,8 @@ public class AutenticacaoServico {
         }
 
         if (passwordEncoder.matches(dto.novaSenha(), usuario.getSenha())) {
-            throw new IllegalArgumentException("A nova senha não pode ser idêntica à senha temporária.");
+            throw new IllegalArgumentException(
+                    "A nova senha não pode ser idêntica à senha temporária.");
         }
 
         usuario.setSenha(passwordEncoder.encode(dto.novaSenha()));

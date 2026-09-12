@@ -3,13 +3,12 @@ package br.ufs.dcomp.sigeagtt.modulos.gtt.controlador;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.dto.GatilhoGttRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.GatilhoGtt;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.servico.GatilhoGttServico;
-
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/gatilhos")
@@ -37,7 +36,8 @@ public class GatilhoGttControlador {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GatilhoGtt> editar(@PathVariable Long id, @Valid @RequestBody GatilhoGttRequisicaoDTO dto) {
+    public ResponseEntity<GatilhoGtt> editar(
+            @PathVariable Long id, @Valid @RequestBody GatilhoGttRequisicaoDTO dto) {
         return ResponseEntity.ok(servico.editar(id, dto));
     }
 

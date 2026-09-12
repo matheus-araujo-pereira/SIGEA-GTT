@@ -12,10 +12,7 @@ export const apiUrlInterceptor: HttpInterceptorFn = (req, next) => {
   let baseUrl = 'https://sigea-gtt-backend.onrender.com';
 
   if (typeof window !== 'undefined') {
-    if (
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1'
-    ) {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       baseUrl = '';
     } else if (window.__SIGEA_API_URL__) {
       const urlConfigurada = window.__SIGEA_API_URL__.trim();
@@ -43,9 +40,7 @@ export const apiUrlInterceptor: HttpInterceptorFn = (req, next) => {
     // Ignora erro de parse de JSON
   }
 
-  const headers = token
-    ? req.headers.set('Authorization', `Bearer ${token}`)
-    : req.headers;
+  const headers = token ? req.headers.set('Authorization', `Bearer ${token}`) : req.headers;
 
   return next(
     req.clone({

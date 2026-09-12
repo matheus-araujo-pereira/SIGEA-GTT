@@ -1,169 +1,145 @@
-<div>
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.5rem">
   <!-- CABEÇALHO DO FORMULÁRIO -->
   <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 1rem;
+    "
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
-      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
+        {{ tituloPagina() }}
+      </h1>
+      <span style="font-size: 0.875rem; color: #64748b">{{ subtituloPagina() }}</span>
     </div>
-    <button
-      type="button"
-      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      (click)="voltarParaListagem()"
-    >
-      <i class="bi bi-arrow-left"></i>
-      <span>VOLTAR PARA MÓDULOS</span>
-    </button>
+    <p-button
+      label="VOLTAR PARA MÓDULOS"
+      icon="pi pi-arrow-left"
+      [outlined]="true"
+      severity="secondary"
+      size="small"
+      (onClick)="voltarParaListagem()"
+    />
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
   @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
+    <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full" />
   }
 
   <!-- CORPO DO FORMULÁRIO -->
-  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-4">
+  <p-card>
     @if (carregando()) {
-      <div class="text-center py-5 text-secondary">
-        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+      <div
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 1rem;
+          padding: 3rem;
+          color: #64748b;
+        "
+      >
+        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4" />
         <span>Carregando dados do módulo...</span>
       </div>
     } @else {
-      <form (ngSubmit)="salvar()">
-        <div class="row g-3">
+      <form (ngSubmit)="salvar()" style="display: flex; flex-direction: column; gap: 1.5rem">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem">
           <!-- Código do Módulo -->
-          <div class="col-md-4">
-            <label
-              for="codigo"
-              class="form-label small fw-semibold text-dark mb-1"
-            >
-              Código do Módulo <span class="text-danger">*</span>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label for="codigo" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+              Código do Módulo <span style="color: #ef4444">*</span>
             </label>
             <input
+              pInputText
               id="codigo"
               name="codigo"
               type="text"
-              class="form-control form-control-sm font-monospace text-uppercase"
               [(ngModel)]="formulario.codigo"
               placeholder="Ex: MOD-01, MOD-MED, MOD-CIR"
               maxlength="30"
+              style="font-family: monospace; text-transform: uppercase"
+              class="w-full"
               required
             />
-            <div class="form-text fs-xxs text-secondary">
+            <small style="font-size: 0.75rem; color: #64748b">
               Identificador único de até 30 caracteres.
-            </div>
+            </small>
           </div>
 
           <!-- Nome do Módulo -->
-          <div class="col-md-8">
-            <label
-              for="nome"
-              class="form-label small fw-semibold text-dark mb-1"
-            >
-              Nome do Módulo <span class="text-danger">*</span>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label for="nome" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+              Nome do Módulo <span style="color: #ef4444">*</span>
             </label>
             <input
+              pInputText
               id="nome"
               name="nome"
               type="text"
-              class="form-control form-control-sm"
               [(ngModel)]="formulario.nome"
               placeholder="Ex: Cuidado Geral, Medicamentos, Cirurgia, Terapia Intensiva"
               maxlength="100"
+              class="w-full"
               required
             />
-            <div class="form-text fs-xxs text-secondary">
+            <small style="font-size: 0.75rem; color: #64748b">
               Título descritivo da especialidade ou escopo clínico do módulo.
-            </div>
+            </small>
           </div>
+        </div>
 
-          <!-- Escopo Clínico / Descrição -->
-          <div class="col-12">
-            <label
-              for="descricao"
-              class="form-label small fw-semibold text-dark mb-1"
-            >
-              Escopo Clínico / Descrição
-            </label>
-            <textarea
-              id="descricao"
-              name="descricao"
-              class="form-control form-control-sm"
-              rows="3"
-              [(ngModel)]="formulario.descricao"
-              placeholder="Descreva a abrangência assistencial, tipos de internação ou critérios cobertos por este módulo..."
-            ></textarea>
-            <div class="form-text fs-xxs text-secondary">
-              Explicação detalhada do contexto hospitalar ou ambulatorial em que
-              os gatilhos deste módulo atuam.
-            </div>
-          </div>
+        <!-- Escopo Clínico / Descrição -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem">
+          <label for="descricao" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+            Escopo Clínico / Descrição
+          </label>
+          <textarea
+            pTextarea
+            id="descricao"
+            name="descricao"
+            rows="4"
+            [(ngModel)]="formulario.descricao"
+            placeholder="Descreva a abrangência assistencial, tipos de internação ou critérios cobertos por este módulo..."
+            class="w-full"
+          ></textarea>
+          <small style="font-size: 0.75rem; color: #64748b">
+            Explicação detalhada do contexto hospitalar ou ambulatorial em que os gatilhos deste
+            módulo atuam.
+          </small>
         </div>
 
         <!-- BOTÕES DE AÇÃO -->
         <div
-          class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            border-top: 1px solid var(--p-content-border-color, #e2e8f0);
+            padding-top: 1rem;
+            margin-top: 1rem;
+          "
         >
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm px-3"
-            (click)="voltarParaListagem()"
+          <p-button
+            label="Cancelar"
+            [outlined]="true"
+            severity="secondary"
+            size="small"
+            (onClick)="voltarParaListagem()"
             [disabled]="salvando()"
-          >
-            Cancelar
-          </button>
-          <button
+          />
+          <p-button
+            [label]="modoEdicao() ? 'Salvar Alterações' : 'Cadastrar Módulo'"
+            icon="pi pi-check"
             type="submit"
-            class="btn btn-primary btn-sm px-4 d-inline-flex align-items-center gap-2"
-            [disabled]="salvando()"
-          >
-            @if (salvando()) {
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              <span>Salvando...</span>
-            } @else {
-              <i class="bi bi-check-lg"></i>
-              <span>{{
-                modoEdicao() ? "Salvar Alterações" : "Cadastrar Módulo"
-              }}</span>
-            }
-          </button>
+            size="small"
+            [loading]="salvando()"
+          />
         </div>
       </form>
     }
-  </div>
+  </p-card>
 </div>

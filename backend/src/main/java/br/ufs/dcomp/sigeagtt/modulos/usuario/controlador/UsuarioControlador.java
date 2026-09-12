@@ -5,12 +5,11 @@ import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioEdicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.dto.UsuarioRespostaDTO;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.servico.UsuarioServico;
-
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -33,12 +32,14 @@ public class UsuarioControlador {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioRespostaDTO> cadastrar(@Valid @RequestBody UsuarioRequisicaoDTO dto) {
+    public ResponseEntity<UsuarioRespostaDTO> cadastrar(
+            @Valid @RequestBody UsuarioRequisicaoDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(servico.cadastrar(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioRespostaDTO> editar(@PathVariable Long id, @Valid @RequestBody UsuarioEdicaoDTO dto) {
+    public ResponseEntity<UsuarioRespostaDTO> editar(
+            @PathVariable Long id, @Valid @RequestBody UsuarioEdicaoDTO dto) {
         return ResponseEntity.ok(servico.editar(id, dto));
     }
 
@@ -58,8 +59,8 @@ public class UsuarioControlador {
     }
 
     @PatchMapping("/{id}/alterar-senha")
-    public ResponseEntity<UsuarioRespostaDTO> alterarSenha(@PathVariable Long id,
-            @Valid @RequestBody AlterarSenhaDTO dto) {
+    public ResponseEntity<UsuarioRespostaDTO> alterarSenha(
+            @PathVariable Long id, @Valid @RequestBody AlterarSenhaDTO dto) {
         return ResponseEntity.ok(servico.alterarSenha(id, dto));
     }
 }

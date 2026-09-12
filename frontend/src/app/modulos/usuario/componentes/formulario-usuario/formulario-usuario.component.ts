@@ -1,23 +1,87 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  UsuarioService,
-  UsuarioRequisicao,
-} from '../../servicos/usuario.service';
-import { PerfilUsuario } from '../../modelos/usuario.modelos';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputMaskModule } from 'primeng/inputmask';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { MessageService } from 'primeng/api';
+
+import { UsuarioService, UsuarioRequisicao } from '../../servicos/usuario.service';
 
 @Component({
   selector: 'app-formulario-usuario',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    FormsModule,
+    CardModule,
+    InputTextModule,
+    InputMaskModule,
+    SelectModule,
+    ButtonModule,
+    MessageModule,
+  ],
   templateUrl: './formulario-usuario.component.html',
+  styles: [
+    `
+      .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .form-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
+      .form-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .form-col-full {
+        grid-column: span 2;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .field label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #334155;
+      }
+      .field-hint {
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .w-full {
+        width: 100%;
+      }
+    `,
+  ],
 })
 export class FormularioUsuarioComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly messageService = inject(MessageService);
 
   readonly idUsuario = signal<number | null>(null);
   readonly modoEdicao = computed(() => this.idUsuario() !== null);
@@ -25,7 +89,6 @@ export class FormularioUsuarioComponent implements OnInit {
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
-  readonly mensagemSucesso = signal<string | null>(null);
 
   formulario: UsuarioRequisicao = {
     nomeCompleto: '',
@@ -34,10 +97,14 @@ export class FormularioUsuarioComponent implements OnInit {
     perfil: 'ALUNO',
   };
 
+  readonly opcoesPerfil = [
+    { label: 'ALUNO (Discente da Graduação)', value: 'ALUNO' },
+    { label: 'PROFESSOR (Docente Responsável)', value: 'PROFESSOR' },
+    { label: 'ADMINISTRADOR (Gestão Global)', value: 'ADMINISTRADOR' },
+  ];
+
   readonly tituloPagina = computed(() => {
-    return this.modoEdicao()
-      ? `Editar Usuário #${this.idUsuario()}`
-      : 'Cadastrar Novo Usuário';
+    return this.modoEdicao() ? `Editar Usuário #${this.idUsuario()}` : 'Cadastrar Novo Usuário';
   });
 
   readonly subtituloPagina = computed(() => {
@@ -73,8 +140,7 @@ export class FormularioUsuarioComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar dados do usuário: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar dados do usuário: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -87,29 +153,15 @@ export class FormularioUsuarioComponent implements OnInit {
     }
   }
 
-  aplicarMascaraMatricula(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const apenasDigitos = input.value.replace(/\D/g, '').slice(0, 12);
-    input.value = apenasDigitos;
-    this.formulario.matriculaSigaa = apenasDigitos;
-  }
-
   validarFormulario(): boolean {
     this.mensagemErro.set(null);
 
-    // 1. Nome Completo
-    if (
-      !this.formulario.nomeCompleto ||
-      this.formulario.nomeCompleto.trim().length === 0
-    ) {
+    if (!this.formulario.nomeCompleto || this.formulario.nomeCompleto.trim().length === 0) {
       this.mensagemErro.set('O Nome Completo é obrigatório.');
       return false;
     }
 
-    // 2. E-mail Institucional (@academico.ufs.br obrigatório para todos)
-    const email = this.formulario.email
-      ? this.formulario.email.trim().toLowerCase()
-      : '';
+    const email = this.formulario.email ? this.formulario.email.trim().toLowerCase() : '';
     if (!email) {
       this.mensagemErro.set('O E-mail Institucional é obrigatório.');
       return false;
@@ -123,16 +175,11 @@ export class FormularioUsuarioComponent implements OnInit {
       return false;
     }
 
-    // 3. Matrícula SIGAA (obrigatória e 12 dígitos para ALUNO)
     if (this.formulario.perfil === 'ALUNO') {
       const matricula = this.formulario.matriculaSigaa
-        ? this.formulario.matriculaSigaa.trim()
+        ? this.formulario.matriculaSigaa.replace(/\D/g, '').trim()
         : '';
-      if (
-        !matricula ||
-        matricula.length !== 12 ||
-        !/^\d{12}$/.test(matricula)
-      ) {
+      if (!matricula || matricula.length !== 12) {
         this.mensagemErro.set(
           'Para alunos, a Matrícula do SIGAA é obrigatória e deve conter exatamente 12 dígitos numéricos.',
         );
@@ -150,52 +197,38 @@ export class FormularioUsuarioComponent implements OnInit {
 
     this.salvando.set(true);
     this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
+
+    const matriculaLimpa = this.formulario.matriculaSigaa
+      ? this.formulario.matriculaSigaa.replace(/\D/g, '').trim()
+      : null;
 
     const payload: UsuarioRequisicao = {
       nomeCompleto: this.formulario.nomeCompleto.trim(),
       email: this.formulario.email.trim().toLowerCase(),
-      matriculaSigaa:
-        this.formulario.perfil === 'ALUNO' && this.formulario.matriculaSigaa
-          ? this.formulario.matriculaSigaa.trim()
-          : null,
+      matriculaSigaa: this.formulario.perfil === 'ALUNO' && matriculaLimpa ? matriculaLimpa : null,
       perfil: this.formulario.perfil,
     };
 
     const id = this.idUsuario();
-    if (id) {
-      this.usuarioService.editar(id, payload).subscribe({
-        next: (atualizado) => {
-          this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Usuário ${atualizado.nomeCompleto} atualizado com sucesso!`,
-          );
-          setTimeout(() => this.voltarParaListagem(), 1200);
-        },
-        error: (err) => {
-          this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar dados do usuário.',
-          );
-        },
-      });
-    } else {
-      this.usuarioService.cadastrar(payload).subscribe({
-        next: (criado) => {
-          this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Usuário ${criado.nomeCompleto} cadastrado com sucesso!`,
-          );
-          setTimeout(() => this.voltarParaListagem(), 1200);
-        },
-        error: (err) => {
-          this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar novo usuário.',
-          );
-        },
-      });
-    }
+    const requisicao$ = id
+      ? this.usuarioService.editar(id, payload)
+      : this.usuarioService.cadastrar(payload);
+
+    requisicao$.subscribe({
+      next: (usuario) => {
+        this.salvando.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `Usuário ${usuario.nomeCompleto} ${id ? 'atualizado' : 'cadastrado'} com sucesso!`,
+        });
+        setTimeout(() => this.voltarParaListagem(), 1000);
+      },
+      error: (err) => {
+        this.salvando.set(false);
+        this.mensagemErro.set(err.error?.mensagem || 'Falha ao salvar usuário.');
+      },
+    });
   }
 
   voltarParaListagem(): void {

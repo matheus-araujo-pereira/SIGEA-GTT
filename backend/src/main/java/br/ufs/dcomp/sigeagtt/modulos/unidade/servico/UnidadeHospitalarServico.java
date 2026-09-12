@@ -3,11 +3,10 @@ package br.ufs.dcomp.sigeagtt.modulos.unidade.servico;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.dto.UnidadeHospitalarRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.modelo.UnidadeHospitalar;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.repositorio.UnidadeHospitalarRepositorio;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UnidadeHospitalarServico {
@@ -25,8 +24,12 @@ public class UnidadeHospitalarServico {
 
     @Transactional(readOnly = true)
     public UnidadeHospitalar buscarPorId(Long id) {
-        return repositorio.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Unidade hospitalar não encontrada: " + id));
+        return repositorio
+                .findById(id)
+                .orElseThrow(
+                        () ->
+                                new NoSuchElementException(
+                                        "Unidade hospitalar não encontrada: " + id));
     }
 
     @Transactional
@@ -35,7 +38,8 @@ public class UnidadeHospitalarServico {
         String nome = dto.nome() != null ? dto.nome().trim() : "";
 
         if (repositorio.findBySigla(sigla).isPresent()) {
-            throw new IllegalArgumentException("Já existe uma unidade cadastrada com a sigla: " + sigla);
+            throw new IllegalArgumentException(
+                    "Já existe uma unidade cadastrada com a sigla: " + sigla);
         }
 
         UnidadeHospitalar unidade = new UnidadeHospitalar();
@@ -54,7 +58,8 @@ public class UnidadeHospitalarServico {
         String nome = dto.nome() != null ? dto.nome().trim() : "";
 
         if (repositorio.findBySiglaAndIdNot(sigla, id).isPresent()) {
-            throw new IllegalArgumentException("A sigla '" + sigla + "' já está em uso por outra unidade.");
+            throw new IllegalArgumentException(
+                    "A sigla '" + sigla + "' já está em uso por outra unidade.");
         }
 
         unidade.setSigla(sigla);

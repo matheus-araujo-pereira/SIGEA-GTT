@@ -41,8 +41,7 @@ public class AtividadeEducacional {
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadaEm;
 
-    public AtividadeEducacional() {
-    }
+    public AtividadeEducacional() {}
 
     @PrePersist
     public void prePersist() {

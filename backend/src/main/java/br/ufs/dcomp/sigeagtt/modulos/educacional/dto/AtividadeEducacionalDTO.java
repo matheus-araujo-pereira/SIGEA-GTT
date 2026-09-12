@@ -21,8 +21,8 @@ public record AtividadeEducacionalDTO(
         Integer totalAlunosTurma,
         Integer totalSubmissoes,
         Integer totalAvaliadas) {
-    public static AtividadeEducacionalDTO deEntidade(AtividadeEducacional a, int totalAlunos, int totalSubmissoes,
-            int totalAvaliadas) {
+    public static AtividadeEducacionalDTO deEntidade(
+            AtividadeEducacional a, int totalAlunos, int totalSubmissoes, int totalAvaliadas) {
         return new AtividadeEducacionalDTO(
                 a.getId(),
                 a.getTurma() != null ? a.getTurma().getId() : null,

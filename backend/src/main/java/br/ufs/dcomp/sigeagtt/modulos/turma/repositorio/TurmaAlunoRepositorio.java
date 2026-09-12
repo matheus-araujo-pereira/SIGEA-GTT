@@ -2,11 +2,10 @@ package br.ufs.dcomp.sigeagtt.modulos.turma.repositorio;
 
 import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.TurmaAluno;
 import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.TurmaAlunoId;
-
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import java.util.List;
 
 public interface TurmaAlunoRepositorio extends JpaRepository<TurmaAluno, TurmaAlunoId> {
 

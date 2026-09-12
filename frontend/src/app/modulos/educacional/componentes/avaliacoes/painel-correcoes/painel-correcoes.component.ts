@@ -1,15 +1,29 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageModule } from 'primeng/message';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { Submissao } from '../../../modelos/educacional.modelos';
-import { PaginacaoComponent } from '../../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 @Component({
   selector: 'app-painel-correcoes',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    CommonModule,
+    DatePipe,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    TagModule,
+    TooltipModule,
+    MessageModule,
+  ],
   templateUrl: './painel-correcoes.component.html',
 })
 export class PainelCorrecoesComponent implements OnInit {
@@ -21,9 +35,6 @@ export class PainelCorrecoesComponent implements OnInit {
   readonly mensagemErro = signal<string | null>(null);
 
   readonly termoBusca = signal('');
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
-
   readonly totalPendentes = computed(() => this.pendentes().length);
 
   readonly pendentesFiltrados = computed<Submissao[]>(() => {
@@ -33,25 +44,12 @@ export class PainelCorrecoesComponent implements OnInit {
         if (!termo) return true;
         return (
           s.alunoNome.toLowerCase().includes(termo) ||
-          (s.alunoMatricula &&
-            s.alunoMatricula.toLowerCase().includes(termo)) ||
+          (s.alunoMatricula && s.alunoMatricula.toLowerCase().includes(termo)) ||
           s.atividadeTitulo.toLowerCase().includes(termo) ||
           s.disciplinaNome.toLowerCase().includes(termo)
         );
       })
-      .sort((a, b) =>
-        (b.dataSubmissao || '').localeCompare(a.dataSubmissao || ''),
-      );
-  });
-
-  readonly totalFiltrados = computed(() => this.pendentesFiltrados().length);
-
-  readonly pendentesPaginados = computed<Submissao[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.pendentesFiltrados().slice(
-      inicio,
-      inicio + this.itensPorPagina,
-    );
+      .sort((a, b) => (b.dataSubmissao || '').localeCompare(a.dataSubmissao || ''));
   });
 
   ngOnInit(): void {
@@ -67,8 +65,7 @@ export class PainelCorrecoesComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar submissões pendentes: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar submissões pendentes: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -84,14 +81,5 @@ export class PainelCorrecoesComponent implements OnInit {
 
   navegarParaCorrigir(submissaoId: number): void {
     this.router.navigate(['/submissoes', submissaoId, 'corrigir']);
-  }
-
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
   }
 }

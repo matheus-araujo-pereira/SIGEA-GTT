@@ -1,26 +1,43 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { SelectModule } from 'primeng/select';
+import { TextareaModule } from 'primeng/textarea';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageService } from 'primeng/api';
 import { EducacionalService } from '../../../servicos/educacional.service';
-import {
-  CasoClinico,
-  SalvarAtividadePayload,
-} from '../../../modelos/educacional.modelos';
+import { CasoClinico, SalvarAtividadePayload } from '../../../modelos/educacional.modelos';
 import { TurmaService } from '../../../../turma/servicos/turma.service';
 import { Turma } from '../../../../turma/modelos/turma.modelos';
 import { AutenticacaoService } from '../../../../autenticacao/servicos/autenticacao.service';
 
 @Component({
   selector: 'app-formulario-atividade',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    FormsModule,
+    CardModule,
+    InputTextModule,
+    InputNumberModule,
+    SelectModule,
+    TextareaModule,
+    ToggleSwitchModule,
+    ButtonModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './formulario-atividade.component.html',
 })
 export class FormularioAtividadeComponent implements OnInit {
   private readonly educacionalService = inject(EducacionalService);
   private readonly turmaService = inject(TurmaService);
   private readonly auth = inject(AutenticacaoService);
+  private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -35,9 +52,7 @@ export class FormularioAtividadeComponent implements OnInit {
   readonly modoEdicao = computed(() => this.atividadeId() !== null);
 
   readonly tituloPagina = computed(() =>
-    this.modoEdicao()
-      ? 'Editar Atividade de Auditoria'
-      : 'Nova Atividade Educacional',
+    this.modoEdicao() ? 'Editar Atividade de Auditoria' : 'Nova Atividade Educacional',
   );
 
   readonly subtituloPagina = computed(() =>
@@ -46,15 +61,27 @@ export class FormularioAtividadeComponent implements OnInit {
       : 'Vincule um caso clínico simulado a uma turma para resolução pelos discentes.',
   );
 
+  readonly turmasOpcoes = computed(() =>
+    this.turmas().map((t) => ({
+      label: `${t.codigoDisciplina} - ${t.periodoLetivo} (${t.nomeDisciplina || 'Disciplina'})`,
+      value: t.id,
+    })),
+  );
+
+  readonly casosOpcoes = computed(() =>
+    this.casos().map((c) => ({
+      label: `${c.numeroAtendimento} — ${c.titulo} (${c.unidadeHospitalarSigla})`,
+      value: c.id,
+    })),
+  );
+
   formulario: SalvarAtividadePayload = {
     turmaId: 0,
     casoClinicoId: 0,
     titulo: '',
     orientacoesPedagogicas: '',
     dataInicio: new Date().toISOString().substring(0, 10),
-    dataFim: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .substring(0, 10),
+    dataFim: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
     tempoLimiteMinutos: 20,
     ativa: true,
   };
@@ -72,9 +99,7 @@ export class FormularioAtividadeComponent implements OnInit {
 
   carregarDependencias(): void {
     const profId =
-      this.auth.usuarioLogado()?.perfil === 'PROFESSOR'
-        ? this.auth.usuarioLogado()?.id
-        : undefined;
+      this.auth.usuarioLogado()?.perfil === 'PROFESSOR' ? this.auth.usuarioLogado()?.id : undefined;
 
     this.turmaService.listar(profId).subscribe({
       next: (dados) => {
@@ -84,11 +109,7 @@ export class FormularioAtividadeComponent implements OnInit {
             ? ativas.filter((t) => t.professorResponsavelId === profId)
             : ativas;
         this.turmas.set(turmasFiltradas);
-        if (
-          !this.modoEdicao() &&
-          turmasFiltradas.length > 0 &&
-          this.formulario.turmaId === 0
-        ) {
+        if (!this.modoEdicao() && turmasFiltradas.length > 0 && this.formulario.turmaId === 0) {
           this.formulario.turmaId = turmasFiltradas[0].id;
         }
       },
@@ -153,9 +174,7 @@ export class FormularioAtividadeComponent implements OnInit {
       return;
     }
     if (this.formulario.tempoLimiteMinutos <= 0) {
-      this.mensagemErro.set(
-        'O tempo limite deve ser maior que zero (padrão IHI GTT: 20 min).',
-      );
+      this.mensagemErro.set('O tempo limite deve ser maior que zero (padrão IHI GTT: 20 min).');
       return;
     }
 
@@ -163,21 +182,21 @@ export class FormularioAtividadeComponent implements OnInit {
     this.mensagemErro.set(null);
 
     const requisicao = this.modoEdicao()
-      ? this.educacionalService.editarAtividade(
-          this.atividadeId()!,
-          this.formulario,
-        )
+      ? this.educacionalService.editarAtividade(this.atividadeId()!, this.formulario)
       : this.educacionalService.salvarAtividade(this.formulario);
 
     requisicao.subscribe({
       next: () => {
         this.salvando.set(false);
-        this.router.navigate(['/atividades']);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `Atividade ${this.modoEdicao() ? 'atualizada' : 'cadastrada'} com sucesso!`,
+        });
+        setTimeout(() => this.router.navigate(['/atividades']), 800);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao salvar atividade: ' + (err.error?.mensagem || err.message),
-        );
+        this.mensagemErro.set('Erro ao salvar atividade: ' + (err.error?.mensagem || err.message));
         this.salvando.set(false);
       },
     });

@@ -1,89 +1,102 @@
-<div>
-  <!-- CABEÇALHO DA PÁGINA (PADRÃO ADMINISTRAÇÃO / GESTÃO ACADÊMICA) -->
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.25rem">
+  <!-- CABEÇALHO DA PÁGINA -->
   <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 1rem;
+    "
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Quadro Resumo de Auditorias</h1>
-      <span class="text-secondary small">
-        Total localizado: {{ totalElementos() }} prontuários clínicos
-        homologados com rastreamento GTT
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
+        Quadro Resumo de Auditorias
+      </h1>
+      <span style="font-size: 0.875rem; color: #64748b">
+        Total localizado: {{ totalElementos() }} prontuários clínicos homologados com rastreamento
+        GTT
       </span>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm rounded-1 font-monospace"
-        (click)="limparFiltros()"
-      >
-        LIMPAR FILTROS
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary btn-sm rounded-1 font-monospace d-inline-flex align-items-center gap-1"
-        (click)="exportarPDF()"
-        [disabled]="exportandoPdf() || carregando()"
-      >
-        @if (exportandoPdf()) {
-          <span
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          <span>GERANDO PDF...</span>
-        } @else {
-          <i class="bi bi-file-earmark-pdf"></i>
-          <span>EXPORTAR PLANILHA PDF</span>
-        }
-      </button>
+    <div style="display: flex; align-items: center; gap: 0.5rem">
+      <p-button
+        label="LIMPAR FILTROS"
+        icon="pi pi-filter-slash"
+        [outlined]="true"
+        severity="secondary"
+        size="small"
+        (onClick)="limparFiltros()"
+      />
+      <p-button
+        label="EXPORTAR PLANILHA PDF"
+        icon="pi pi-file-pdf"
+        size="small"
+        [loading]="exportandoPdf() || carregando()"
+        (onClick)="exportarPDF()"
+      />
     </div>
   </div>
 
-  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO EPIDEMIOLOGIA) -->
-  <ul class="nav nav-pills mb-3 gap-2">
-    <li class="nav-item">
-      <a
-        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores"
-      >
-        <i class="bi bi-graph-up me-1"></i>DASHBOARD EXECUTIVO
-      </a>
-    </li>
-    <li class="nav-item">
-      <a
-        class="nav-link active rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores/quadro-resumo"
-      >
-        <i class="bi bi-table me-1"></i>QUADRO RESUMO
-      </a>
-    </li>
-    <li class="nav-item">
-      <a
-        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores/gatilhos"
-      >
-        <i class="bi bi-bullseye me-1"></i>RASTREABILIDADE & GATILHOS
-      </a>
-    </li>
-  </ul>
-
-  <!-- CARD DE FILTROS E BUSCA PADRONIZADO -->
+  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO INDICADORES) -->
   <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+    style="
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 0.5rem;
+    "
   >
-    <div class="row g-2 align-items-end">
+    <p-button
+      label="DASHBOARD EXECUTIVO"
+      icon="pi pi-chart-line"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/indicadores"
+    />
+    <p-button
+      label="QUADRO RESUMO"
+      icon="pi pi-table"
+      severity="primary"
+      size="small"
+      routerLink="/indicadores/quadro-resumo"
+    />
+    <p-button
+      label="RASTREABILIDADE & GATILHOS"
+      icon="pi pi-compass"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/indicadores/gatilhos"
+    />
+  </div>
+
+  <!-- CARD DE FILTROS E BUSCA -->
+  <p-card>
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: flex-end;
+      "
+    >
       <!-- BUSCA TEXTUAL -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Buscar Prontuário, Gatilho ou Auditor
         </label>
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light border-end-0">
-            <i class="bi bi-search text-secondary"></i>
-          </span>
+        <div style="position: relative; display: flex; align-items: center">
+          <i
+            class="pi pi-search"
+            style="position: absolute; left: 0.75rem; color: #94a3b8; z-index: 1"
+          ></i>
           <input
+            pInputText
             type="text"
-            class="form-control border-start-0"
+            style="width: 100%; padding-left: 2.25rem"
             placeholder="Nº atendimento, gatilho, dano..."
             [ngModel]="termoBusca()"
             (ngModelChange)="termoBusca.set($event); carregarQuadroResumo()"
@@ -91,385 +104,448 @@
         </div>
       </div>
 
-      <!-- PERÍODO LETIVO (SEM DUPLICAÇÃO) -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <!-- PERÍODO LETIVO -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Período Letivo
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="periodoOptions()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroPeriodoLetivo()"
           (ngModelChange)="
-            filtroPeriodoLetivo.set($event);
-            paginaAtual.set(0);
-            carregarQuadroResumo()
+            filtroPeriodoLetivo.set($event); paginaAtual.set(0); carregarQuadroResumo()
           "
-        >
-          <option value="TODOS">Todos os Períodos</option>
-          @for (p of periodosDisponiveis(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
+          styleClass="w-full"
+        />
       </div>
 
       <!-- TURMA -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Turma
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="turmaOptions()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroTurmaId()"
-          (ngModelChange)="
-            filtroTurmaId.set($event);
-            paginaAtual.set(0);
-            carregarQuadroResumo()
-          "
-        >
-          <option value="TODOS">Todas as Turmas</option>
-          @for (t of turmasFiltradas(); track t.id) {
-            <option [value]="t.id">{{ t.codigoDisciplina }}</option>
-          }
-        </select>
+          (ngModelChange)="filtroTurmaId.set($event); paginaAtual.set(0); carregarQuadroResumo()"
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- UNIDADE HOSPITALAR -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <!-- UNIDADE -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Unidade
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="unidadeOptions()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroUnidadeId()"
-          (ngModelChange)="
-            filtroUnidadeId.set($event);
-            paginaAtual.set(0);
-            carregarQuadroResumo()
-          "
-        >
-          <option value="TODOS">Todas as Unidades</option>
-          @for (u of unidades(); track u.id) {
-            <option [value]="u.id">{{ u.sigla }}</option>
-          }
-        </select>
+          (ngModelChange)="filtroUnidadeId.set($event); paginaAtual.set(0); carregarQuadroResumo()"
+          styleClass="w-full"
+        />
       </div>
 
-      <!-- GRAVIDADE NCC MERP -->
-      <div class="col-md-2">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <!-- GRAVIDADE -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Gravidade
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="gravidadeOptions"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroGravidade()"
-          (ngModelChange)="
-            filtroGravidade.set($event);
-            paginaAtual.set(0);
-            carregarQuadroResumo()
+          (ngModelChange)="filtroGravidade.set($event); paginaAtual.set(0); carregarQuadroResumo()"
+          styleClass="w-full"
+        />
+      </div>
+
+      <!-- APENAS COM DANO SWITCH -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.5rem">
+        <p-toggleswitch
+          [ngModel]="apenasComDano()"
+          (ngModelChange)="apenasComDano.set($event); paginaAtual.set(0); carregarQuadroResumo()"
+        />
+        <label
+          style="
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+            cursor: pointer;
           "
         >
-          <option value="TODOS">Todas</option>
-          <option value="CATEGORIA_E">Cat. E (Intervenção)</option>
-          <option value="CATEGORIA_F">Cat. F (Prolongamento)</option>
-          <option value="CATEGORIA_G">Cat. G (Permanente)</option>
-          <option value="CATEGORIA_H">Cat. H (Vida &lt;1h)</option>
-          <option value="CATEGORIA_I">Cat. I (Óbito)</option>
-        </select>
-      </div>
-
-      <!-- CHECKBOX APENAS COM DANO -->
-      <div class="col-md-1 d-flex align-items-center mb-1">
-        <div class="form-check form-switch m-0">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="apenasComDanoSwitch"
-            [ngModel]="apenasComDano()"
-            (ngModelChange)="
-              apenasComDano.set($event);
-              paginaAtual.set(0);
-              carregarQuadroResumo()
-            "
-          />
-          <label
-            class="form-check-label small fw-semibold text-secondary"
-            for="apenasComDanoSwitch"
-          >
-            Só Danos
-          </label>
-        </div>
+          Só Danos
+        </label>
       </div>
     </div>
-  </div>
+  </p-card>
 
   <!-- CONTAINER DE CAPTURA DO QUADRO RESUMO PARA PDF -->
-  <div id="relatorio-quadro-resumo">
+  <div id="relatorio-quadro-resumo" style="display: flex; flex-direction: column; gap: 1rem">
     <!-- CABEÇALHO PARA RELATÓRIO DO QUADRO RESUMO -->
     <div
-      class="p-2 mb-2 bg-white rounded-2 border border-light-subtle shadow-sm d-flex justify-content-between align-items-center"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+      "
     >
-      <div class="d-flex align-items-center gap-2">
-        <span class="fw-bold text-dark font-monospace small">
-          Quadro Resumo de Eventos Adversos e Rastreamento Clínico
-        </span>
-      </div>
-      <div
-        class="small font-monospace text-secondary"
-        style="font-size: 0.72rem"
-      >
+      <span style="font-size: 0.875rem; font-weight: 700; color: #0f172a">
+        Quadro Resumo de Eventos Adversos e Rastreamento Clínico (IHI Global Trigger Tool)
+      </span>
+      <span style="font-size: 0.75rem; color: #64748b; font-variant-numeric: tabular-nums">
         EMISSÃO: {{ dataHoraEmissao() }}
-      </div>
+      </span>
     </div>
 
     <!-- TABELA DO QUADRO RESUMO -->
     <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3"
+      style="
+        background: #ffffff;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        border-radius: 6px;
+        overflow: hidden;
+      "
     >
-      <div class="table-responsive">
-        <table class="table table-hover table-sm m-0 align-middle bg-white">
-          <thead
-            class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-          >
-            <tr>
-              <th scope="col" class="py-2 px-3">PRONTUÁRIO</th>
-              <th scope="col" class="py-2 px-2">UNIDADE</th>
-              <th scope="col" class="py-2 px-2 text-center">TTP (DIAS)</th>
-              <th scope="col" class="py-2 px-2">TRIGGERS IDENTIFICADOS</th>
-              <th scope="col" class="py-2 px-3">
-                EVENTO ADVERSO (DESCRIÇÃO DO DANO)
-              </th>
-              <th scope="col" class="py-2 px-2 text-center">GRAVIDADE</th>
-              <th scope="col" class="py-2 px-2 text-center">NA ADMISSÃO?</th>
-              <th scope="col" class="py-2 px-2">AUDITOR</th>
-            </tr>
-          </thead>
-          <tbody class="small font-monospace bg-white">
-            @for (item of itens(); track item.revisaoId) {
-              <tr class="bg-white">
-                <!-- PRONTUÁRIO -->
-                <td
-                  class="py-2 px-3 fw-bold text-dark bg-white font-sans-serif"
-                >
-                  <i class="bi bi-file-earmark-person text-secondary me-1"></i>
+      <p-table
+        [value]="itens()"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="itensPorPagina()"
+        [first]="paginaAtual() * itensPorPagina()"
+        [totalRecords]="totalElementos()"
+        [rowsPerPageOptions]="[15, 25, 50]"
+        (onPage)="aoMudarPagina($event)"
+        [loading]="carregando()"
+        styleClass="p-datatable-sm"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} prontuários"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="min-width: 140px">PRONTUÁRIO</th>
+            <th style="min-width: 150px">UNIDADE</th>
+            <th style="width: 100px; text-align: center">TTP (DIAS)</th>
+            <th style="min-width: 180px">TRIGGERS IDENTIFICADOS</th>
+            <th style="min-width: 250px">EVENTO ADVERSO (DESCRIÇÃO DO DANO)</th>
+            <th style="width: 120px; text-align: center">GRAVIDADE</th>
+            <th style="width: 120px; text-align: center">NA ADMISSÃO?</th>
+            <th style="min-width: 180px">AUDITOR</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <!-- PRONTUÁRIO -->
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.5rem">
+                <i class="pi pi-id-card" style="color: #64748b"></i>
+                <span style="font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums">
                   {{ item.numeroAtendimento }}
-                  <span
-                    class="text-secondary small d-block font-monospace"
-                    style="font-size: 0.72rem"
-                  >
-                    Idade: {{ item.idadePaciente }}a
-                  </span>
-                </td>
+                </span>
+              </div>
+              <span style="font-size: 0.75rem; color: #64748b; margin-left: 1.5rem; display: block">
+                Idade: {{ item.idadePaciente }}a
+              </span>
+            </td>
 
-                <!-- UNIDADE -->
-                <td class="py-2 px-2 text-secondary bg-white font-sans-serif">
-                  <span
-                    class="badge bg-light text-dark border border-light-subtle font-monospace"
-                  >
-                    {{ item.unidadeHospitalarSigla }}
-                  </span>
-                  <span
-                    class="d-block small text-muted"
-                    style="font-size: 0.72rem"
-                  >
-                    {{ item.unidadeHospitalarNome }}
-                  </span>
-                </td>
+            <!-- UNIDADE -->
+            <td>
+              <p-tag [value]="item.unidadeHospitalarSigla" severity="secondary" />
+              <span style="display: block; font-size: 0.75rem; color: #64748b; margin-top: 0.25rem">
+                {{ item.unidadeHospitalarNome }}
+              </span>
+            </td>
 
-                <!-- TEMPO DE PERMANÊNCIA (TTP) -->
-                <td class="py-2 px-2 text-center fw-bold text-dark bg-white">
-                  {{ item.tempoPermanenciaDias }} d
-                </td>
+            <!-- TEMPO DE PERMANÊNCIA (TTP) -->
+            <td
+              style="
+                text-align: center;
+                font-weight: 700;
+                color: #0f172a;
+                font-variant-numeric: tabular-nums;
+              "
+            >
+              {{ item.tempoPermanenciaDias }} d
+            </td>
 
-                <!-- TRIGGERS DETECTADOS -->
-                <td class="py-2 px-2 bg-white">
-                  @if (item.gatilhosDetectados.length === 0) {
-                    <span class="text-muted small">Nenhum</span>
-                  } @else {
-                    <div class="d-flex flex-wrap gap-1">
-                      @for (g of item.gatilhosDetectados; track g) {
-                        <span
-                          class="badge bg-light text-primary border border-primary-subtle font-monospace px-1"
-                        >
-                          {{ g }}
-                        </span>
-                      }
-                    </div>
+            <!-- TRIGGERS DETECTADOS -->
+            <td>
+              @if (item.gatilhosDetectados.length === 0) {
+                <span style="font-size: 0.8125rem; color: #94a3b8">Nenhum</span>
+              } @else {
+                <div style="display: flex; flex-wrap: wrap; gap: 0.25rem">
+                  @for (g of item.gatilhosDetectados; track g) {
+                    <p-tag [value]="g" severity="info" />
                   }
-                </td>
+                </div>
+              }
+            </td>
 
-                <!-- EVENTO ADVERSO / JUSTIFICATIVA DE DANO -->
-                <td class="py-2 px-3 bg-white font-sans-serif">
-                  @if (item.totalDanos === 0) {
-                    <span class="text-secondary small fst-italic">
-                      Nenhum evento adverso associado aos gatilhos
-                    </span>
-                  } @else {
-                    <div class="text-dark fw-medium small">
-                      @for (desc of item.descricoesDanos; track desc) {
-                        <div
-                          class="mb-1 pb-1 border-bottom border-light-subtle last-border-none"
-                        >
-                          <i
-                            class="bi bi-exclamation-triangle-fill text-danger me-1"
-                          ></i>
-                          {{ desc }}
-                        </div>
-                      }
-                    </div>
-                  }
-                </td>
-
-                <!-- GRAVIDADE NCC MERP -->
-                <td class="py-2 px-2 text-center bg-white">
-                  @if (item.totalDanos > 0) {
-                    <span
-                      class="badge font-monospace px-2 py-1"
-                      [ngClass]="
-                        obterBadgeGravidade(item.gravidadeMaxima).classe
+            <!-- EVENTO ADVERSO / JUSTIFICATIVA DE DANO -->
+            <td>
+              @if (item.totalDanos === 0) {
+                <span style="font-size: 0.8125rem; color: #94a3b8; font-style: italic">
+                  Nenhum evento adverso associado
+                </span>
+              } @else {
+                <div style="display: flex; flex-direction: column; gap: 0.35rem">
+                  @for (desc of item.descricoesDanos; track desc) {
+                    <div
+                      style="
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 0.35rem;
+                        font-size: 0.8125rem;
+                        color: #0f172a;
                       "
                     >
-                      {{ obterBadgeGravidade(item.gravidadeMaxima).rotulo }}
-                    </span>
-                  } @else {
-                    <span
-                      class="badge bg-light text-secondary border border-light-subtle font-monospace"
-                    >
-                      Sem Dano
-                    </span>
+                      <i
+                        class="pi pi-exclamation-triangle"
+                        style="color: #ef4444; margin-top: 0.2rem; flex-shrink: 0"
+                      ></i>
+                      <span>{{ desc }}</span>
+                    </div>
                   }
-                </td>
+                </div>
+              }
+            </td>
 
-                <!-- PRESENTE NA ADMISSÃO -->
-                <td class="py-2 px-2 text-center bg-white">
-                  @if (item.totalDanos > 0) {
-                    @if (item.danoPresenteAdmissao) {
-                      <span
-                        class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace px-2"
-                      >
-                        SIM (Ext)
-                      </span>
-                    } @else {
-                      <span
-                        class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2"
-                      >
-                        NÃO (Hosp)
-                      </span>
-                    }
-                  } @else {
-                    <span class="text-muted">-</span>
-                  }
-                </td>
+            <!-- GRAVIDADE NCC MERP -->
+            <td style="text-align: center">
+              @if (item.totalDanos > 0) {
+                <p-tag
+                  [severity]="obterBadgeGravidade(item.gravidadeMaxima).severity"
+                  [value]="obterBadgeGravidade(item.gravidadeMaxima).rotulo"
+                />
+              } @else {
+                <p-tag severity="secondary" value="Sem Dano" />
+              }
+            </td>
 
-                <!-- AUDITOR / DOCENTE -->
-                <td class="py-2 px-2 text-secondary bg-white font-sans-serif">
-                  <div class="fw-semibold text-dark small">
-                    {{ item.alunoAuditorNome }}
-                  </div>
-                  <div
-                    class="text-muted font-monospace"
-                    style="font-size: 0.72rem"
-                  >
-                    Docente: {{ item.professorValidadorNome }}
-                    @if (item.nota) {
-                      &bull; Nota:
-                      <span class="fw-bold text-success">{{ item.nota }}</span>
-                    }
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="8" class="text-center py-5 text-muted bg-white">
-                  <i class="bi bi-inbox fs-2 d-block text-secondary mb-2"></i>
-                  Nenhum prontuário encontrado com os filtros selecionados.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            <!-- PRESENTE NA ADMISSÃO -->
+            <td style="text-align: center">
+              @if (item.totalDanos > 0) {
+                @if (item.danoPresenteAdmissao) {
+                  <p-tag severity="warn" value="SIM (Ext)" />
+                } @else {
+                  <p-tag severity="info" value="NÃO (Hosp)" />
+                }
+              } @else {
+                <span style="color: #94a3b8">-</span>
+              }
+            </td>
+
+            <!-- AUDITOR / DOCENTE -->
+            <td>
+              <div style="font-weight: 600; font-size: 0.8125rem; color: #0f172a">
+                {{ item.alunoAuditorNome }}
+              </div>
+              <div style="font-size: 0.75rem; color: #64748b">
+                Docente: {{ item.professorValidadorNome }}
+                @if (item.nota) {
+                  &bull; Nota: <span style="font-weight: 700; color: #10b981">{{ item.nota }}</span>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 3rem; color: #94a3b8">
+              <i
+                class="pi pi-inbox"
+                style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1"
+              ></i>
+              Nenhum prontuário localizado com os filtros selecionados.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
 
       <!-- TOTAIS CONSOLIDADOS -->
       @if (totais()) {
-        <div class="bg-light p-3 border-top border-light-subtle">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-dark font-monospace small">
-              TOTAIS CONSOLIDADOS DO QUADRO RESUMO:
-            </span>
+        <div
+          style="
+            background: #f8fafc;
+            border-top: 1px solid var(--p-content-border-color, #e2e8f0);
+            padding: 1.25rem;
+          "
+        >
+          <div
+            style="
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              margin-bottom: 0.75rem;
+            "
+          >
+            Totais Consolidados do Quadro Resumo
           </div>
-          <div class="row g-2 text-center">
-            <div class="col-md-2">
-              <div class="p-2 bg-white rounded-2 border border-light-subtle">
-                <span class="text-muted small font-monospace d-block"
-                  >Prontuários Revistos</span
-                >
-                <span class="fw-bold h5 text-dark m-0 font-monospace">{{
-                  totais()?.totalProntuarios
-                }}</span>
-              </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(6, 1fr);
+              gap: 0.75rem;
+              text-align: center;
+            "
+          >
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 0.75rem;
+              "
+            >
+              <span style="font-size: 0.75rem; color: #64748b; display: block"
+                >Prontuários Revistos</span
+              >
+              <span
+                style="
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #0f172a;
+                  font-variant-numeric: tabular-nums;
+                "
+              >
+                {{ totais()?.totalProntuarios }}
+              </span>
             </div>
-            <div class="col-md-2">
-              <div class="p-2 bg-white rounded-2 border border-light-subtle">
-                <span class="text-muted small font-monospace d-block"
-                  >Tempo Total (TTP)</span
-                >
-                <span class="fw-bold h5 text-dark m-0 font-monospace"
-                  >{{ totais()?.totalDiasInternacao }} d</span
-                >
-              </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 0.75rem;
+              "
+            >
+              <span style="font-size: 0.75rem; color: #64748b; display: block"
+                >Tempo Total (TTP)</span
+              >
+              <span
+                style="
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #0f172a;
+                  font-variant-numeric: tabular-nums;
+                "
+              >
+                {{ totais()?.totalDiasInternacao }} d
+              </span>
             </div>
-            <div class="col-md-2">
-              <div class="p-2 bg-white rounded-2 border border-light-subtle">
-                <span class="text-muted small font-monospace d-block"
-                  >Total de Eventos (EA)</span
-                >
-                <span class="fw-bold h5 text-danger m-0 font-monospace">{{
-                  totais()?.totalEventosAdversos
-                }}</span>
-              </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 0.75rem;
+              "
+            >
+              <span style="font-size: 0.75rem; color: #64748b; display: block"
+                >Total de Eventos (EA)</span
+              >
+              <span
+                style="
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #ef4444;
+                  font-variant-numeric: tabular-nums;
+                "
+              >
+                {{ totais()?.totalEventosAdversos }}
+              </span>
             </div>
-            <div class="col-md-2">
-              <div class="p-2 bg-white rounded-2 border border-light-subtle">
-                <span class="text-muted small font-monospace d-block"
-                  >Taxa por 1.000 Dias</span
-                >
-                <span class="fw-bold h5 text-primary m-0 font-monospace">{{
-                  totais()?.taxaDanosPorMilDias
-                }}</span>
-              </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 0.75rem;
+              "
+            >
+              <span style="font-size: 0.75rem; color: #64748b; display: block"
+                >Taxa / 1.000 Dias</span
+              >
+              <span
+                style="
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #3b82f6;
+                  font-variant-numeric: tabular-nums;
+                "
+              >
+                {{ totais()?.taxaDanosPorMilDias }}
+              </span>
             </div>
-            <div class="col-md-2">
-              <div class="p-2 bg-white rounded-2 border border-light-subtle">
-                <span class="text-muted small font-monospace d-block"
-                  >Danos por 100 Admissões</span
-                >
-                <span class="fw-bold h5 text-primary m-0 font-monospace"
-                  >{{ totais()?.frequenciaPorCemAdmissoes }}%</span
-                >
-              </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 0.75rem;
+              "
+            >
+              <span style="font-size: 0.75rem; color: #64748b; display: block"
+                >Danos / 100 Admissões</span
+              >
+              <span
+                style="
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #3b82f6;
+                  font-variant-numeric: tabular-nums;
+                "
+              >
+                {{ totais()?.frequenciaPorCemAdmissoes }}%
+              </span>
             </div>
-            <div class="col-md-2">
-              <div class="p-2 bg-white rounded-2 border border-light-subtle">
-                <span class="text-muted small font-monospace d-block"
-                  >% Pacientes com Dano</span
-                >
-                <span class="fw-bold h5 text-primary m-0 font-monospace"
-                  >{{ totais()?.prevalenciaPercentual }}%</span
-                >
-              </div>
+            <div
+              style="
+                background: #ffffff;
+                border: 1px solid var(--p-content-border-color, #e2e8f0);
+                border-radius: 6px;
+                padding: 0.75rem;
+              "
+            >
+              <span style="font-size: 0.75rem; color: #64748b; display: block"
+                >% Pacientes c/ Dano</span
+              >
+              <span
+                style="
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                  color: #3b82f6;
+                  font-variant-numeric: tabular-nums;
+                "
+              >
+                {{ totais()?.prevalenciaPercentual }}%
+              </span>
             </div>
           </div>
         </div>
       }
-
-      <!-- PAGINAÇÃO PADRÃO -->
-      <app-paginacao
-        [totalItens]="totalElementos()"
-        [itensPorPagina]="itensPorPagina()"
-        [paginaAtual]="paginaAtual() + 1"
-        (paginaAlterada)="mudarPagina($event)"
-      >
-      </app-paginacao>
     </div>
   </div>
 </div>

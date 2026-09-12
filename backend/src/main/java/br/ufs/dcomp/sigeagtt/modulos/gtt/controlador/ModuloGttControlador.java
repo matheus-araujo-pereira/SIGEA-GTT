@@ -3,13 +3,12 @@ package br.ufs.dcomp.sigeagtt.modulos.gtt.controlador;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.dto.ModuloGttRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.ModuloGtt;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.servico.ModuloGttServico;
-
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/modulos-gtt")
@@ -37,14 +36,16 @@ public class ModuloGttControlador {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ModuloGtt> editar(@PathVariable Long id, @Valid @RequestBody ModuloGttRequisicaoDTO dto) {
+    public ResponseEntity<ModuloGtt> editar(
+            @PathVariable Long id, @Valid @RequestBody ModuloGttRequisicaoDTO dto) {
         return ResponseEntity.ok(servico.editar(id, dto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> excluir(@PathVariable Long id) {
         servico.excluir(id);
-        return ResponseEntity.ok(Map.of("mensagem", "Módulo e gatilhos associados excluídos com sucesso."));
+        return ResponseEntity.ok(
+                Map.of("mensagem", "Módulo e gatilhos associados excluídos com sucesso."));
     }
 
     @PatchMapping("/{id}/alternar-status")

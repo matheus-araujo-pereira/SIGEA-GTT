@@ -1,12 +1,18 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { CardModule } from 'primeng/card';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
 import { TurmaService } from '../../servicos/turma.service';
 import { UsuarioService } from '../../../usuario/servicos/usuario.service';
 import { Turma } from '../../modelos/turma.modelos';
 import { Usuario } from '../../../usuario/modelos/usuario.modelos';
-import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 import { AutenticacaoService } from '../../../autenticacao/servicos/autenticacao.service';
 
 export interface AlunoLinha {
@@ -19,9 +25,54 @@ export interface AlunoLinha {
 
 @Component({
   selector: 'app-alunos-turma',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    CardModule,
+    TooltipModule,
+  ],
   templateUrl: './alunos-turma.component.html',
+  styles: [
+    `
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .page-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
+      .page-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .enroll-card {
+        margin-bottom: 20px;
+      }
+      .enroll-form {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .enroll-select {
+        flex: 1;
+      }
+      .search-card {
+        margin-bottom: 16px;
+      }
+      .actions-cell {
+        display: flex;
+        justify-content: flex-end;
+      }
+    `,
+  ],
 })
 export class AlunosTurmaComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -29,10 +80,10 @@ export class AlunosTurmaComponent implements OnInit {
   private readonly auth = inject(AutenticacaoService);
   private readonly turmaService = inject(TurmaService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
 
-  readonly ehAdmin = computed(
-    () => this.auth.usuarioLogado()?.perfil === 'ADMINISTRADOR',
-  );
+  readonly ehAdmin = computed(() => this.auth.usuarioLogado()?.perfil === 'ADMINISTRADOR');
 
   readonly turmaId = signal<number>(0);
   readonly turma = signal<Turma | null>(null);
@@ -41,15 +92,9 @@ export class AlunosTurmaComponent implements OnInit {
 
   readonly carregando = signal(false);
   readonly matriculando = signal(false);
-  readonly mensagemSucesso = signal<string | null>(null);
-  readonly mensagemErro = signal<string | null>(null);
 
   readonly termoBusca = signal('');
-  readonly termoBuscaDisponivel = signal('');
   alunoSelecionadoId: number | null = null;
-
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
 
   readonly totalMatriculados = computed(() => this.alunosMatriculados().length);
 
@@ -72,32 +117,21 @@ export class AlunosTurmaComponent implements OnInit {
       .map((a) => ({
         id: a.id,
         nome: a.nomeCompleto,
-        matricula: a.matriculaSigaa || '-',
+        matricula: a.matriculaSigaa || '—',
         email: a.email,
         original: a,
       }));
   });
 
-  readonly totalFiltrados = computed(() => this.alunosFiltrados().length);
-
-  readonly alunosPaginados = computed<AlunoLinha[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.alunosFiltrados().slice(inicio, inicio + this.itensPorPagina);
-  });
-
-  readonly alunosDisponiveis = computed(() => {
+  readonly opcoesAlunosDisponiveis = computed(() => {
     const matriculadosIds = new Set(this.alunosMatriculados().map((a) => a.id));
-    const termo = this.termoBuscaDisponivel().trim().toLowerCase();
     return this.todosAlunos()
-      .filter((a) => {
-        const match =
-          !termo ||
-          a.nomeCompleto.toLowerCase().includes(termo) ||
-          (a.matriculaSigaa || '').toLowerCase().includes(termo) ||
-          a.email.toLowerCase().includes(termo);
-        return a.ativo && !matriculadosIds.has(a.id) && match;
-      })
-      .sort((a, b) => a.nomeCompleto.localeCompare(b.nomeCompleto, 'pt-BR'));
+      .filter((a) => a.ativo && !matriculadosIds.has(a.id))
+      .sort((a, b) => a.nomeCompleto.localeCompare(b.nomeCompleto, 'pt-BR'))
+      .map((a) => ({
+        label: `${a.nomeCompleto} (Matrícula: ${a.matriculaSigaa || 'N/A'})`,
+        value: a.id,
+      }));
   });
 
   ngOnInit(): void {
@@ -120,7 +154,11 @@ export class AlunosTurmaComponent implements OnInit {
         this.carregarAlunosMatriculados(id);
       },
       error: (err) => {
-        this.mensagemErro.set('Erro ao carregar turma: ' + err.message);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Erro ao carregar turma: ' + err.message,
+        });
         this.carregando.set(false);
       },
     });
@@ -142,9 +180,11 @@ export class AlunosTurmaComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao listar alunos matriculados: ' + err.message,
-        );
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Erro ao listar alunos matriculados: ' + err.message,
+        });
         this.carregando.set(false);
       },
     });
@@ -158,20 +198,24 @@ export class AlunosTurmaComponent implements OnInit {
     if (!alunoId || !turmaId) return;
 
     this.matriculando.set(true);
-    this.limparMensagens();
 
     this.turmaService.matricularAluno(turmaId, alunoId).subscribe({
       next: () => {
-        this.mensagemSucesso.set('Aluno matriculado na turma com sucesso.');
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Aluno matriculado na turma com sucesso.',
+        });
         this.alunoSelecionadoId = null;
-        this.termoBuscaDisponivel.set('');
         this.matriculando.set(false);
         this.carregarAlunosMatriculados(turmaId);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          err.error?.mensagem || 'Falha ao matricular aluno.',
-        );
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: err.error?.mensagem || 'Falha ao matricular aluno.',
+        });
         this.matriculando.set(false);
       },
     });
@@ -180,36 +224,34 @@ export class AlunosTurmaComponent implements OnInit {
   desmatricular(aluno: Usuario): void {
     if (!this.ehAdmin()) return;
 
-    const conf = confirm(
-      `Deseja realmente desmatricular o aluno "${aluno.nomeCompleto}" da turma?`,
-    );
-    if (!conf) return;
-
-    const turmaId = this.turmaId();
-    this.limparMensagens();
-
-    this.turmaService.desmatricularAluno(turmaId, aluno.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(
-          `Aluno ${aluno.nomeCompleto} desmatriculado da turma.`,
-        );
-        this.carregarAlunosMatriculados(turmaId);
-      },
-      error: (err) => {
-        this.mensagemErro.set(
-          err.error?.mensagem || 'Falha ao desmatricular aluno.',
-        );
+    this.confirmationService.confirm({
+      header: 'Confirmar Desmatrícula',
+      message: `Deseja realmente desmatricular o aluno "${aluno.nomeCompleto}" da turma?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, Desmatricular',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        const turmaId = this.turmaId();
+        this.turmaService.desmatricularAluno(turmaId, aluno.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Aluno ${aluno.nomeCompleto} desmatriculado da turma.`,
+            });
+            this.carregarAlunosMatriculados(turmaId);
+          },
+          error: (err) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: err.error?.mensagem || 'Falha ao desmatricular aluno.',
+            });
+          },
+        });
       },
     });
-  }
-
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(p: number): void {
-    this.paginaAtual.set(p);
   }
 
   voltarParaTurmas(): void {
@@ -218,10 +260,5 @@ export class AlunosTurmaComponent implements OnInit {
     } else {
       this.router.navigate(['/minhas-turmas']);
     }
-  }
-
-  private limparMensagens(): void {
-    this.mensagemErro.set(null);
-    this.mensagemSucesso.set(null);
   }
 }

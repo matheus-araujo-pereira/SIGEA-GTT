@@ -5,11 +5,10 @@ import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.GatilhoGtt;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.ModuloGtt;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.repositorio.GatilhoGttRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.repositorio.ModuloGttRepositorio;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GatilhoGttServico {
@@ -17,7 +16,8 @@ public class GatilhoGttServico {
     private final GatilhoGttRepositorio gatilhoRepositorio;
     private final ModuloGttRepositorio moduloRepositorio;
 
-    public GatilhoGttServico(GatilhoGttRepositorio gatilhoRepositorio, ModuloGttRepositorio moduloRepositorio) {
+    public GatilhoGttServico(
+            GatilhoGttRepositorio gatilhoRepositorio, ModuloGttRepositorio moduloRepositorio) {
         this.gatilhoRepositorio = gatilhoRepositorio;
         this.moduloRepositorio = moduloRepositorio;
     }
@@ -38,25 +38,28 @@ public class GatilhoGttServico {
             return lista;
         }
         java.util.List<GatilhoGtt> mutavel = new java.util.ArrayList<>(lista);
-        mutavel.sort((g1, g2) -> {
-            String mod1 = (g1.getModulo() != null && g1.getModulo().getCodigo() != null) ? g1.getModulo().getCodigo()
-                    : "";
-            String mod2 = (g2.getModulo() != null && g2.getModulo().getCodigo() != null) ? g2.getModulo().getCodigo()
-                    : "";
-            int cmpMod = mod1.compareToIgnoreCase(mod2);
-            if (cmpMod != 0) {
-                return cmpMod;
-            }
-            return compararCodigosNaturalmente(g1.getCodigo(), g2.getCodigo());
-        });
+        mutavel.sort(
+                (g1, g2) -> {
+                    String mod1 =
+                            (g1.getModulo() != null && g1.getModulo().getCodigo() != null)
+                                    ? g1.getModulo().getCodigo()
+                                    : "";
+                    String mod2 =
+                            (g2.getModulo() != null && g2.getModulo().getCodigo() != null)
+                                    ? g2.getModulo().getCodigo()
+                                    : "";
+                    int cmpMod = mod1.compareToIgnoreCase(mod2);
+                    if (cmpMod != 0) {
+                        return cmpMod;
+                    }
+                    return compararCodigosNaturalmente(g1.getCodigo(), g2.getCodigo());
+                });
         return mutavel;
     }
 
     private int compararCodigosNaturalmente(String cod1, String cod2) {
-        if (cod1 == null)
-            return cod2 == null ? 0 : -1;
-        if (cod2 == null)
-            return 1;
+        if (cod1 == null) return cod2 == null ? 0 : -1;
+        if (cod2 == null) return 1;
 
         String prefix1 = cod1.replaceAll("\\d", "");
         String prefix2 = cod2.replaceAll("\\d", "");
@@ -80,8 +83,10 @@ public class GatilhoGttServico {
 
     @Transactional(readOnly = true)
     public GatilhoGtt buscarPorId(Long id) {
-        return gatilhoRepositorio.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Gatilho não encontrado com o ID: " + id));
+        return gatilhoRepositorio
+                .findById(id)
+                .orElseThrow(
+                        () -> new NoSuchElementException("Gatilho não encontrado com o ID: " + id));
     }
 
     @Transactional
@@ -91,11 +96,18 @@ public class GatilhoGttServico {
         String limiar = dto.limiarReferencia() != null ? dto.limiarReferencia().trim() : null;
 
         if (gatilhoRepositorio.findByCodigo(codigo).isPresent()) {
-            throw new IllegalArgumentException("Já existe um gatilho cadastrado com o código: " + codigo);
+            throw new IllegalArgumentException(
+                    "Já existe um gatilho cadastrado com o código: " + codigo);
         }
 
-        ModuloGtt modulo = moduloRepositorio.findById(dto.moduloId())
-                .orElseThrow(() -> new NoSuchElementException("Módulo não encontrado com o ID: " + dto.moduloId()));
+        ModuloGtt modulo =
+                moduloRepositorio
+                        .findById(dto.moduloId())
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                "Módulo não encontrado com o ID: "
+                                                        + dto.moduloId()));
 
         GatilhoGtt gatilho = new GatilhoGtt();
         gatilho.setCodigo(codigo);
@@ -116,11 +128,18 @@ public class GatilhoGttServico {
         String limiar = dto.limiarReferencia() != null ? dto.limiarReferencia().trim() : null;
 
         if (gatilhoRepositorio.findByCodigoAndIdNot(codigo, id).isPresent()) {
-            throw new IllegalArgumentException("O código '" + codigo + "' já está em uso por outro gatilho.");
+            throw new IllegalArgumentException(
+                    "O código '" + codigo + "' já está em uso por outro gatilho.");
         }
 
-        ModuloGtt modulo = moduloRepositorio.findById(dto.moduloId())
-                .orElseThrow(() -> new NoSuchElementException("Módulo não encontrado com o ID: " + dto.moduloId()));
+        ModuloGtt modulo =
+                moduloRepositorio
+                        .findById(dto.moduloId())
+                        .orElseThrow(
+                                () ->
+                                        new NoSuchElementException(
+                                                "Módulo não encontrado com o ID: "
+                                                        + dto.moduloId()));
 
         gatilho.setCodigo(codigo);
         gatilho.setModulo(modulo);

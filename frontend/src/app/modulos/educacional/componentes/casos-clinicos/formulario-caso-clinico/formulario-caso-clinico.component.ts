@@ -1,7 +1,15 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TextareaModule } from 'primeng/textarea';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageService } from 'primeng/api';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { SalvarCasoClinicoPayload } from '../../../modelos/educacional.modelos';
 import { UnidadeService } from '../../../../unidade/servicos/unidade.service';
@@ -9,29 +17,36 @@ import { UnidadeHospitalar } from '../../../../unidade/modelos/unidade.modelos';
 
 @Component({
   selector: 'app-formulario-caso-clinico',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    FormsModule,
+    CardModule,
+    InputTextModule,
+    InputNumberModule,
+    TextareaModule,
+    SelectModule,
+    ButtonModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './formulario-caso-clinico.component.html',
 })
 export class FormularioCasoClinicoComponent implements OnInit {
   private readonly educacionalService = inject(EducacionalService);
   private readonly unidadeService = inject(UnidadeService);
+  private readonly messageService = inject(MessageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly mensagemErro = signal<string | null>(null);
-  readonly mensagemSucesso = signal<string | null>(null);
 
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly casoId = signal<number | null>(null);
   readonly modoEdicao = computed(() => this.casoId() !== null);
 
   readonly tituloPagina = computed(() =>
-    this.modoEdicao()
-      ? 'Editar Caso Clínico & Prontuário'
-      : 'Novo Caso Clínico Simulado',
+    this.modoEdicao() ? 'Editar Caso Clínico & Prontuário' : 'Novo Caso Clínico Simulado',
   );
 
   readonly subtituloPagina = computed(() =>
@@ -72,11 +87,7 @@ export class FormularioCasoClinicoComponent implements OnInit {
     this.unidadeService.listar().subscribe({
       next: (dados) => {
         this.unidades.set(dados);
-        if (
-          !this.modoEdicao() &&
-          dados.length > 0 &&
-          this.formulario.unidadeHospitalarId === 0
-        ) {
+        if (!this.modoEdicao() && dados.length > 0 && this.formulario.unidadeHospitalarId === 0) {
           this.formulario.unidadeHospitalarId = dados[0].id;
         }
       },
@@ -108,8 +119,7 @@ export class FormularioCasoClinicoComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar caso clínico: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar caso clínico: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -138,15 +148,11 @@ export class FormularioCasoClinicoComponent implements OnInit {
       return;
     }
     if (!this.formulario.numeroAtendimento.trim()) {
-      this.mensagemErro.set(
-        'O número de atendimento/prontuário é obrigatório.',
-      );
+      this.mensagemErro.set('O número de atendimento/prontuário é obrigatório.');
       return;
     }
     if (!this.formulario.sumarioAlta.trim()) {
-      this.mensagemErro.set(
-        'O sumário de alta / histórico do paciente é obrigatório.',
-      );
+      this.mensagemErro.set('O sumário de alta / histórico do paciente é obrigatório.');
       return;
     }
 
@@ -160,12 +166,16 @@ export class FormularioCasoClinicoComponent implements OnInit {
     requisicao.subscribe({
       next: () => {
         this.salvando.set(false);
-        this.router.navigate(['/casos-clinicos']);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: `Caso clínico ${this.modoEdicao() ? 'atualizado' : 'cadastrado'} com sucesso!`,
+        });
+        setTimeout(() => this.router.navigate(['/casos-clinicos']), 800);
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao salvar caso clínico: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao salvar caso clínico: ' + (err.error?.mensagem || err.message),
         );
         this.salvando.set(false);
       },

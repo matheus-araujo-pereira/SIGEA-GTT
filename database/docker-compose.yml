@@ -1,7 +1,7 @@
 services:
   postgres:
-    image: postgres:16-alpine
-    container_name: sigea-gtt-postgres
+    image: postgres:17-alpine
+    container_name: sigea-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-sigea_gtt}
@@ -11,7 +11,7 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
-      - sigea_postgres_data:/var/lib/postgresql/data
+      - ./dados:/var/lib/postgresql/data:Z
     healthcheck:
       test:
         [
@@ -21,7 +21,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-volumes:
-  sigea_postgres_data:
-    name: sigea_gtt_postgres_data

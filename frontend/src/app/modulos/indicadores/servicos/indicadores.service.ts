@@ -17,9 +17,7 @@ export class IndicadoresService {
   private readonly http = inject(HttpClient);
   private readonly url = '/api/indicadores';
 
-  obterIndicadores(
-    filtros: FiltrosIndicadores = {},
-  ): Observable<IndicadoresIHI> {
+  obterIndicadores(filtros: FiltrosIndicadores = {}): Observable<IndicadoresIHI> {
     let params = new HttpParams();
     for (const [chave, valor] of Object.entries(filtros)) {
       if (valor !== undefined && valor !== null && valor !== '') {
@@ -29,9 +27,7 @@ export class IndicadoresService {
     return this.http.get<IndicadoresIHI>(this.url, { params });
   }
 
-  obterQuadroResumo(
-    filtros: Record<string, any> = {},
-  ): Observable<QuadroResumoResultado> {
+  obterQuadroResumo(filtros: Record<string, unknown> = {}): Observable<QuadroResumoResultado> {
     let params = new HttpParams();
     for (const [chave, valor] of Object.entries(filtros)) {
       if (valor !== undefined && valor !== null && valor !== '') {

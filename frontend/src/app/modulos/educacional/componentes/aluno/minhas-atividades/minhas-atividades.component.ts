@@ -1,15 +1,35 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { MinhaAtividadeItem } from '../../../modelos/educacional.modelos';
-import { PaginacaoComponent } from '../../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 @Component({
   selector: 'app-minhas-atividades',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    CommonModule,
+    DecimalPipe,
+    FormsModule,
+    CardModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './minhas-atividades.component.html',
 })
 export class MinhasAtividadesComponent implements OnInit {
@@ -23,8 +43,13 @@ export class MinhasAtividadesComponent implements OnInit {
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
 
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
+  readonly statusOptions = [
+    { label: 'Todos os Status', value: 'TODOS' },
+    { label: 'Não Iniciadas', value: 'NAO_INICIADA' },
+    { label: 'Em Andamento (Rascunho)', value: 'EM_ANDAMENTO' },
+    { label: 'Submetidas (Aguardando Nota)', value: 'SUBMETIDA' },
+    { label: 'Avaliadas com Nota', value: 'AVALIADA' },
+  ];
 
   readonly totalAtividades = computed(() => this.atividades().length);
   readonly totalAvaliadas = computed(
@@ -35,9 +60,7 @@ export class MinhasAtividadesComponent implements OnInit {
   );
 
   readonly mediaNotas = computed(() => {
-    const avaliadas = this.atividades().filter(
-      (a) => a.nota !== null && a.nota !== undefined,
-    );
+    const avaliadas = this.atividades().filter((a) => a.nota !== null && a.nota !== undefined);
     if (avaliadas.length === 0) return null;
     const soma = avaliadas.reduce((acc, a) => acc + (a.nota || 0), 0);
     return soma / avaliadas.length;
@@ -69,16 +92,6 @@ export class MinhasAtividadesComponent implements OnInit {
       .sort((a, b) => b.atividadeId - a.atividadeId);
   });
 
-  readonly totalFiltrados = computed(() => this.atividadesFiltradas().length);
-
-  readonly atividadesPaginadas = computed<MinhaAtividadeItem[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.atividadesFiltradas().slice(
-      inicio,
-      inicio + this.itensPorPagina,
-    );
-  });
-
   ngOnInit(): void {
     this.carregarAtividades();
   }
@@ -92,8 +105,7 @@ export class MinhasAtividadesComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar atividades: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar atividades: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -106,19 +118,5 @@ export class MinhasAtividadesComponent implements OnInit {
 
   verResultado(submissaoId: number): void {
     this.router.navigate(['/submissoes', submissaoId, 'resultado']);
-  }
-
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  atualizarFiltroStatus(status: string): void {
-    this.filtroStatus.set(status);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
   }
 }

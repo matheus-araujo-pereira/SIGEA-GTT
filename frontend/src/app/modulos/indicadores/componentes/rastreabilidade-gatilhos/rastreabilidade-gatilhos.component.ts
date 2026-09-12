@@ -4,6 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { CardModule } from 'primeng/card';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
+
 import {
   IndicadoresService,
   DesempenhoGatilho,
@@ -18,7 +29,20 @@ import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
 @Component({
   selector: 'app-rastreabilidade-gatilhos',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TableModule,
+    ButtonModule,
+    SelectModule,
+    InputTextModule,
+    TagModule,
+    CardModule,
+    ProgressBarModule,
+    ProgressSpinnerModule,
+    TooltipModule,
+  ],
   templateUrl: './rastreabilidade-gatilhos.component.html',
   styles: [
     `
@@ -35,7 +59,7 @@ import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
         header,
         nav,
         aside,
-        .btn,
+        button,
         select,
         input {
           display: none !important;
@@ -74,7 +98,7 @@ export class RastreabilidadeGatilhosComponent implements OnInit {
   readonly totalDanosConfirmados = signal<number>(0);
   readonly taxaConversaoGeral = signal<number>(0);
 
-  // Períodos desduplicados
+  // Opções para p-select
   readonly periodosDisponiveis = computed(() => {
     const periodos = this.turmas()
       .map((t) => t.periodoLetivo)
@@ -82,7 +106,11 @@ export class RastreabilidadeGatilhosComponent implements OnInit {
     return Array.from(new Set(periodos)).sort().reverse();
   });
 
-  // Turmas filtradas pelo período selecionado
+  readonly periodoOptions = computed(() => [
+    { label: 'Todos os Períodos', value: 'TODOS' },
+    ...this.periodosDisponiveis().map((p) => ({ label: p, value: p })),
+  ]);
+
   readonly turmasFiltradas = computed(() => {
     const periodo = this.filtroPeriodoLetivo();
     if (!periodo || periodo === 'TODOS') {
@@ -91,14 +119,39 @@ export class RastreabilidadeGatilhosComponent implements OnInit {
     return this.turmas().filter((t) => t.periodoLetivo === periodo);
   });
 
+  readonly turmaOptions = computed(() => [
+    { label: 'Todas as Turmas', value: 'TODOS' },
+    ...this.turmasFiltradas().map((t) => ({
+      label: t.codigoDisciplina,
+      value: String(t.id),
+    })),
+  ]);
+
+  readonly unidadeOptions = computed(() => [
+    { label: 'Todas as Unidades', value: 'TODOS' },
+    ...this.unidades().map((u) => ({
+      label: `${u.sigla} - ${u.nome}`,
+      value: String(u.id),
+    })),
+  ]);
+
+  readonly moduloOptions = [
+    { label: 'Todos os Módulos', value: 'TODOS' },
+    { label: 'Cuidados Gerais (C)', value: 'CUIDADOS' },
+    { label: 'Medicamentos (M)', value: 'MEDICACAO' },
+    { label: 'Cirúrgico (S)', value: 'CIRURGICO' },
+    { label: 'Terapia Intensiva (I)', value: 'TERAPIA_INTENSIVA' },
+    { label: 'Perinatal (P)', value: 'PERINATAL' },
+    { label: 'Pronto Atendimento (E)', value: 'URGENCIA' },
+  ];
+
   // Gatilhos filtrados por busca textual e módulo selecionado
   readonly gatilhosFiltrados = computed(() => {
     const busca = this.termoBusca().trim().toLowerCase();
     const mod = this.filtroModulo();
 
     return this.gatilhos().filter((g) => {
-      const matchMod =
-        mod === 'TODOS' || g.moduloCodigo.toUpperCase() === mod.toUpperCase();
+      const matchMod = mod === 'TODOS' || g.moduloCodigo.toUpperCase() === mod.toUpperCase();
       const matchBusca =
         !busca ||
         g.codigo.toLowerCase().includes(busca) ||
@@ -205,11 +258,7 @@ export class RastreabilidadeGatilhosComponent implements OnInit {
       const margem = 8;
       const larguraUtil = pdfLargura - margem * 2;
       const alturaUtil = pdfAltura - margem * 2;
-
-      const alturaTotalMm = (canvas.height * larguraUtil) / canvas.width;
-      const alturaPaginaPx = Math.floor(
-        (alturaUtil * canvas.width) / larguraUtil,
-      );
+      const alturaPaginaPx = Math.floor((alturaUtil * canvas.width) / larguraUtil);
 
       let yOffsetPx = 0;
       let paginaAtual = 1;
@@ -219,10 +268,7 @@ export class RastreabilidadeGatilhosComponent implements OnInit {
           pdf.addPage();
         }
 
-        const alturaChunkPx = Math.min(
-          alturaPaginaPx,
-          canvas.height - yOffsetPx,
-        );
+        const alturaChunkPx = Math.min(alturaPaginaPx, canvas.height - yOffsetPx);
         const chunkCanvas = document.createElement('canvas');
         chunkCanvas.width = canvas.width;
         chunkCanvas.height = alturaChunkPx;

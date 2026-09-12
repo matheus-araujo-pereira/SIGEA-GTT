@@ -11,5 +11,4 @@ public record SubmissaoPlano5w3hDTO(
         String quando,
         String como,
         BigDecimal quantoCusta,
-        String comoMedir) {
-}
+        String comoMedir) {}

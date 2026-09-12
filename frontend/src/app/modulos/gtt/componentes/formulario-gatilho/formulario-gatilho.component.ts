@@ -1,18 +1,30 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  GatilhoService,
-  GatilhoRequisicao,
-} from '../../servicos/gatilho.service';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageService } from 'primeng/api';
+import { GatilhoService, GatilhoRequisicao } from '../../servicos/gatilho.service';
 import { ModuloGttService } from '../../servicos/modulo-gtt.service';
 import { ModuloGtt } from '../../modelos/gtt.modelos';
 
 @Component({
   selector: 'app-formulario-gatilho',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    FormsModule,
+    CardModule,
+    InputTextModule,
+    TextareaModule,
+    SelectModule,
+    ButtonModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './formulario-gatilho.component.html',
 })
 export class FormularioGatilhoComponent implements OnInit {
@@ -20,6 +32,7 @@ export class FormularioGatilhoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly gatilhoService = inject(GatilhoService);
   private readonly moduloService = inject(ModuloGttService);
+  private readonly messageService = inject(MessageService);
 
   readonly idGatilho = signal<number | null>(null);
   readonly modoEdicao = computed(() => this.idGatilho() !== null);
@@ -38,9 +51,7 @@ export class FormularioGatilhoComponent implements OnInit {
   };
 
   readonly tituloPagina = computed(() => {
-    return this.modoEdicao()
-      ? `Editar Gatilho #${this.idGatilho()}`
-      : 'Cadastrar Novo Gatilho GTT';
+    return this.modoEdicao() ? `Editar Gatilho #${this.idGatilho()}` : 'Cadastrar Novo Gatilho GTT';
   });
 
   readonly subtituloPagina = computed(() => {
@@ -65,8 +76,7 @@ export class FormularioGatilhoComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar lista de módulos: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar lista de módulos: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -101,8 +111,7 @@ export class FormularioGatilhoComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar dados do gatilho: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar dados do gatilho: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
@@ -112,28 +121,18 @@ export class FormularioGatilhoComponent implements OnInit {
   validarFormulario(): boolean {
     this.mensagemErro.set(null);
 
-    // 1. Código
     if (!this.formulario.codigo || this.formulario.codigo.trim().length === 0) {
-      this.mensagemErro.set(
-        'O Código do Gatilho é obrigatório (ex: G01, C02).',
-      );
+      this.mensagemErro.set('O Código do Gatilho é obrigatório (ex: G01, C02).');
       return false;
     }
 
-    // 2. Módulo
     if (!this.formulario.moduloId || this.formulario.moduloId <= 0) {
       this.mensagemErro.set('Selecione um Módulo GTT válido.');
       return false;
     }
 
-    // 3. Descrição Operacional
-    if (
-      !this.formulario.descricao ||
-      this.formulario.descricao.trim().length === 0
-    ) {
-      this.mensagemErro.set(
-        'A Descrição Operacional do gatilho é obrigatória.',
-      );
+    if (!this.formulario.descricao || this.formulario.descricao.trim().length === 0) {
+      this.mensagemErro.set('A Descrição Operacional do gatilho é obrigatória.');
       return false;
     }
 
@@ -161,32 +160,32 @@ export class FormularioGatilhoComponent implements OnInit {
       this.gatilhoService.editar(id, payload).subscribe({
         next: (atualizado) => {
           this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Gatilho ${atualizado.codigo} atualizado com sucesso!`,
-          );
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: `Gatilho ${atualizado.codigo} atualizado com sucesso!`,
+          });
           setTimeout(() => this.voltarParaListagem(), 1200);
         },
         error: (err) => {
           this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao atualizar dados do gatilho.',
-          );
+          this.mensagemErro.set(err.error?.mensagem || 'Falha ao atualizar dados do gatilho.');
         },
       });
     } else {
       this.gatilhoService.cadastrar(payload).subscribe({
         next: (criado) => {
           this.salvando.set(false);
-          this.mensagemSucesso.set(
-            `Gatilho ${criado.codigo} cadastrado com sucesso!`,
-          );
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: `Gatilho ${criado.codigo} cadastrado com sucesso!`,
+          });
           setTimeout(() => this.voltarParaListagem(), 1200);
         },
         error: (err) => {
           this.salvando.set(false);
-          this.mensagemErro.set(
-            err.error?.mensagem || 'Falha ao cadastrar novo gatilho.',
-          );
+          this.mensagemErro.set(err.error?.mensagem || 'Falha ao cadastrar novo gatilho.');
         },
       });
     }

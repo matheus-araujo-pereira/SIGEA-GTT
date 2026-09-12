@@ -8,12 +8,11 @@ import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.CategoriaEventoAdverso;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.servico.SubmissaoAtividadeServico;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/submissoes")
@@ -35,16 +34,14 @@ public class SubmissaoAtividadeControlador {
     @PostMapping("/iniciar/{atividadeId}")
     @PreAuthorize("hasAnyRole('ALUNO', 'ADMINISTRADOR')")
     public ResponseEntity<SubmissaoDTO> iniciarOuContinuar(
-            @PathVariable Long atividadeId,
-            @AuthenticationPrincipal Usuario usuarioLogado) {
+            @PathVariable Long atividadeId, @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(submissaoServico.iniciarOuContinuar(atividadeId, usuarioLogado));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ALUNO', 'PROFESSOR', 'ADMINISTRADOR')")
     public ResponseEntity<SubmissaoDTO> buscarPorId(
-            @PathVariable Long id,
-            @AuthenticationPrincipal Usuario usuarioLogado) {
+            @PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogado) {
         return ResponseEntity.ok(submissaoServico.buscarSubmissao(id, usuarioLogado));
     }
 

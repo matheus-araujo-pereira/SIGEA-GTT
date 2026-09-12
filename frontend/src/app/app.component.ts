@@ -1,13 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { LoadingService } from './nucleo/servicos/loading.service';
+
+import { Toast } from 'primeng/toast';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet],
-  templateUrl: './app.component.html'
+  imports: [RouterOutlet, Toast, ConfirmDialog, ProgressSpinner],
+  templateUrl: './app.component.html',
 })
 export class AppComponent {
   readonly loadingService = inject(LoadingService);

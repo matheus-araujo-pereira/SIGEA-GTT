@@ -1,155 +1,100 @@
 <div>
-  <!-- CABEÇALHO DA LISTAGEM -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
-    <div>
-      <h1 class="h4 fw-bold text-dark m-0">Minhas Turmas Acadêmicas</h1>
-      <span class="text-secondary small">
-        Total atribuído: {{ totalTurmas() }} turmas sob sua responsabilidade
-        docente
-      </span>
-    </div>
+  <!-- CABEÇALHO -->
+  <div class="page-header">
+    <h1 class="page-title">Minhas Turmas Vinculadas</h1>
+    <span class="page-subtitle">Acesso rápido às turmas sob sua docência no SIGEA-GTT</span>
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
+  <!-- BARRA DE BUSCA -->
+  <div class="search-card">
+    <input
+      pInputText
+      type="text"
+      [ngModel]="termoBusca()"
+      (ngModelChange)="termoBusca.set($event)"
+      placeholder="Filtrar por código de disciplina ou período letivo..."
+      style="width: 100%"
+    />
+  </div>
 
-  <!-- BARRA DE FILTROS E BUSCA -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+  <!-- TABELA PRIMENG COMPACTA -->
+  <p-table
+    [value]="turmasFiltradas()"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm p-datatable-striped"
+    [paginator]="true"
+    [rows]="15"
+    [rowsPerPageOptions]="[15, 25, 50]"
+    [loading]="carregando()"
   >
-    <div class="row g-2 align-items-center">
-      <div class="col-md-8">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-secondary border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control border-start-0"
-            placeholder="Filtrar por código da disciplina ou período letivo..."
-            [ngModel]="termoBusca()"
-            (ngModelChange)="atualizarBusca($event)"
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="codigoDisciplina" style="width: 35%">
+          Código da Disciplina <p-sortIcon field="codigoDisciplina" />
+        </th>
+        <th pSortableColumn="periodoLetivo" style="width: 25%">
+          Período Letivo <p-sortIcon field="periodoLetivo" />
+        </th>
+        <th pSortableColumn="totalAlunos" style="width: 20%">
+          Discentes <p-sortIcon field="totalAlunos" />
+        </th>
+        <th style="width: 10%">Status</th>
+        <th style="width: 10%; text-align: right">Ações</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-t>
+      <tr>
+        <td>
+          <span style="font-weight: 600; color: #0f172a">{{ t.codigoDisciplina }}</span>
+        </td>
+        <td>
+          <code>{{ t.periodoLetivo }}</code>
+        </td>
+        <td>
+          <p-tag [value]="t.totalAlunos + ' aluno(s)'" severity="info" />
+        </td>
+        <td>
+          <p-tag
+            [value]="t.ativa ? 'ATIVA' : 'INATIVA'"
+            [severity]="t.ativa ? 'success' : 'danger'"
           />
-          @if (termoBusca()) {
+        </td>
+        <td>
+          <div class="actions-cell">
             <button
-              class="btn btn-outline-secondary"
+              pButton
               type="button"
-              (click)="atualizarBusca('')"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          }
-        </div>
-      </div>
-      <div class="col-md-4 text-md-end text-secondary small">
-        Exibindo {{ totalFiltradas() }} de {{ totalTurmas() }} turmas
-      </div>
-    </div>
-  </div>
-
-  <!-- TABELA DE MINHAS TURMAS COM FUNDO BRANCO E SEM BADGES -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
-  >
-    <div class="table-responsive bg-white">
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-        >
-          <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              CÓDIGO DA DISCIPLINA
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PERÍODO LETIVO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              ALUNOS MATRICULADOS
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              STATUS
-            </th>
-            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
-              AÇÕES
-            </th>
-          </tr>
-        </thead>
-        <tbody class="small font-monospace bg-white">
-          @for (t of turmasPaginadas(); track t.id) {
-            <tr class="bg-white">
-              <td class="py-2 px-3 font-monospace fw-bold text-dark bg-white">
-                {{ t.codigoDisciplina }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                {{ t.periodoLetivo }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                {{ t.totalAlunos }} aluno(s)
-              </td>
-              <td
-                class="py-2 px-2 fw-semibold bg-white"
-                [class.text-success]="t.status === 'ATIVO'"
-                [class.text-muted]="t.status !== 'ATIVO'"
-              >
-                {{ t.status }}
-              </td>
-              <td class="py-2 px-3 text-end text-nowrap bg-white">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="verAlunos(t.id)"
-                  title="Ver Alunos Matriculados"
-                >
-                  ALUNOS
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-1"
-                  (click)="verAtividades(t.id)"
-                  title="Gerenciar Atividades da Turma"
-                >
-                  ATIVIDADES
-                </button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="text-center py-5 text-muted bg-white">
-                <i
-                  class="bi bi-mortarboard fs-2 d-block text-secondary mb-2"
-                ></i>
-                Nenhuma turma atribuída a você foi encontrada.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
-    <app-paginacao
-      [totalItens]="totalFiltradas()"
-      [itensPorPagina]="itensPorPagina"
-      [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)"
-    >
-    </app-paginacao>
-  </div>
+              icon="pi pi-users"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              (click)="verAlunos(t.id)"
+              pTooltip="Ver Alunos Matriculados"
+              tooltipPosition="top"
+              aria-label="Ver Alunos"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-calendar"
+              [text]="true"
+              severity="info"
+              size="small"
+              (click)="verAtividades(t.id)"
+              pTooltip="Ver Atividades da Turma"
+              tooltipPosition="top"
+              aria-label="Ver Atividades"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 24px; color: #64748b">
+          Nenhuma turma vinculada a seu cadastro docente.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>

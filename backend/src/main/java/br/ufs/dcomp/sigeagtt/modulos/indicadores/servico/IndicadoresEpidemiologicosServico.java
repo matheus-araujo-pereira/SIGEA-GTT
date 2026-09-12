@@ -7,14 +7,13 @@ import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.SubmissaoGatilho;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoAtividadeRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoGatilhoRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.GatilhoGtt;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class IndicadoresEpidemiologicosServico {
@@ -29,21 +28,40 @@ public class IndicadoresEpidemiologicosServico {
         this.gatilhoAchadoRepositorio = gatilhoAchadoRepositorio;
     }
 
-    public Map<String, Object> calcularIndicadoresIndividuais(Long turmaId, String periodoLetivo,
-            Long cenarioId, Long unidadeId,
-            LocalDate dataInicio, LocalDate dataFim) {
-        return calcularIndicadoresIndividuais(turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim, null,
-                null, null);
+    public Map<String, Object> calcularIndicadoresIndividuais(
+            Long turmaId,
+            String periodoLetivo,
+            Long cenarioId,
+            Long unidadeId,
+            LocalDate dataInicio,
+            LocalDate dataFim) {
+        return calcularIndicadoresIndividuais(
+                turmaId,
+                periodoLetivo,
+                cenarioId,
+                unidadeId,
+                dataInicio,
+                dataFim,
+                null,
+                null,
+                null);
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> calcularIndicadoresIndividuais(Long turmaId, String periodoLetivo,
-            Long cenarioId, Long unidadeId,
-            LocalDate dataInicio, LocalDate dataFim,
-            String moduloCodigo, String gravidade, Boolean danoPresenteAdmissao) {
+    public Map<String, Object> calcularIndicadoresIndividuais(
+            Long turmaId,
+            String periodoLetivo,
+            Long cenarioId,
+            Long unidadeId,
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            String moduloCodigo,
+            String gravidade,
+            Boolean danoPresenteAdmissao) {
 
-        List<SubmissaoAtividade> submissoes = filtrarSubmissoesAvaliadas(turmaId, periodoLetivo, cenarioId, unidadeId,
-                dataInicio, dataFim);
+        List<SubmissaoAtividade> submissoes =
+                filtrarSubmissoesAvaliadas(
+                        turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim);
 
         int totalDias = 0;
         int totalEventos = 0;
@@ -76,16 +94,20 @@ public class IndicadoresEpidemiologicosServico {
             int diasValidos = dias != null && dias > 0 ? dias : 1;
             totalDias += diasValidos;
 
-            LocalDate dataRef = sub.getDataSubmissao() != null ? sub.getDataSubmissao().toLocalDate()
-                    : (sub.getAtividade().getDataInicio() != null
-                            ? sub.getAtividade().getDataInicio().toLocalDate()
-                            : LocalDate.now());
+            LocalDate dataRef =
+                    sub.getDataSubmissao() != null
+                            ? sub.getDataSubmissao().toLocalDate()
+                            : (sub.getAtividade().getDataInicio() != null
+                                    ? sub.getAtividade().getDataInicio().toLocalDate()
+                                    : LocalDate.now());
             YearMonth ym = YearMonth.from(dataRef);
-            AgregadoTemporal agg = agregadoTemporal.computeIfAbsent(ym, k -> new AgregadoTemporal());
+            AgregadoTemporal agg =
+                    agregadoTemporal.computeIfAbsent(ym, k -> new AgregadoTemporal());
             agg.prontuarios++;
             agg.dias += diasValidos;
 
-            List<SubmissaoGatilho> achados = gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
+            List<SubmissaoGatilho> achados =
+                    gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
             boolean danoNoCaso = false;
 
             for (SubmissaoGatilho achado : achados) {
@@ -95,14 +117,22 @@ public class IndicadoresEpidemiologicosServico {
                     totalDanosConfirmadosGeral++;
 
                     // Filtros específicos de achado se fornecidos
-                    if (moduloCodigo != null && !moduloCodigo.isBlank() && !moduloCodigo.equalsIgnoreCase("TODOS")) {
-                        if (achado.getGatilho() == null || achado.getGatilho().getModulo() == null
-                                || !achado.getGatilho().getModulo().getCodigo().equalsIgnoreCase(moduloCodigo)) {
+                    if (moduloCodigo != null
+                            && !moduloCodigo.isBlank()
+                            && !moduloCodigo.equalsIgnoreCase("TODOS")) {
+                        if (achado.getGatilho() == null
+                                || achado.getGatilho().getModulo() == null
+                                || !achado.getGatilho()
+                                        .getModulo()
+                                        .getCodigo()
+                                        .equalsIgnoreCase(moduloCodigo)) {
                             continue;
                         }
                     }
 
-                    if (gravidade != null && !gravidade.isBlank() && !gravidade.equalsIgnoreCase("TODOS")) {
+                    if (gravidade != null
+                            && !gravidade.isBlank()
+                            && !gravidade.equalsIgnoreCase("TODOS")) {
                         if (achado.getGravidade() == null
                                 || !achado.getGravidade().name().equalsIgnoreCase(gravidade)) {
                             continue;
@@ -110,7 +140,8 @@ public class IndicadoresEpidemiologicosServico {
                     }
 
                     if (danoPresenteAdmissao != null) {
-                        if (!Objects.equals(achado.getDanoPresenteAdmissao(), danoPresenteAdmissao)) {
+                        if (!Objects.equals(
+                                achado.getDanoPresenteAdmissao(), danoPresenteAdmissao)) {
                             continue;
                         }
                     }
@@ -147,11 +178,13 @@ public class IndicadoresEpidemiologicosServico {
         List<Double> taxasPorMilHistorico = new ArrayList<>();
         List<Double> taxasPorCemHistorico = new ArrayList<>();
 
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM/yy", Locale.forLanguageTag("pt-BR"));
+        DateTimeFormatter fmt =
+                DateTimeFormatter.ofPattern("MMM/yy", Locale.forLanguageTag("pt-BR"));
         for (Map.Entry<YearMonth, AgregadoTemporal> entry : agregadoTemporal.entrySet()) {
             AgregadoTemporal agg = entry.getValue();
             double taxaMil = agg.dias == 0 ? 0.0 : ((double) agg.eventos / agg.dias) * 1000.0;
-            double taxaCem = agg.prontuarios == 0 ? 0.0 : ((double) agg.eventos / agg.prontuarios) * 100.0;
+            double taxaCem =
+                    agg.prontuarios == 0 ? 0.0 : ((double) agg.eventos / agg.prontuarios) * 100.0;
             double taxaMilArr = Math.round(taxaMil * 10.0) / 10.0;
             double taxaCemArr = Math.round(taxaCem * 10.0) / 10.0;
 
@@ -177,8 +210,14 @@ public class IndicadoresEpidemiologicosServico {
             ponto.put("medianaPorCemAdmissoes", medianaTaxaCem);
         }
 
-        double taxaRendimentoGatilhos = totalGatilhosRastreados == 0 ? 0.0
-                : Math.round((double) totalDanosConfirmadosGeral / totalGatilhosRastreados * 10000.0) / 100.0;
+        double taxaRendimentoGatilhos =
+                totalGatilhosRastreados == 0
+                        ? 0.0
+                        : Math.round(
+                                        (double) totalDanosConfirmadosGeral
+                                                / totalGatilhosRastreados
+                                                * 10000.0)
+                                / 100.0;
 
         Map<String, Object> resultado = new HashMap<>();
         resultado.put("totalProntuariosAuditados", submissoes.size());
@@ -188,12 +227,21 @@ public class IndicadoresEpidemiologicosServico {
         resultado.put("eventosPresentesAdmissao", eventosPresentesAdmissao);
         resultado.put("prontuariosComEventosAdversos", casosComDano);
 
-        resultado.put("taxaDanosPorMilDias",
-                totalDias == 0 ? 0.0 : Math.round((double) totalEventos / totalDias * 100000.0) / 100.0);
-        resultado.put("frequenciaPorCemAdmissoes",
-                submissoes.isEmpty() ? 0.0 : Math.round((double) totalEventos / submissoes.size() * 10000.0) / 100.0);
-        resultado.put("prevalenciaPercentual",
-                submissoes.isEmpty() ? 0.0 : Math.round((double) casosComDano / submissoes.size() * 10000.0) / 100.0);
+        resultado.put(
+                "taxaDanosPorMilDias",
+                totalDias == 0
+                        ? 0.0
+                        : Math.round((double) totalEventos / totalDias * 100000.0) / 100.0);
+        resultado.put(
+                "frequenciaPorCemAdmissoes",
+                submissoes.isEmpty()
+                        ? 0.0
+                        : Math.round((double) totalEventos / submissoes.size() * 10000.0) / 100.0);
+        resultado.put(
+                "prevalenciaPercentual",
+                submissoes.isEmpty()
+                        ? 0.0
+                        : Math.round((double) casosComDano / submissoes.size() * 10000.0) / 100.0);
 
         resultado.put("distribuicaoSeveridade", severidades);
         resultado.put("distribuicaoModulos", distribuicaoModulos);
@@ -211,15 +259,24 @@ public class IndicadoresEpidemiologicosServico {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> obterQuadroResumo(Long turmaId, String periodoLetivo,
-            Long cenarioId, Long unidadeId,
-            LocalDate dataInicio, LocalDate dataFim,
-            String moduloCodigo, String gravidade,
-            Boolean danoPresenteAdmissao, Boolean apenasComDano,
-            String busca, Integer pagina, Integer tamanho) {
+    public Map<String, Object> obterQuadroResumo(
+            Long turmaId,
+            String periodoLetivo,
+            Long cenarioId,
+            Long unidadeId,
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            String moduloCodigo,
+            String gravidade,
+            Boolean danoPresenteAdmissao,
+            Boolean apenasComDano,
+            String busca,
+            Integer pagina,
+            Integer tamanho) {
 
-        List<SubmissaoAtividade> submissoes = filtrarSubmissoesAvaliadas(turmaId, periodoLetivo, cenarioId, unidadeId,
-                dataInicio, dataFim);
+        List<SubmissaoAtividade> submissoes =
+                filtrarSubmissoesAvaliadas(
+                        turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim);
 
         List<Map<String, Object>> itens = new ArrayList<>();
         int totalDiasGeral = 0;
@@ -231,7 +288,8 @@ public class IndicadoresEpidemiologicosServico {
             int ttpValido = ttp != null && ttp > 0 ? ttp : 1;
             totalDiasGeral += ttpValido;
 
-            List<SubmissaoGatilho> achadosBrutos = gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
+            List<SubmissaoGatilho> achadosBrutos =
+                    gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
             List<SubmissaoGatilho> achadosValidos = new ArrayList<>();
             List<String> codigosGatilhos = new ArrayList<>();
             List<String> descricoesDanos = new ArrayList<>();
@@ -246,7 +304,8 @@ public class IndicadoresEpidemiologicosServico {
                 if (Boolean.TRUE.equals(achado.getConfirmouDano())) {
                     possuiDano = true;
                     achadosValidos.add(achado);
-                    if (achado.getJustificativaDano() != null && !achado.getJustificativaDano().isBlank()) {
+                    if (achado.getJustificativaDano() != null
+                            && !achado.getJustificativaDano().isBlank()) {
                         descricoesDanos.add(achado.getJustificativaDano());
                     } else if (achado.getGatilho() != null) {
                         descricoesDanos.add(achado.getGatilho().getDescricao());
@@ -255,7 +314,8 @@ public class IndicadoresEpidemiologicosServico {
                         presenteAdmissao = true;
                     }
                     if (achado.getGravidade() != null) {
-                        if (gravidadeMaxima == null || achado.getGravidade().ordinal() > gravidadeMaxima.ordinal()) {
+                        if (gravidadeMaxima == null
+                                || achado.getGravidade().ordinal() > gravidadeMaxima.ordinal()) {
                             gravidadeMaxima = achado.getGravidade();
                         }
                     }
@@ -273,59 +333,96 @@ public class IndicadoresEpidemiologicosServico {
             }
 
             if (gravidade != null && !gravidade.isBlank() && !gravidade.equalsIgnoreCase("TODOS")) {
-                boolean bateGravidade = achadosValidos.stream()
-                        .anyMatch(a -> a.getGravidade() != null && a.getGravidade().name().equalsIgnoreCase(gravidade));
-                if (!bateGravidade)
-                    continue;
+                boolean bateGravidade =
+                        achadosValidos.stream()
+                                .anyMatch(
+                                        a ->
+                                                a.getGravidade() != null
+                                                        && a.getGravidade()
+                                                                .name()
+                                                                .equalsIgnoreCase(gravidade));
+                if (!bateGravidade) continue;
             }
 
-            if (moduloCodigo != null && !moduloCodigo.isBlank() && !moduloCodigo.equalsIgnoreCase("TODOS")) {
-                boolean bateModulo = achadosBrutos.stream()
-                        .anyMatch(a -> a.getGatilho() != null && a.getGatilho().getModulo() != null
-                                && a.getGatilho().getModulo().getCodigo().equalsIgnoreCase(moduloCodigo));
-                if (!bateModulo)
-                    continue;
+            if (moduloCodigo != null
+                    && !moduloCodigo.isBlank()
+                    && !moduloCodigo.equalsIgnoreCase("TODOS")) {
+                boolean bateModulo =
+                        achadosBrutos.stream()
+                                .anyMatch(
+                                        a ->
+                                                a.getGatilho() != null
+                                                        && a.getGatilho().getModulo() != null
+                                                        && a.getGatilho()
+                                                                .getModulo()
+                                                                .getCodigo()
+                                                                .equalsIgnoreCase(moduloCodigo));
+                if (!bateModulo) continue;
             }
 
             if (danoPresenteAdmissao != null) {
-                boolean bateAdmissao = achadosValidos.stream()
-                        .anyMatch(a -> Objects.equals(a.getDanoPresenteAdmissao(), danoPresenteAdmissao));
-                if (!bateAdmissao)
-                    continue;
+                boolean bateAdmissao =
+                        achadosValidos.stream()
+                                .anyMatch(
+                                        a ->
+                                                Objects.equals(
+                                                        a.getDanoPresenteAdmissao(),
+                                                        danoPresenteAdmissao));
+                if (!bateAdmissao) continue;
             }
 
             if (busca != null && !busca.isBlank()) {
                 String termo = busca.trim().toLowerCase();
-                String num = sub.getAtividade().getCasoClinico().getNumeroAtendimento().toLowerCase();
-                String unidade = sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getNome().toLowerCase();
+                String num =
+                        sub.getAtividade().getCasoClinico().getNumeroAtendimento().toLowerCase();
+                String unidade =
+                        sub.getAtividade()
+                                .getCasoClinico()
+                                .getUnidadeHospitalar()
+                                .getNome()
+                                .toLowerCase();
                 String aluno = sub.getAluno().getNomeCompleto().toLowerCase();
-                boolean achou = num.contains(termo) || unidade.contains(termo) || aluno.contains(termo)
-                        || codigosGatilhos.stream().anyMatch(c -> c.toLowerCase().contains(termo))
-                        || descricoesDanos.stream().anyMatch(d -> d.toLowerCase().contains(termo));
-                if (!achou)
-                    continue;
+                boolean achou =
+                        num.contains(termo)
+                                || unidade.contains(termo)
+                                || aluno.contains(termo)
+                                || codigosGatilhos.stream()
+                                        .anyMatch(c -> c.toLowerCase().contains(termo))
+                                || descricoesDanos.stream()
+                                        .anyMatch(d -> d.toLowerCase().contains(termo));
+                if (!achou) continue;
             }
 
             Map<String, Object> item = new HashMap<>();
             item.put("revisaoId", sub.getId());
-            item.put("numeroAtendimento", sub.getAtividade().getCasoClinico().getNumeroAtendimento());
+            item.put(
+                    "numeroAtendimento",
+                    sub.getAtividade().getCasoClinico().getNumeroAtendimento());
             item.put("idadePaciente", sub.getAtividade().getCasoClinico().getIdadePaciente());
             item.put("tempoPermanenciaDias", ttpValido);
-            item.put("unidadeHospitalarNome", sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getNome());
-            item.put("unidadeHospitalarSigla", sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getSigla());
+            item.put(
+                    "unidadeHospitalarNome",
+                    sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getNome());
+            item.put(
+                    "unidadeHospitalarSigla",
+                    sub.getAtividade().getCasoClinico().getUnidadeHospitalar().getSigla());
             item.put("codigoDisciplina", sub.getAtividade().getTurma().getCodigoDisciplina());
             item.put("periodoLetivo", sub.getAtividade().getTurma().getPeriodoLetivo());
             item.put("alunoAuditorNome", sub.getAluno().getNomeCompleto());
             item.put("alunoMatricula", sub.getAluno().getMatriculaSigaa());
             item.put("dataAuditoria", sub.getDataSubmissao());
-            item.put("professorValidadorNome",
-                    sub.getProfessorCorretor() != null ? sub.getProfessorCorretor().getNomeCompleto() : "Docente");
+            item.put(
+                    "professorValidadorNome",
+                    sub.getProfessorCorretor() != null
+                            ? sub.getProfessorCorretor().getNomeCompleto()
+                            : "Docente");
             item.put("nota", sub.getNota());
             item.put("totalGatilhos", codigosGatilhos.size());
             item.put("gatilhosDetectados", codigosGatilhos);
             item.put("totalDanos", achadosValidos.size());
             item.put("descricoesDanos", descricoesDanos);
-            item.put("gravidadeMaxima", gravidadeMaxima != null ? gravidadeMaxima.name() : "NENHUM");
+            item.put(
+                    "gravidadeMaxima", gravidadeMaxima != null ? gravidadeMaxima.name() : "NENHUM");
             item.put("danoPresenteAdmissao", presenteAdmissao);
 
             itens.add(item);
@@ -343,14 +440,24 @@ public class IndicadoresEpidemiologicosServico {
         resumoGeral.put("totalDiasInternacao", totalDiasGeral);
         resumoGeral.put("totalEventosAdversos", totalEventosGeral);
         resumoGeral.put("prontuariosComDano", prontuariosComDanoGeral);
-        resumoGeral.put("taxaDanosPorMilDias",
-                totalDiasGeral == 0 ? 0.0 : Math.round((double) totalEventosGeral / totalDiasGeral * 100000.0) / 100.0);
-        resumoGeral.put("frequenciaPorCemAdmissoes",
-                submissoes.isEmpty() ? 0.0
-                        : Math.round((double) totalEventosGeral / submissoes.size() * 10000.0) / 100.0);
-        resumoGeral.put("prevalenciaPercentual",
-                submissoes.isEmpty() ? 0.0
-                        : Math.round((double) prontuariosComDanoGeral / submissoes.size() * 10000.0) / 100.0);
+        resumoGeral.put(
+                "taxaDanosPorMilDias",
+                totalDiasGeral == 0
+                        ? 0.0
+                        : Math.round((double) totalEventosGeral / totalDiasGeral * 100000.0)
+                                / 100.0);
+        resumoGeral.put(
+                "frequenciaPorCemAdmissoes",
+                submissoes.isEmpty()
+                        ? 0.0
+                        : Math.round((double) totalEventosGeral / submissoes.size() * 10000.0)
+                                / 100.0);
+        resumoGeral.put(
+                "prevalenciaPercentual",
+                submissoes.isEmpty()
+                        ? 0.0
+                        : Math.round((double) prontuariosComDanoGeral / submissoes.size() * 10000.0)
+                                / 100.0);
 
         Map<String, Object> resposta = new HashMap<>();
         resposta.put("conteudo", paginaItens);
@@ -364,12 +471,17 @@ public class IndicadoresEpidemiologicosServico {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> obterDesempenhoGatilhos(Long turmaId, String periodoLetivo,
-            Long cenarioId, Long unidadeId,
-            LocalDate dataInicio, LocalDate dataFim) {
+    public Map<String, Object> obterDesempenhoGatilhos(
+            Long turmaId,
+            String periodoLetivo,
+            Long cenarioId,
+            Long unidadeId,
+            LocalDate dataInicio,
+            LocalDate dataFim) {
 
-        List<SubmissaoAtividade> submissoes = filtrarSubmissoesAvaliadas(turmaId, periodoLetivo, cenarioId, unidadeId,
-                dataInicio, dataFim);
+        List<SubmissaoAtividade> submissoes =
+                filtrarSubmissoesAvaliadas(
+                        turmaId, periodoLetivo, cenarioId, unidadeId, dataInicio, dataFim);
 
         Map<Long, DesempenhoGatilhoAgregador> porGatilho = new HashMap<>();
         Map<String, DesempenhoModuloAgregador> porModulo = new LinkedHashMap<>();
@@ -378,11 +490,11 @@ public class IndicadoresEpidemiologicosServico {
         int totalDanosGeral = 0;
 
         for (SubmissaoAtividade sub : submissoes) {
-            List<SubmissaoGatilho> achados = gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
+            List<SubmissaoGatilho> achados =
+                    gatilhoAchadoRepositorio.findBySubmissaoId(sub.getId());
             for (SubmissaoGatilho achado : achados) {
                 GatilhoGtt gatilho = achado.getGatilho();
-                if (gatilho == null)
-                    continue;
+                if (gatilho == null) continue;
 
                 totalPositivosGeral++;
                 boolean dano = Boolean.TRUE.equals(achado.getConfirmouDano());
@@ -390,13 +502,23 @@ public class IndicadoresEpidemiologicosServico {
                     totalDanosGeral++;
                 }
 
-                String modCod = gatilho.getModulo() != null ? gatilho.getModulo().getCodigo().toUpperCase() : "OUTROS";
-                String modNome = gatilho.getModulo() != null ? gatilho.getModulo().getNome() : "Outros";
+                String modCod =
+                        gatilho.getModulo() != null
+                                ? gatilho.getModulo().getCodigo().toUpperCase()
+                                : "OUTROS";
+                String modNome =
+                        gatilho.getModulo() != null ? gatilho.getModulo().getNome() : "Outros";
 
-                DesempenhoGatilhoAgregador gAgg = porGatilho.computeIfAbsent(gatilho.getId(),
-                        k -> new DesempenhoGatilhoAgregador(gatilho.getId(), gatilho.getCodigo(),
-                                gatilho.getDescricao(),
-                                modCod, modNome));
+                DesempenhoGatilhoAgregador gAgg =
+                        porGatilho.computeIfAbsent(
+                                gatilho.getId(),
+                                k ->
+                                        new DesempenhoGatilhoAgregador(
+                                                gatilho.getId(),
+                                                gatilho.getCodigo(),
+                                                gatilho.getDescricao(),
+                                                modCod,
+                                                modNome));
                 gAgg.positivos++;
                 if (dano) {
                     gAgg.danos++;
@@ -414,8 +536,9 @@ public class IndicadoresEpidemiologicosServico {
                     }
                 }
 
-                DesempenhoModuloAgregador mAgg = porModulo.computeIfAbsent(modCod,
-                        k -> new DesempenhoModuloAgregador(modCod, modNome));
+                DesempenhoModuloAgregador mAgg =
+                        porModulo.computeIfAbsent(
+                                modCod, k -> new DesempenhoModuloAgregador(modCod, modNome));
                 mAgg.positivos++;
                 if (dano) {
                     mAgg.danos++;
@@ -423,23 +546,37 @@ public class IndicadoresEpidemiologicosServico {
             }
         }
 
-        List<Map<String, Object>> listaGatilhos = porGatilho.values().stream()
-                .map(agg -> agg.paraMapa())
-                .sorted((a, b) -> {
-                    int cDano = Integer.compare((Integer) b.get("totalDanos"), (Integer) a.get("totalDanos"));
-                    if (cDano != 0)
-                        return cDano;
-                    return Integer.compare((Integer) b.get("totalPositivos"), (Integer) a.get("totalPositivos"));
-                })
-                .collect(Collectors.toList());
+        List<Map<String, Object>> listaGatilhos =
+                porGatilho.values().stream()
+                        .map(agg -> agg.paraMapa())
+                        .sorted(
+                                (a, b) -> {
+                                    int cDano =
+                                            Integer.compare(
+                                                    (Integer) b.get("totalDanos"),
+                                                    (Integer) a.get("totalDanos"));
+                                    if (cDano != 0) return cDano;
+                                    return Integer.compare(
+                                            (Integer) b.get("totalPositivos"),
+                                            (Integer) a.get("totalPositivos"));
+                                })
+                        .collect(Collectors.toList());
 
-        List<Map<String, Object>> listaModulos = porModulo.values().stream()
-                .map(agg -> agg.paraMapa())
-                .sorted((a, b) -> Integer.compare((Integer) b.get("totalDanos"), (Integer) a.get("totalDanos")))
-                .collect(Collectors.toList());
+        List<Map<String, Object>> listaModulos =
+                porModulo.values().stream()
+                        .map(agg -> agg.paraMapa())
+                        .sorted(
+                                (a, b) ->
+                                        Integer.compare(
+                                                (Integer) b.get("totalDanos"),
+                                                (Integer) a.get("totalDanos")))
+                        .collect(Collectors.toList());
 
-        double taxaConversaoGeral = totalPositivosGeral == 0 ? 0.0
-                : Math.round((double) totalDanosGeral / totalPositivosGeral * 10000.0) / 100.0;
+        double taxaConversaoGeral =
+                totalPositivosGeral == 0
+                        ? 0.0
+                        : Math.round((double) totalDanosGeral / totalPositivosGeral * 10000.0)
+                                / 100.0;
 
         Map<String, Object> resultado = new HashMap<>();
         resultado.put("totalGatilhosRastreados", totalPositivosGeral);
@@ -451,24 +588,66 @@ public class IndicadoresEpidemiologicosServico {
         return resultado;
     }
 
-    private List<SubmissaoAtividade> filtrarSubmissoesAvaliadas(Long turmaId, String periodoLetivo,
-            Long cenarioId, Long unidadeId,
-            LocalDate dataInicio, LocalDate dataFim) {
+    private List<SubmissaoAtividade> filtrarSubmissoesAvaliadas(
+            Long turmaId,
+            String periodoLetivo,
+            Long cenarioId,
+            Long unidadeId,
+            LocalDate dataInicio,
+            LocalDate dataFim) {
         return submissaoRepositorio.findAll().stream()
                 .filter(s -> s.getStatus() == StatusSubmissao.AVALIADA)
-                .filter(s -> turmaId == null
-                        || (s.getAtividade() != null && s.getAtividade().getTurma().getId().equals(turmaId)))
-                .filter(s -> periodoLetivo == null || periodoLetivo.isBlank() || periodoLetivo.equalsIgnoreCase("TODOS")
-                        || (s.getAtividade() != null
-                                && s.getAtividade().getTurma().getPeriodoLetivo().equalsIgnoreCase(periodoLetivo)))
-                .filter(s -> cenarioId == null
-                        || (s.getAtividade() != null && s.getAtividade().getCasoClinico().getId().equals(cenarioId)))
-                .filter(s -> unidadeId == null || (s.getAtividade() != null
-                        && s.getAtividade().getCasoClinico().getUnidadeHospitalar().getId().equals(unidadeId)))
-                .filter(s -> dataInicio == null || (s.getAtividade() != null
-                        && !s.getAtividade().getDataInicio().toLocalDate().isBefore(dataInicio)))
-                .filter(s -> dataFim == null || (s.getAtividade() != null
-                        && !s.getAtividade().getDataInicio().toLocalDate().isAfter(dataFim)))
+                .filter(
+                        s ->
+                                turmaId == null
+                                        || (s.getAtividade() != null
+                                                && s.getAtividade()
+                                                        .getTurma()
+                                                        .getId()
+                                                        .equals(turmaId)))
+                .filter(
+                        s ->
+                                periodoLetivo == null
+                                        || periodoLetivo.isBlank()
+                                        || periodoLetivo.equalsIgnoreCase("TODOS")
+                                        || (s.getAtividade() != null
+                                                && s.getAtividade()
+                                                        .getTurma()
+                                                        .getPeriodoLetivo()
+                                                        .equalsIgnoreCase(periodoLetivo)))
+                .filter(
+                        s ->
+                                cenarioId == null
+                                        || (s.getAtividade() != null
+                                                && s.getAtividade()
+                                                        .getCasoClinico()
+                                                        .getId()
+                                                        .equals(cenarioId)))
+                .filter(
+                        s ->
+                                unidadeId == null
+                                        || (s.getAtividade() != null
+                                                && s.getAtividade()
+                                                        .getCasoClinico()
+                                                        .getUnidadeHospitalar()
+                                                        .getId()
+                                                        .equals(unidadeId)))
+                .filter(
+                        s ->
+                                dataInicio == null
+                                        || (s.getAtividade() != null
+                                                && !s.getAtividade()
+                                                        .getDataInicio()
+                                                        .toLocalDate()
+                                                        .isBefore(dataInicio)))
+                .filter(
+                        s ->
+                                dataFim == null
+                                        || (s.getAtividade() != null
+                                                && !s.getAtividade()
+                                                        .getDataInicio()
+                                                        .toLocalDate()
+                                                        .isAfter(dataFim)))
                 .toList();
     }
 
@@ -482,7 +661,8 @@ public class IndicadoresEpidemiologicosServico {
         if (ordenados.size() % 2 != 0) {
             return Math.round(ordenados.get(meio) * 10.0) / 10.0;
         } else {
-            return Math.round(((ordenados.get(meio - 1) + ordenados.get(meio)) / 2.0) * 10.0) / 10.0;
+            return Math.round(((ordenados.get(meio - 1) + ordenados.get(meio)) / 2.0) * 10.0)
+                    / 10.0;
         }
     }
 
@@ -504,7 +684,8 @@ public class IndicadoresEpidemiologicosServico {
         int presentesAdmissao = 0;
         final Map<String, Integer> severidades = new HashMap<>();
 
-        DesempenhoGatilhoAgregador(Long id, String codigo, String descricao, String moduloCodigo, String moduloNome) {
+        DesempenhoGatilhoAgregador(
+                Long id, String codigo, String descricao, String moduloCodigo, String moduloNome) {
             this.id = id;
             this.codigo = codigo;
             this.descricao = descricao;
@@ -513,7 +694,8 @@ public class IndicadoresEpidemiologicosServico {
         }
 
         Map<String, Object> paraMapa() {
-            double tx = positivos == 0 ? 0.0 : Math.round((double) danos / positivos * 10000.0) / 100.0;
+            double tx =
+                    positivos == 0 ? 0.0 : Math.round((double) danos / positivos * 10000.0) / 100.0;
             Map<String, Object> m = new HashMap<>();
             m.put("gatilhoId", id);
             m.put("codigo", codigo);
@@ -542,7 +724,8 @@ public class IndicadoresEpidemiologicosServico {
         }
 
         Map<String, Object> paraMapa() {
-            double tx = positivos == 0 ? 0.0 : Math.round((double) danos / positivos * 10000.0) / 100.0;
+            double tx =
+                    positivos == 0 ? 0.0 : Math.round((double) danos / positivos * 10000.0) / 100.0;
             Map<String, Object> m = new HashMap<>();
             m.put("moduloCodigo", codigo);
             m.put("moduloNome", nome);

@@ -26,8 +26,7 @@ public class SubmissaoPdca {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String agir;
 
-    public SubmissaoPdca() {
-    }
+    public SubmissaoPdca() {}
 
     public Long getId() {
         return id;

@@ -3,11 +3,7 @@ export type PerfilUsuario = 'ADMINISTRADOR' | 'PROFESSOR' | 'ALUNO';
 export type StatusSubmissao = 'EM_ANDAMENTO' | 'SUBMETIDA' | 'AVALIADA';
 
 export type GravidadeNccMerp =
-  | 'CATEGORIA_E'
-  | 'CATEGORIA_F'
-  | 'CATEGORIA_G'
-  | 'CATEGORIA_H'
-  | 'CATEGORIA_I';
+  'CATEGORIA_E' | 'CATEGORIA_F' | 'CATEGORIA_G' | 'CATEGORIA_H' | 'CATEGORIA_I';
 
 export interface CasoClinico {
   id: number;

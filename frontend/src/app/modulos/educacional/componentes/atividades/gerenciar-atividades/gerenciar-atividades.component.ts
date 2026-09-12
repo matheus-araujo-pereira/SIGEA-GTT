@@ -1,13 +1,21 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { MessageModule } from 'primeng/message';
+import { BadgeModule } from 'primeng/badge';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { AtividadeEducacional } from '../../../modelos/educacional.modelos';
 import { TurmaService } from '../../../../turma/servicos/turma.service';
 import { Turma } from '../../../../turma/modelos/turma.modelos';
 import { AutenticacaoService } from '../../../../autenticacao/servicos/autenticacao.service';
-import { PaginacaoComponent } from '../../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface AtividadeLinha {
   id: number;
@@ -29,8 +37,18 @@ export interface AtividadeLinha {
 
 @Component({
   selector: 'app-gerenciar-atividades',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+    ProgressBarModule,
+    MessageModule,
+    BadgeModule,
+  ],
   templateUrl: './gerenciar-atividades.component.html',
 })
 export class GerenciarAtividadesComponent implements OnInit {
@@ -39,24 +57,30 @@ export class GerenciarAtividadesComponent implements OnInit {
   private readonly auth = inject(AutenticacaoService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly messageService = inject(MessageService);
 
   readonly atividades = signal<AtividadeEducacional[]>([]);
   readonly turmas = signal<Turma[]>([]);
   readonly carregando = signal(false);
-  readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
   readonly termoBusca = signal('');
   readonly filtroTurmaId = signal<number | null>(null);
-
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
 
   readonly totalAtividades = computed(() => this.atividades().length);
   readonly ehDocenteOuAdmin = computed(() => {
     const p = this.auth.usuarioLogado()?.perfil;
     return p === 'PROFESSOR' || p === 'ADMINISTRADOR';
   });
+
+  readonly turmasOpcoes = computed(() => [
+    { label: 'Todas as Turmas Acadêmicas', value: null },
+    ...this.turmas().map((t) => ({
+      label: `${t.codigoDisciplina} - ${t.periodoLetivo}`,
+      value: t.id,
+    })),
+  ]);
 
   readonly atividadesFiltradas = computed<AtividadeLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
@@ -101,16 +125,6 @@ export class GerenciarAtividadesComponent implements OnInit {
       });
   });
 
-  readonly totalFiltrados = computed(() => this.atividadesFiltradas().length);
-
-  readonly atividadesPaginadas = computed<AtividadeLinha[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.atividadesFiltradas().slice(
-      inicio,
-      inicio + this.itensPorPagina,
-    );
-  });
-
   ngOnInit(): void {
     const paramTurma = this.route.snapshot.queryParamMap.get('turmaId');
     if (paramTurma) {
@@ -127,17 +141,13 @@ export class GerenciarAtividadesComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao listar atividades: ' + (err.error?.mensagem || err.message),
-        );
+        this.mensagemErro.set('Erro ao listar atividades: ' + (err.error?.mensagem || err.message));
         this.carregando.set(false);
       },
     });
 
     const profId =
-      this.auth.usuarioLogado()?.perfil === 'PROFESSOR'
-        ? this.auth.usuarioLogado()?.id
-        : undefined;
+      this.auth.usuarioLogado()?.perfil === 'PROFESSOR' ? this.auth.usuarioLogado()?.id : undefined;
 
     this.turmaService.listar(profId).subscribe({
       next: (dados) => {
@@ -164,37 +174,32 @@ export class GerenciarAtividadesComponent implements OnInit {
   }
 
   excluir(a: AtividadeEducacional): void {
-    const conf = confirm(
-      `Confirma a exclusão da atividade "${a.titulo}"? Todas as resoluções e notas associadas serão excluídas.`,
-    );
-    if (!conf) return;
-
-    this.educacionalService.excluirAtividade(a.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(
-          `Atividade "${a.titulo}" excluída com sucesso.`,
-        );
-        this.carregarDados();
-      },
-      error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao excluir atividade: ' + (err.error?.mensagem || err.message),
-        );
+    this.confirmationService.confirm({
+      header: 'Confirmar Exclusão',
+      message: `Confirma a exclusão da atividade "${a.titulo}"? Todas as resoluções e notas associadas serão excluídas.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, Excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.educacionalService.excluirAtividade(a.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Excluído',
+              detail: `Atividade "${a.titulo}" excluída com sucesso.`,
+            });
+            this.carregarDados();
+          },
+          error: (err) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao excluir atividade: ' + (err.error?.mensagem || err.message),
+            });
+          },
+        });
       },
     });
-  }
-
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  atualizarFiltroTurma(turmaId: any): void {
-    this.filtroTurmaId.set(turmaId ? Number(turmaId) : null);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
   }
 }

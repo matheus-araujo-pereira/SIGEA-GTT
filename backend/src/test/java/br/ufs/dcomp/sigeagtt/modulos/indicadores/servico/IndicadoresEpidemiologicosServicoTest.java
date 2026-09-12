@@ -1,5 +1,9 @@
 package br.ufs.dcomp.sigeagtt.modulos.indicadores.servico;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
+
 import br.ufs.dcomp.sigeagtt.modulos.educacional.modelo.*;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoAtividadeRepositorio;
 import br.ufs.dcomp.sigeagtt.modulos.educacional.repositorio.SubmissaoGatilhoRepositorio;
@@ -9,7 +13,10 @@ import br.ufs.dcomp.sigeagtt.modulos.turma.modelo.Turma;
 import br.ufs.dcomp.sigeagtt.modulos.unidade.modelo.UnidadeHospitalar;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
-
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,25 +24,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IndicadoresEpidemiologicosServicoTest {
 
-    @Mock
-    private SubmissaoAtividadeRepositorio submissaoRepositorio;
+    @Mock private SubmissaoAtividadeRepositorio submissaoRepositorio;
 
-    @Mock
-    private SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio;
+    @Mock private SubmissaoGatilhoRepositorio gatilhoAchadoRepositorio;
 
-    @InjectMocks
-    private IndicadoresEpidemiologicosServico servico;
+    @InjectMocks private IndicadoresEpidemiologicosServico servico;
 
     private Turma turma;
     private CasoClinico casoClinico;
@@ -121,7 +118,11 @@ class IndicadoresEpidemiologicosServicoTest {
         return sub;
     }
 
-    private SubmissaoGatilho criarAchado(Long id, SubmissaoAtividade sub, GatilhoGtt gat, boolean confirmouDano,
+    private SubmissaoGatilho criarAchado(
+            Long id,
+            SubmissaoAtividade sub,
+            GatilhoGtt gat,
+            boolean confirmouDano,
             GravidadeNccMerp gravidade) {
         SubmissaoGatilho a = new SubmissaoGatilho();
         a.setId(id);
@@ -141,14 +142,17 @@ class IndicadoresEpidemiologicosServicoTest {
         SubmissaoAtividade rev2 = criarSubmissao(2L, 15);
         when(submissaoRepositorio.findAll()).thenReturn(List.of(rev1, rev2));
 
-        SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
-        SubmissaoGatilho achado2 = criarAchado(2L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_F);
+        SubmissaoGatilho achado1 =
+                criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
+        SubmissaoGatilho achado2 =
+                criarAchado(2L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_F);
         when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1, achado2));
 
         SubmissaoGatilho achado3 = criarAchado(3L, rev2, gatilhoC1, false, null);
         when(gatilhoAchadoRepositorio.findBySubmissaoId(2L)).thenReturn(List.of(achado3));
 
-        Map<String, Object> resultado = servico.calcularIndicadoresIndividuais(null, null, null, null, null, null);
+        Map<String, Object> resultado =
+                servico.calcularIndicadoresIndividuais(null, null, null, null, null, null);
 
         assertNotNull(resultado);
         assertEquals(2, resultado.get("totalProntuariosAuditados"));
@@ -167,11 +171,13 @@ class IndicadoresEpidemiologicosServicoTest {
         SubmissaoAtividade rev1 = criarSubmissao(1L, 10);
         when(submissaoRepositorio.findAll()).thenReturn(List.of(rev1));
 
-        SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
+        SubmissaoGatilho achado1 =
+                criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
         when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1));
 
-        Map<String, Object> resumo = servico.obterQuadroResumo(null, null, null, null, null, null, null, null, null,
-                null, null, 0, 10);
+        Map<String, Object> resumo =
+                servico.obterQuadroResumo(
+                        null, null, null, null, null, null, null, null, null, null, null, 0, 10);
 
         assertNotNull(resumo);
         List<?> conteudo = (List<?>) resumo.get("conteudo");
@@ -189,10 +195,12 @@ class IndicadoresEpidemiologicosServicoTest {
         SubmissaoAtividade rev1 = criarSubmissao(1L, 10);
         when(submissaoRepositorio.findAll()).thenReturn(List.of(rev1));
 
-        SubmissaoGatilho achado1 = criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
+        SubmissaoGatilho achado1 =
+                criarAchado(1L, rev1, gatilhoC1, true, GravidadeNccMerp.CATEGORIA_E);
         when(gatilhoAchadoRepositorio.findBySubmissaoId(1L)).thenReturn(List.of(achado1));
 
-        Map<String, Object> desempenho = servico.obterDesempenhoGatilhos(null, null, null, null, null, null);
+        Map<String, Object> desempenho =
+                servico.obterDesempenhoGatilhos(null, null, null, null, null, null);
 
         assertNotNull(desempenho);
         assertEquals(1, desempenho.get("totalGatilhosRastreados"));
@@ -208,7 +216,8 @@ class IndicadoresEpidemiologicosServicoTest {
     void deveRetornarVazioQuandoNaoHouverRevisoes() {
         when(submissaoRepositorio.findAll()).thenReturn(List.of());
 
-        Map<String, Object> resultado = servico.calcularIndicadoresIndividuais(null, null, null, null, null, null);
+        Map<String, Object> resultado =
+                servico.calcularIndicadoresIndividuais(null, null, null, null, null, null);
 
         assertNotNull(resultado);
         assertEquals(0, resultado.get("totalProntuariosAuditados"));

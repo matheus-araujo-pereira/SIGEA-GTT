@@ -1,40 +1,96 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
 import { UnidadeService } from '../../servicos/unidade.service';
 import { UnidadeHospitalar } from '../../modelos/unidade.modelos';
-import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface UnidadeLinha {
   id: number;
   sigla: string;
   nome: string;
-  status: string;
   ativa: boolean;
   original: UnidadeHospitalar;
 }
 
 @Component({
   selector: 'app-gerenciar-unidades',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+  ],
   templateUrl: './gerenciar-unidades.component.html',
+  styles: [
+    `
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .page-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+      }
+      .page-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .filter-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .search-input {
+        flex: 1;
+      }
+      .filter-select {
+        width: 220px;
+      }
+      .actions-cell {
+        display: flex;
+        gap: 4px;
+        justify-content: flex-end;
+      }
+    `,
+  ],
 })
 export class GerenciarUnidadesComponent implements OnInit {
   private readonly unidadeService = inject(UnidadeService);
   private readonly router = inject(Router);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   readonly unidades = signal<UnidadeHospitalar[]>([]);
   readonly carregando = signal(false);
-  readonly mensagemSucesso = signal<string | null>(null);
-  readonly mensagemErro = signal<string | null>(null);
 
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
 
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
+  readonly opcoesStatus = [
+    { label: 'Todos os Status', value: 'TODOS' },
+    { label: 'Unidades Ativas', value: 'ATIVAS' },
+    { label: 'Unidades Inativas', value: 'INATIVAS' },
+  ];
 
   readonly totalUnidades = computed(() => this.unidades().length);
 
@@ -45,12 +101,9 @@ export class GerenciarUnidadesComponent implements OnInit {
     return this.unidades()
       .filter((u) => {
         const matchTermo =
-          !termo ||
-          u.nome.toLowerCase().includes(termo) ||
-          u.sigla.toLowerCase().includes(termo);
+          !termo || u.nome.toLowerCase().includes(termo) || u.sigla.toLowerCase().includes(termo);
 
-        const matchStatus =
-          status === 'TODOS' || (status === 'ATIVAS' ? u.ativa : !u.ativa);
+        const matchStatus = status === 'TODOS' || (status === 'ATIVAS' ? u.ativa : !u.ativa);
 
         return matchTermo && matchStatus;
       })
@@ -64,22 +117,9 @@ export class GerenciarUnidadesComponent implements OnInit {
         id: u.id,
         sigla: u.sigla,
         nome: u.nome,
-        status: u.ativa ? 'ATIVO' : 'INATIVO',
         ativa: u.ativa,
         original: u,
       }));
-  });
-
-  readonly totalFiltrados = computed(
-    () => this.unidadesLinhasFiltradas().length,
-  );
-
-  readonly unidadesLinhasPaginadas = computed<UnidadeLinha[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.unidadesLinhasFiltradas().slice(
-      inicio,
-      inicio + this.itensPorPagina,
-    );
   });
 
   ngOnInit(): void {
@@ -94,10 +134,11 @@ export class GerenciarUnidadesComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao carregar unidades hospitalares: ' +
-            (err.error?.mensagem || err.message),
-        );
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Erro ao carregar unidades hospitalares: ' + (err.error?.mensagem || err.message),
+        });
         this.carregando.set(false);
       },
     });
@@ -111,50 +152,61 @@ export class GerenciarUnidadesComponent implements OnInit {
     this.router.navigate(['/unidades', u.id, 'editar']);
   }
 
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  atualizarFiltroStatus(status: string): void {
-    this.filtroStatus.set(status);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
-  }
-
   alternarStatus(u: UnidadeHospitalar): void {
-    this.unidadeService.alternarStatus(u.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(
-          `Unidade "${u.sigla}" ${u.ativa ? 'inativada' : 'ativada'} com sucesso.`,
-        );
-        this.carregarUnidades();
+    const acao = u.ativa ? 'inativar' : 'reativar';
+    this.confirmationService.confirm({
+      header: `Confirmar ${acao.toUpperCase()}`,
+      message: `Deseja realmente ${acao} a unidade "${u.sigla}"?`,
+      icon: 'pi pi-exclamation-circle',
+      acceptLabel: `Sim, ${acao}`,
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.unidadeService.alternarStatus(u.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Unidade "${u.sigla}" ${u.ativa ? 'inativada' : 'ativada'} com sucesso.`,
+            });
+            this.carregarUnidades();
+          },
+          error: (err) =>
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao alternar status: ' + (err.error?.mensagem || err.message),
+            }),
+        });
       },
-      error: (err) =>
-        this.mensagemErro.set(
-          'Erro ao alternar status: ' + (err.error?.mensagem || err.message),
-        ),
     });
   }
 
   excluir(u: UnidadeHospitalar): void {
-    const confirmacao = confirm(
-      `Deseja realmente excluir a unidade "${u.nome}" (${u.sigla})?`,
-    );
-    if (!confirmacao) return;
-
-    this.unidadeService.excluir(u.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(`Unidade ${u.sigla} excluída com sucesso.`);
-        this.carregarUnidades();
+    this.confirmationService.confirm({
+      header: 'Confirmar Exclusão',
+      message: `Deseja realmente excluir a unidade "${u.nome}" (${u.sigla})?`,
+      icon: 'pi pi-trash',
+      acceptLabel: 'Sim, Excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.unidadeService.excluir(u.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Unidade ${u.sigla} excluída com sucesso.`,
+            });
+            this.carregarUnidades();
+          },
+          error: (err) =>
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao excluir unidade: ' + (err.error?.mensagem || err.message),
+            }),
+        });
       },
-      error: (err) =>
-        this.mensagemErro.set(
-          'Erro ao excluir unidade: ' + (err.error?.mensagem || err.message),
-        ),
     });
   }
 }

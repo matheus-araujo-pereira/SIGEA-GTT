@@ -1,246 +1,219 @@
-<div>
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.5rem">
   <!-- CABEÇALHO DA LISTAGEM -->
   <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 1rem;
+    "
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">Atividades de Auditoria Docente</h1>
-      <span class="text-secondary small">
-        Total cadastrado: {{ totalAtividades() }} atividades curriculares
-        vinculadas a casos clínicos e turmas
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
+        Atividades de Auditoria Docente
+      </h1>
+      <span style="font-size: 0.875rem; color: #64748b">
+        Total cadastrado: {{ totalAtividades() }} atividades curriculares vinculadas a casos
+        clínicos e turmas
       </span>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      @if (ehDocenteOuAdmin()) {
-        <button
-          type="button"
-          class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 px-3"
-          (click)="navegarParaNovo()"
-        >
-          <i class="bi bi-plus-circle-fill"></i>
-          <span>NOVA ATIVIDADE</span>
-        </button>
-      }
-    </div>
+    @if (ehDocenteOuAdmin()) {
+      <p-button
+        label="NOVA ATIVIDADE"
+        icon="pi pi-plus-circle"
+        size="small"
+        (onClick)="navegarParaNovo()"
+      />
+    }
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
   @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
+    <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full" />
   }
 
   <!-- BARRA DE FILTROS E BUSCA -->
   <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+    style="
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      background: #ffffff;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--p-content-border-color, #e2e8f0);
+    "
   >
-    <div class="row g-2 align-items-center">
-      <div class="col-md-8">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-secondary border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control border-start-0"
-            [ngModel]="termoBusca()"
-            (ngModelChange)="atualizarBusca($event)"
-            placeholder="Filtrar por título, turma, disciplina ou caso clínico..."
-          />
-          @if (termoBusca()) {
-            <button
-              class="btn btn-outline-secondary"
-              type="button"
-              (click)="atualizarBusca('')"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          }
-        </div>
-      </div>
+    <div style="flex: 1; max-width: 480px; position: relative">
+      <i
+        class="pi pi-search"
+        style="
+          position: absolute;
+          left: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #64748b;
+        "
+      ></i>
+      <input
+        pInputText
+        type="text"
+        [ngModel]="termoBusca()"
+        (ngModelChange)="termoBusca.set($event)"
+        placeholder="Filtrar por título, turma, disciplina ou caso clínico..."
+        style="width: 100%; padding-left: 2.25rem"
+      />
+    </div>
 
-      <div class="col-md-4">
-        <select
-          class="form-select form-select-sm"
-          [ngModel]="filtroTurmaId()"
-          (ngModelChange)="atualizarFiltroTurma($event)"
-        >
-          <option [ngValue]="null">Todas as Turmas Acadêmicas</option>
-          @for (t of turmas(); track t.id) {
-            <option [ngValue]="t.id">
-              {{ t.codigoDisciplina }} - {{ t.periodoLetivo }}
-            </option>
-          }
-        </select>
-      </div>
+    <div style="width: 280px">
+      <p-select
+        [options]="turmasOpcoes()"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="filtroTurmaId()"
+        (ngModelChange)="filtroTurmaId.set($event)"
+        styleClass="w-full"
+      />
     </div>
   </div>
 
   <!-- TABELA DE ATIVIDADES -->
   <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+    style="
+      background: #ffffff;
+      border-radius: 6px;
+      border: 1px solid var(--p-content-border-color, #e2e8f0);
+      overflow: hidden;
+    "
   >
-    <div class="table-responsive bg-white">
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-        >
-          <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              TÍTULO DA ATIVIDADE
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              TURMA / DISCIPLINA
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              CASO CLÍNICO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              PRAZO DE ENTREGA
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              ENTREGAS
-            </th>
-            <th scope="col" class="py-2 px-3 text-end bg-white text-secondary">
-              AÇÕES
-            </th>
-          </tr>
-        </thead>
-        <tbody class="small font-monospace bg-white">
-          @for (a of atividadesPaginadas(); track a.id) {
-            <tr class="bg-white">
-              <td class="py-2 px-3 bg-white">
-                <div class="fw-bold text-dark font-sans-serif">
-                  {{ a.titulo }}
-                </div>
-                <div class="text-secondary small font-monospace">
-                  Limite: {{ a.tempoLimiteMinutos }} min (IHI GTT)
-                </div>
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                <div class="fw-bold text-dark">{{ a.turmaCodigo }}</div>
-                <div class="small text-muted">{{ a.turmaDisciplina }}</div>
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white font-sans-serif">
-                {{ a.casoTitulo }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                <div>{{ a.prazoInicio }} a</div>
-                <div>{{ a.prazoFim }}</div>
-              </td>
-              <td class="py-2 px-2 bg-white">
-                <div class="d-flex align-items-center gap-2">
-                  <span class="fw-bold text-dark"
-                    >{{ a.totalSubmissoes }}/{{ a.totalAlunos }}</span
-                  >
-                  <span class="badge bg-light text-dark border"
-                    >{{ a.porcentagemEntrega }}%</span
-                  >
-                </div>
-                <div class="progress mt-1" style="height: 4px">
-                  <div
-                    class="progress-bar bg-primary"
-                    role="progressbar"
-                    [style.width.%]="a.porcentagemEntrega"
-                  ></div>
-                </div>
-                @if (a.pendentesCorrecao > 0) {
-                  <div class="mt-1">
-                    <span
-                      class="badge bg-warning text-dark font-monospace"
-                      style="font-size: 0.65rem"
-                      title="Submissões aguardando avaliação"
-                    >
-                      <i class="bi bi-clock-history me-1"></i
-                      >{{ a.pendentesCorrecao }} a corrigir
-                    </span>
-                  </div>
-                }
-              </td>
-              <td class="py-2 px-3 text-end text-nowrap bg-white">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm py-0 px-2 me-1 rounded-1"
-                  (click)="navegarParaPainel(a.original)"
-                  title="Abrir Painel da Turma & Correções"
-                >
-                  <i class="bi bi-speedometer2 me-1"></i>PAINEL DA TURMA
-                  @if (a.pendentesCorrecao > 0) {
-                    <span
-                      class="badge bg-primary text-white ms-1 rounded-pill"
-                      >{{ a.pendentesCorrecao }}</span
-                    >
-                  }
-                </button>
-                @if (ehDocenteOuAdmin()) {
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm py-0 px-2 me-1 rounded-1"
-                    (click)="navegarParaEditar(a.original)"
-                    title="Editar Atividade"
-                  >
-                    EDITAR
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                    (click)="excluir(a.original)"
-                    title="Excluir Atividade"
-                  >
-                    EXCLUIR
-                  </button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="text-center py-5 text-muted bg-white">
-                <i class="bi bi-journal-x fs-2 d-block text-secondary mb-2"></i>
-                Nenhuma atividade educacional encontrada com os filtros
-                selecionados.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- PAGINAÇÃO -->
-    <app-paginacao
-      [totalItens]="totalFiltrados()"
-      [itensPorPagina]="itensPorPagina"
-      [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)"
+    <p-table
+      [value]="atividadesFiltradas()"
+      [paginator]="true"
+      [rows]="15"
+      [rowsPerPageOptions]="[15, 25, 50]"
+      [loading]="carregando()"
+      styleClass="p-datatable-sm p-datatable-striped"
+      [tableStyle]="{ 'min-width': '100%' }"
     >
-    </app-paginacao>
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="titulo">TÍTULO DA ATIVIDADE <p-sortIcon field="titulo" /></th>
+          <th pSortableColumn="turmaCodigo" style="width: 200px">
+            TURMA / DISCIPLINA <p-sortIcon field="turmaCodigo" />
+          </th>
+          <th pSortableColumn="casoTitulo" style="width: 220px">
+            CASO CLÍNICO <p-sortIcon field="casoTitulo" />
+          </th>
+          <th pSortableColumn="prazoInicio" style="width: 170px">
+            PRAZO DE ENTREGA <p-sortIcon field="prazoInicio" />
+          </th>
+          <th style="width: 160px; text-align: center">ENTREGAS</th>
+          <th style="width: 260px; text-align: right">AÇÕES</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-a>
+        <tr>
+          <td>
+            <div style="font-weight: 600; color: #0f172a">{{ a.titulo }}</div>
+            <div style="font-size: 0.75rem; color: #64748b">
+              Limite: {{ a.tempoLimiteMinutos }} min (IHI GTT)
+            </div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: #0f172a">{{ a.turmaCodigo }}</div>
+            <div style="font-size: 0.75rem; color: #64748b">{{ a.turmaDisciplina }}</div>
+          </td>
+          <td style="color: #334155">
+            {{ a.casoTitulo }}
+          </td>
+          <td style="font-size: 0.8125rem; color: #475569">
+            <div>{{ a.prazoInicio }} a</div>
+            <div>{{ a.prazoFim }}</div>
+          </td>
+          <td>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.25rem;
+              "
+            >
+              <span style="font-weight: 700; font-size: 0.8125rem; color: #0f172a"
+                >{{ a.totalSubmissoes }}/{{ a.totalAlunos }}</span
+              >
+              <span style="font-size: 0.75rem; color: #64748b; font-weight: 600"
+                >{{ a.porcentagemEntrega }}%</span
+              >
+            </div>
+            <p-progressBar
+              [value]="a.porcentagemEntrega"
+              [showValue]="false"
+              [style]="{ height: '6px' }"
+            />
+            @if (a.pendentesCorrecao > 0) {
+              <div style="margin-top: 0.35rem; display: flex; align-items: center">
+                <p-tag
+                  [value]="a.pendentesCorrecao + ' a corrigir'"
+                  severity="warn"
+                  icon="pi pi-clock"
+                />
+              </div>
+            }
+          </td>
+          <td style="text-align: right">
+            <div
+              style="
+                display: inline-flex;
+                gap: 0.35rem;
+                justify-content: flex-end;
+                align-items: center;
+              "
+            >
+              <p-button
+                label="Painel"
+                icon="pi pi-chart-bar"
+                size="small"
+                [badge]="a.pendentesCorrecao > 0 ? '' + a.pendentesCorrecao : undefined"
+                badgeSeverity="danger"
+                pTooltip="Abrir Painel da Turma & Correções"
+                (onClick)="navegarParaPainel(a.original)"
+              />
+              @if (ehDocenteOuAdmin()) {
+                <p-button
+                  icon="pi pi-pencil"
+                  [text]="true"
+                  size="small"
+                  pTooltip="Editar Atividade"
+                  (onClick)="navegarParaEditar(a.original)"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  [text]="true"
+                  severity="danger"
+                  size="small"
+                  pTooltip="Excluir Atividade"
+                  (onClick)="excluir(a.original)"
+                />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 3rem; color: #64748b">
+            <i
+              class="pi pi-folder-open"
+              style="font-size: 2rem; display: block; margin-bottom: 0.5rem"
+            ></i>
+            Nenhuma atividade educacional encontrada com os filtros selecionados.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
   </div>
 </div>

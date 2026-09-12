@@ -7,5 +7,4 @@ public record SubmissaoIshikawaDTO(
         String material,
         String medida,
         String meioAmbiente,
-        String maquina) {
-}
+        String maquina) {}

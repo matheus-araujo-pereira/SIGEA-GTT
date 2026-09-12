@@ -39,8 +39,7 @@ public class SubmissaoGatilho {
     @Column(name = "gravidade", columnDefinition = "gravidade_ncc_merp_enum")
     private GravidadeNccMerp gravidade;
 
-    public SubmissaoGatilho() {
-    }
+    public SubmissaoGatilho() {}
 
     public Long getId() {
         return id;

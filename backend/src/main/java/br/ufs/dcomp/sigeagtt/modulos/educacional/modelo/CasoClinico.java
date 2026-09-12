@@ -64,8 +64,7 @@ public class CasoClinico {
     @Column(nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
-    public CasoClinico() {
-    }
+    public CasoClinico() {}
 
     @PrePersist
     public void prePersist() {

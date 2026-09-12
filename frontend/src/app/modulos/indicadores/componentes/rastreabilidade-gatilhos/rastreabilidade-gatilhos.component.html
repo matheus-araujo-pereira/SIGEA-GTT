@@ -1,91 +1,102 @@
-<div>
-  <!-- CABEÇALHO DA PÁGINA (PADRÃO ADMINISTRAÇÃO / GESTÃO ACADÊMICA) -->
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.25rem">
+  <!-- CABEÇALHO DA PÁGINA -->
   <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 1rem;
+    "
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
         Rastreabilidade e Rendimento de Gatilhos
       </h1>
-      <span class="text-secondary small">
-        Avaliação da sensibilidade diagnóstica dos 6 módulos e taxa de conversão
-        em eventos adversos reais
+      <span style="font-size: 0.875rem; color: #64748b">
+        Avaliação da sensibilidade diagnóstica dos 6 módulos e taxa de conversão em eventos adversos
+        reais
       </span>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button
-        type="button"
-        class="btn btn-outline-secondary btn-sm rounded-1 font-monospace"
-        (click)="limparFiltros()"
-      >
-        LIMPAR FILTROS
-      </button>
-      <button
-        type="button"
-        class="btn btn-primary btn-sm rounded-1 font-monospace d-inline-flex align-items-center gap-1"
-        (click)="exportarPDF()"
-        [disabled]="exportandoPdf() || carregando()"
-      >
-        @if (exportandoPdf()) {
-          <span
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          <span>GERANDO PDF...</span>
-        } @else {
-          <i class="bi bi-file-earmark-pdf"></i>
-          <span>EXPORTAR RELATÓRIO PDF</span>
-        }
-      </button>
+    <div style="display: flex; align-items: center; gap: 0.5rem">
+      <p-button
+        label="LIMPAR FILTROS"
+        icon="pi pi-filter-slash"
+        [outlined]="true"
+        severity="secondary"
+        size="small"
+        (onClick)="limparFiltros()"
+      />
+      <p-button
+        label="EXPORTAR RELATÓRIO PDF"
+        icon="pi pi-file-pdf"
+        size="small"
+        [loading]="exportandoPdf() || carregando()"
+        (onClick)="exportarPDF()"
+      />
     </div>
   </div>
 
-  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO EPIDEMIOLOGIA) -->
-  <ul class="nav nav-pills mb-3 gap-2">
-    <li class="nav-item">
-      <a
-        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores"
-      >
-        <i class="bi bi-graph-up me-1"></i>DASHBOARD EXECUTIVO
-      </a>
-    </li>
-    <li class="nav-item">
-      <a
-        class="nav-link text-secondary bg-white border border-light-subtle rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores/quadro-resumo"
-      >
-        <i class="bi bi-table me-1"></i>QUADRO RESUMO
-      </a>
-    </li>
-    <li class="nav-item">
-      <a
-        class="nav-link active rounded-1 py-1 px-3 small font-monospace"
-        routerLink="/indicadores/gatilhos"
-      >
-        <i class="bi bi-bullseye me-1"></i>RASTREABILIDADE & GATILHOS
-      </a>
-    </li>
-  </ul>
-
-  <!-- CARD DE FILTROS E BUSCA PADRONIZADO -->
+  <!-- NAVEGAÇÃO SUPERIOR POR ABAS (MÓDULO INDICADORES) -->
   <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
+    style="
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 0.5rem;
+    "
   >
-    <div class="row g-2 align-items-end">
+    <p-button
+      label="DASHBOARD EXECUTIVO"
+      icon="pi pi-chart-line"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/indicadores"
+    />
+    <p-button
+      label="QUADRO RESUMO"
+      icon="pi pi-table"
+      [text]="true"
+      severity="secondary"
+      size="small"
+      routerLink="/indicadores/quadro-resumo"
+    />
+    <p-button
+      label="RASTREABILIDADE & GATILHOS"
+      icon="pi pi-compass"
+      severity="primary"
+      size="small"
+      routerLink="/indicadores/gatilhos"
+    />
+  </div>
+
+  <!-- CARD DE FILTROS E BUSCA -->
+  <p-card>
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 1rem;
+        align-items: flex-end;
+      "
+    >
       <!-- BUSCA TEXTUAL -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Buscar Código ou Descrição do Gatilho
         </label>
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light border-end-0">
-            <i class="bi bi-search text-secondary"></i>
-          </span>
+        <div style="position: relative; display: flex; align-items: center">
+          <i
+            class="pi pi-search"
+            style="position: absolute; left: 0.75rem; color: #94a3b8; z-index: 1"
+          ></i>
           <input
+            pInputText
             type="text"
-            class="form-control border-start-0"
+            style="width: 100%; padding-left: 2.25rem"
             placeholder="Ex: C1, naloxona, INR..."
             [ngModel]="termoBusca()"
             (ngModelChange)="termoBusca.set($event)"
@@ -93,320 +104,435 @@
         </div>
       </div>
 
-      <!-- PERÍODO LETIVO (SEM DUPLICAÇÃO) -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <!-- PERÍODO LETIVO -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Período Letivo
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="periodoOptions()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroPeriodoLetivo()"
-          (ngModelChange)="
-            filtroPeriodoLetivo.set($event); carregarDesempenhoGatilhos()
-          "
-        >
-          <option value="TODOS">Todos os Períodos</option>
-          @for (p of periodosDisponiveis(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
+          (ngModelChange)="filtroPeriodoLetivo.set($event); carregarDesempenhoGatilhos()"
+          styleClass="w-full"
+        />
       </div>
 
       <!-- TURMA -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Turma
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="turmaOptions()"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroTurmaId()"
-          (ngModelChange)="
-            filtroTurmaId.set($event); carregarDesempenhoGatilhos()
-          "
+          (ngModelChange)="filtroTurmaId.set($event); carregarDesempenhoGatilhos()"
+          styleClass="w-full"
+        />
+      </div>
+
+      <!-- UNIDADE -->
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
         >
-          <option value="TODOS">Todas as Turmas</option>
-          @for (t of turmasFiltradas(); track t.id) {
-            <option [value]="t.id">{{ t.codigoDisciplina }}</option>
-          }
-        </select>
+          Unidade
+        </label>
+        <p-select
+          [options]="unidadeOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="filtroUnidadeId()"
+          (ngModelChange)="filtroUnidadeId.set($event); carregarDesempenhoGatilhos()"
+          styleClass="w-full"
+        />
       </div>
 
       <!-- MÓDULO GTT -->
-      <div class="col-md-3">
-        <label class="form-label small fw-semibold text-secondary mb-1">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem">
+        <label
+          style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase"
+        >
           Módulo GTT
         </label>
-        <select
-          class="form-select form-select-sm"
+        <p-select
+          [options]="moduloOptions"
+          optionLabel="label"
+          optionValue="value"
           [ngModel]="filtroModulo()"
           (ngModelChange)="filtroModulo.set($event)"
-        >
-          <option value="TODOS">Todos os Módulos</option>
-          <option value="CUIDADOS">Cuidados Gerais (C)</option>
-          <option value="MEDICACAO">Medicamentos (M)</option>
-          <option value="CIRURGICO">Cirúrgico (S)</option>
-          <option value="TERAPIA_INTENSIVA">Terapia Intensiva (I)</option>
-          <option value="PERINATAL">Perinatal (P)</option>
-          <option value="URGENCIA">Pronto Atendimento (E)</option>
-        </select>
+          styleClass="w-full"
+        />
       </div>
     </div>
-  </div>
+  </p-card>
 
   <!-- CONTAINER DO RELATÓRIO DE GATILHOS PARA EXPORTAÇÃO PDF -->
-  <div id="relatorio-gatilhos">
+  <div id="relatorio-gatilhos" style="display: flex; flex-direction: column; gap: 1rem">
     <!-- METRICAS EM DESTAQUE (KPIS DE SENSIBILIDADE) -->
-    <div class="row g-2 mb-3">
-      <div class="col-6 col-md-3">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
-        >
-          <span class="text-secondary small font-monospace d-block"
-            >TRIGGERS RASTREADOS</span
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem">
+      <p-card>
+        <div style="text-align: center">
+          <span
+            style="
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              display: block;
+            "
           >
-          <span class="h3 fw-bold text-dark my-1 font-monospace">{{
-            totalGatilhosRastreados()
-          }}</span>
-          <span class="text-muted" style="font-size: 0.72rem"
-            >ocorrências positivas</span
+            TRIGGERS RASTREADOS
+          </span>
+          <span
+            style="
+              font-size: 1.75rem;
+              font-weight: 700;
+              color: #0f172a;
+              display: block;
+              margin: 0.25rem 0;
+              font-variant-numeric: tabular-nums;
+            "
           >
+            {{ totalGatilhosRastreados() }}
+          </span>
+          <span style="font-size: 0.75rem; color: #94a3b8">ocorrências positivas</span>
         </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
-        >
-          <span class="text-secondary small font-monospace d-block"
-            >DANOS CONFIRMADOS</span
+      </p-card>
+
+      <p-card>
+        <div style="text-align: center">
+          <span
+            style="
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              display: block;
+            "
           >
-          <span class="h3 fw-bold text-danger my-1 font-monospace">{{
-            totalDanosConfirmados()
-          }}</span>
-          <span class="text-muted" style="font-size: 0.72rem"
-            >eventos adversos reais</span
+            DANOS CONFIRMADOS
+          </span>
+          <span
+            style="
+              font-size: 1.75rem;
+              font-weight: 700;
+              color: #ef4444;
+              display: block;
+              margin: 0.25rem 0;
+              font-variant-numeric: tabular-nums;
+            "
           >
+            {{ totalDanosConfirmados() }}
+          </span>
+          <span style="font-size: 0.75rem; color: #94a3b8">eventos adversos reais</span>
         </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
-        >
-          <span class="text-secondary small font-monospace d-block"
-            >RENDIMENTO GLOBAL</span
+      </p-card>
+
+      <p-card>
+        <div style="text-align: center">
+          <span
+            style="
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              display: block;
+            "
           >
-          <span class="h3 fw-bold text-success my-1 font-monospace"
-            >{{ taxaConversaoGeral() }}%</span
+            RENDIMENTO GLOBAL
+          </span>
+          <span
+            style="
+              font-size: 1.75rem;
+              font-weight: 700;
+              color: #10b981;
+              display: block;
+              margin: 0.25rem 0;
+              font-variant-numeric: tabular-nums;
+            "
           >
-          <span class="text-muted" style="font-size: 0.72rem"
-            >taxa de conversão em dano</span
-          >
+            {{ taxaConversaoGeral() }}%
+          </span>
+          <span style="font-size: 0.75rem; color: #94a3b8">taxa de conversão em dano</span>
         </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div
-          class="card border border-light-subtle rounded-2 shadow-sm p-3 bg-white text-center"
-        >
-          <span class="text-secondary small font-monospace d-block"
-            >DANOS GRAVES (G, H, I)</span
+      </p-card>
+
+      <p-card>
+        <div style="text-align: center">
+          <span
+            style="
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: #64748b;
+              text-transform: uppercase;
+              display: block;
+            "
           >
-          <span class="h3 fw-bold text-warning-emphasis my-1 font-monospace">{{
-            totalDanosGraves()
-          }}</span>
-          <span class="text-muted" style="font-size: 0.72rem"
-            >ameaça à vida ou óbito</span
+            DANOS GRAVES (G, H, I)
+          </span>
+          <span
+            style="
+              font-size: 1.75rem;
+              font-weight: 700;
+              color: #f59e0b;
+              display: block;
+              margin: 0.25rem 0;
+              font-variant-numeric: tabular-nums;
+            "
           >
+            {{ totalDanosGraves() }}
+          </span>
+          <span style="font-size: 0.75rem; color: #94a3b8">ameaça à vida ou óbito</span>
         </div>
-      </div>
+      </p-card>
     </div>
 
     <!-- RESUMO COMPARATIVO DOS 6 MÓDULOS DO IHI -->
-    <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
-    >
-      <div class="pb-2 mb-2 border-bottom border-light-subtle">
-        <span class="fw-bold text-dark small font-monospace d-block">
+    <p-card>
+      <div
+        style="
+          border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+          padding-bottom: 0.75rem;
+          margin-bottom: 1rem;
+        "
+      >
+        <span
+          style="
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            display: block;
+          "
+        >
           DESEMPENHO COMPARATIVO POR MÓDULO GTT (SEÇÃO II-C DO WHITE PAPER)
         </span>
-        <span class="text-secondary" style="font-size: 0.75rem">
-          Volume de gatilhos rastreados vs eventos adversos gerados por setor
-          hospitalar
+        <span style="font-size: 0.75rem; color: #64748b">
+          Volume de gatilhos rastreados vs eventos adversos gerados por setor hospitalar
         </span>
       </div>
 
-      <div class="row g-2">
+      <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem">
         @for (m of modulos(); track m.moduloCodigo) {
-          <div class="col-md-4 col-lg-2">
-            <div
-              class="p-2 border border-light-subtle rounded-2 bg-light text-center h-100"
+          <div
+            style="
+              background: #f8fafc;
+              border: 1px solid var(--p-content-border-color, #e2e8f0);
+              border-radius: 6px;
+              padding: 0.75rem;
+              text-align: center;
+            "
+          >
+            <span style="font-weight: 700; font-size: 0.875rem; color: #0f172a; display: block">
+              {{ m.moduloCodigo }}
+            </span>
+            <span
+              style="
+                font-size: 0.75rem;
+                color: #64748b;
+                display: block;
+                margin-top: 0.15rem;
+                min-height: 2rem;
+              "
             >
-              <span class="fw-bold text-dark font-monospace d-block small">{{
-                m.moduloCodigo
-              }}</span>
-              <span class="text-secondary d-block" style="font-size: 0.72rem">{{
-                m.moduloNome
-              }}</span>
-              <div class="my-1">
-                <span class="h5 fw-bold text-danger font-monospace m-0">{{
-                  m.totalDanos
-                }}</span>
-                <span class="text-muted small"> / {{ m.totalPositivos }}</span>
-              </div>
+              {{ m.moduloNome }}
+            </span>
+            <div style="margin: 0.5rem 0">
               <span
-                class="badge bg-white border border-light-subtle text-success font-monospace px-1"
+                style="
+                  font-size: 1.125rem;
+                  font-weight: 700;
+                  color: #ef4444;
+                  font-variant-numeric: tabular-nums;
+                "
               >
-                {{ m.taxaConversaoPercentual }}% conv.
+                {{ m.totalDanos }}
               </span>
+              <span style="font-size: 0.75rem; color: #64748b"> / {{ m.totalPositivos }}</span>
             </div>
+            <p-tag [value]="m.taxaConversaoPercentual + '% conv.'" severity="success" />
           </div>
         }
       </div>
-    </div>
+    </p-card>
 
-    <!-- TABELA COMPLETA DE DESEMPENHO E SENSILIBIDADE POR GATILHO -->
+    <!-- TABELA COMPLETA DE DESEMPENHO E SENSIBILIDADE POR GATILHO -->
     <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden mb-3"
+      style="
+        background: #ffffff;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        border-radius: 6px;
+        overflow: hidden;
+      "
     >
       <div
-        class="p-2 border-bottom border-light-subtle bg-light d-flex justify-content-between align-items-center"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem 1.25rem;
+          border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+          background: #f8fafc;
+        "
       >
-        <span class="fw-bold text-dark small font-monospace">
+        <span
+          style="font-size: 0.8125rem; font-weight: 700; color: #0f172a; text-transform: uppercase"
+        >
           RANKING DE GATILHOS POR EFICÁCIA DE RASTREAMENTO E RISCO
         </span>
-        <span class="text-secondary small font-monospace">
+        <span style="font-size: 0.75rem; color: #64748b">
           Exibindo {{ gatilhosFiltrados().length }} gatilhos
         </span>
       </div>
 
-      <div class="table-responsive">
-        <table class="table table-hover table-sm m-0 align-middle bg-white">
-          <thead
-            class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
-          >
-            <tr>
-              <th scope="col" class="py-2 px-3">CÓDIGO</th>
-              <th scope="col" class="py-2 px-2">MÓDULO</th>
-              <th scope="col" class="py-2 px-3">
-                DESCRIÇÃO CLÍNICA DO GATILHO
-              </th>
-              <th scope="col" class="py-2 px-2 text-center">POSITIVOS</th>
-              <th scope="col" class="py-2 px-2 text-center">DANOS</th>
-              <th scope="col" class="py-2 px-2 text-center">RENDIMENTO (%)</th>
-              <th scope="col" class="py-2 px-2 text-center">GRAVES (G-I)</th>
-              <th scope="col" class="py-2 px-2 text-center">NA ADMISSÃO</th>
-            </tr>
-          </thead>
-          <tbody class="small font-monospace bg-white">
-            @for (g of gatilhosFiltrados(); track g.gatilhoId) {
-              <tr class="bg-white">
-                <!-- CÓDIGO -->
-                <td class="py-2 px-3 fw-bold text-dark bg-white">
-                  <span
-                    class="badge bg-light text-primary border border-primary-subtle font-monospace px-2 py-1"
-                  >
-                    {{ g.codigo }}
-                  </span>
-                </td>
+      <p-table
+        [value]="gatilhosFiltrados()"
+        [paginator]="true"
+        [rows]="15"
+        [rowsPerPageOptions]="[15, 25, 50]"
+        [loading]="carregando()"
+        styleClass="p-datatable-sm"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Exibindo {first} a {last} de {totalRecords} gatilhos"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 100px">CÓDIGO</th>
+            <th style="width: 100px">MÓDULO</th>
+            <th style="min-width: 300px">DESCRIÇÃO CLÍNICA DO GATILHO</th>
+            <th style="width: 110px; text-align: center">POSITIVOS</th>
+            <th style="width: 110px; text-align: center">DANOS</th>
+            <th style="width: 160px; text-align: center">RENDIMENTO (%)</th>
+            <th style="width: 120px; text-align: center">GRAVES (G-I)</th>
+            <th style="width: 120px; text-align: center">NA ADMISSÃO</th>
+          </tr>
+        </ng-template>
 
-                <!-- MÓDULO -->
-                <td class="py-2 px-2 text-secondary bg-white font-sans-serif">
-                  <span
-                    class="badge bg-light text-secondary border border-light-subtle font-monospace"
-                  >
-                    {{ g.moduloCodigo }}
-                  </span>
-                </td>
+        <ng-template pTemplate="body" let-g>
+          <tr>
+            <!-- CÓDIGO -->
+            <td>
+              <p-tag [value]="g.codigo" severity="info" />
+            </td>
 
-                <!-- DESCRIÇÃO -->
-                <td
-                  class="py-2 px-3 font-sans-serif fw-medium text-dark bg-white"
+            <!-- MÓDULO -->
+            <td>
+              <p-tag [value]="g.moduloCodigo" severity="secondary" />
+            </td>
+
+            <!-- DESCRIÇÃO -->
+            <td style="font-weight: 500; color: #0f172a; font-size: 0.8125rem">
+              {{ g.descricao }}
+            </td>
+
+            <!-- POSITIVOS -->
+            <td
+              style="
+                text-align: center;
+                font-weight: 600;
+                color: #0f172a;
+                font-variant-numeric: tabular-nums;
+              "
+            >
+              {{ g.totalPositivos }}
+            </td>
+
+            <!-- DANOS CONFIRMADOS -->
+            <td
+              style="
+                text-align: center;
+                font-weight: 700;
+                color: #ef4444;
+                font-variant-numeric: tabular-nums;
+              "
+            >
+              {{ g.totalDanos }}
+            </td>
+
+            <!-- RENDIMENTO / TAXA DE CONVERSÃO -->
+            <td style="text-align: center">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem">
+                <span
+                  style="
+                    font-weight: 700;
+                    color: #10b981;
+                    font-variant-numeric: tabular-nums;
+                    font-size: 0.8125rem;
+                  "
                 >
-                  {{ g.descricao }}
-                </td>
+                  {{ g.taxaConversaoPercentual }}%
+                </span>
+                <div style="width: 70px">
+                  <p-progressBar
+                    [value]="g.taxaConversaoPercentual"
+                    [showValue]="false"
+                    styleClass="h-1"
+                  />
+                </div>
+              </div>
+            </td>
 
-                <!-- POSITIVOS -->
-                <td
-                  class="py-2 px-2 text-center fw-semibold text-dark bg-white"
-                >
-                  {{ g.totalPositivos }}
-                </td>
+            <!-- DANOS GRAVES (G, H, I) -->
+            <td style="text-align: center">
+              @if (g.danosGraves > 0) {
+                <p-tag [value]="g.danosGraves" severity="danger" />
+              } @else {
+                <span style="color: #94a3b8">0</span>
+              }
+            </td>
 
-                <!-- DANOS CONFIRMADOS -->
-                <td class="py-2 px-2 text-center fw-bold text-danger bg-white">
-                  {{ g.totalDanos }}
-                </td>
+            <!-- NA ADMISSÃO -->
+            <td style="text-align: center">
+              @if (g.presentesAdmissao > 0) {
+                <p-tag [value]="g.presentesAdmissao" severity="warn" />
+              } @else {
+                <span style="color: #94a3b8">0</span>
+              }
+            </td>
+          </tr>
+        </ng-template>
 
-                <!-- RENDIMENTO / TAXA DE CONVERSÃO -->
-                <td class="py-2 px-2 text-center bg-white">
-                  <div
-                    class="d-flex align-items-center justify-content-center gap-1"
-                  >
-                    <span class="fw-bold text-success font-monospace">
-                      {{ g.taxaConversaoPercentual }}%
-                    </span>
-                  </div>
-                  <div
-                    class="progress mt-1 mx-auto"
-                    style="height: 3px; max-width: 60px"
-                  >
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      [style.width.%]="g.taxaConversaoPercentual"
-                    ></div>
-                  </div>
-                </td>
-
-                <!-- DANOS GRAVES (G, H, I) -->
-                <td class="py-2 px-2 text-center bg-white">
-                  @if (g.danosGraves > 0) {
-                    <span
-                      class="badge bg-danger-subtle text-danger border border-danger-subtle font-monospace px-2"
-                    >
-                      {{ g.danosGraves }}
-                    </span>
-                  } @else {
-                    <span class="text-muted">0</span>
-                  }
-                </td>
-
-                <!-- NA ADMISSÃO -->
-                <td class="py-2 px-2 text-center bg-white">
-                  @if (g.presentesAdmissao > 0) {
-                    <span
-                      class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace px-1"
-                    >
-                      {{ g.presentesAdmissao }}
-                    </span>
-                  } @else {
-                    <span class="text-muted">0</span>
-                  }
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="8" class="text-center py-5 text-muted bg-white">
-                  <i
-                    class="bi bi-bullseye fs-2 d-block text-secondary mb-2"
-                  ></i>
-                  Nenhum gatilho localizado com os filtros selecionados.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 3rem; color: #94a3b8">
+              <i
+                class="pi pi-compass"
+                style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1"
+              ></i>
+              Nenhum gatilho localizado com os filtros selecionados.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
 
     <!-- RODAPÉ INSTITUCIONAL -->
     <div
-      class="d-flex justify-content-between align-items-center text-muted px-3 py-2 bg-white rounded-2 border border-light-subtle font-monospace"
-      style="font-size: 0.7rem"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: #ffffff;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: #64748b;
+      "
     >
-      <span
-        >SIGEA-GTT v2.0 • Análise de Rendimento Diagnóstico de Gatilhos</span
-      >
+      <span>SIGEA-GTT v2.0 • Análise de Rendimento Diagnóstico de Gatilhos</span>
       <span>Metodologia: IHI Global Trigger Tool (White Paper 2ª Edição)</span>
-      <span class="fw-bold text-dark">Emissão: {{ dataHoraEmissao() }}</span>
+      <span style="font-weight: 600; color: #0f172a; font-variant-numeric: tabular-nums"
+        >Emissão: {{ dataHoraEmissao() }}</span
+      >
     </div>
   </div>
 </div>

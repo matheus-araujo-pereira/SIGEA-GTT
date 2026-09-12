@@ -46,4 +46,6 @@ yarn-error.log*
 **/coverage/
 *.dump
 *.dumpstream
-
+# Database Local Data
+database/dados/
+dados/

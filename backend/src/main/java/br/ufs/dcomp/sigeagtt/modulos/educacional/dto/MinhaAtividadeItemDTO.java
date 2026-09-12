@@ -22,5 +22,4 @@ public record MinhaAtividadeItemDTO(
         BigDecimal nota,
         Integer tempoGastoSegundos,
         LocalDateTime dataSubmissao,
-        LocalDateTime dataAvaliacao) {
-}
+        LocalDateTime dataAvaliacao) {}

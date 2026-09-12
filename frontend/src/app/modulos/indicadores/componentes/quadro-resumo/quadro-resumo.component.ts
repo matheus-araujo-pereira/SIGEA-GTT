@@ -4,7 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
+
+import { TableModule, TablePageEvent } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TagModule } from 'primeng/tag';
+import { CardModule } from 'primeng/card';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
+
 import {
   IndicadoresService,
   QuadroResumoItem,
@@ -18,7 +28,20 @@ import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
 @Component({
   selector: 'app-quadro-resumo',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, PaginacaoComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TableModule,
+    ButtonModule,
+    SelectModule,
+    InputTextModule,
+    TagModule,
+    CardModule,
+    ToggleSwitchModule,
+    ProgressSpinnerModule,
+    TooltipModule,
+  ],
   templateUrl: './quadro-resumo.component.html',
   styles: [
     `
@@ -35,12 +58,12 @@ import { UnidadeHospitalar } from '../../../unidade/modelos/unidade.modelos';
         header,
         nav,
         aside,
-        .btn,
+        button,
         select,
         input {
           display: none !important;
         }
-        #tabela-quadro-resumo {
+        #relatorio-quadro-resumo {
           border: none !important;
           background: #ffffff !important;
           width: 100% !important;
@@ -80,7 +103,7 @@ export class QuadroResumoComponent implements OnInit {
   // Totais agregados canônicos do Apêndice C
   readonly totais = signal<QuadroResumoTotais | null>(null);
 
-  // Períodos desduplicados
+  // Opções para p-select
   readonly periodosDisponiveis = computed(() => {
     const periodos = this.turmas()
       .map((t) => t.periodoLetivo)
@@ -88,7 +111,11 @@ export class QuadroResumoComponent implements OnInit {
     return Array.from(new Set(periodos)).sort().reverse();
   });
 
-  // Turmas filtradas pelo período selecionado
+  readonly periodoOptions = computed(() => [
+    { label: 'Todos os Períodos', value: 'TODOS' },
+    ...this.periodosDisponiveis().map((p) => ({ label: p, value: p })),
+  ]);
+
   readonly turmasFiltradas = computed(() => {
     const periodo = this.filtroPeriodoLetivo();
     if (!periodo || periodo === 'TODOS') {
@@ -96,6 +123,31 @@ export class QuadroResumoComponent implements OnInit {
     }
     return this.turmas().filter((t) => t.periodoLetivo === periodo);
   });
+
+  readonly turmaOptions = computed(() => [
+    { label: 'Todas as Turmas', value: 'TODOS' },
+    ...this.turmasFiltradas().map((t) => ({
+      label: t.codigoDisciplina,
+      value: String(t.id),
+    })),
+  ]);
+
+  readonly unidadeOptions = computed(() => [
+    { label: 'Todas as Unidades', value: 'TODOS' },
+    ...this.unidades().map((u) => ({
+      label: `${u.sigla} - ${u.nome}`,
+      value: String(u.id),
+    })),
+  ]);
+
+  readonly gravidadeOptions = [
+    { label: 'Todas as Gravidades', value: 'TODOS' },
+    { label: 'Cat. E (Intervenção)', value: 'CATEGORIA_E' },
+    { label: 'Cat. F (Prolongamento)', value: 'CATEGORIA_F' },
+    { label: 'Cat. G (Permanente)', value: 'CATEGORIA_G' },
+    { label: 'Cat. H (Vida <1h)', value: 'CATEGORIA_H' },
+    { label: 'Cat. I (Óbito)', value: 'CATEGORIA_I' },
+  ];
 
   readonly dataHoraEmissao = computed(() => {
     return new Date().toLocaleString('pt-BR', {
@@ -126,7 +178,7 @@ export class QuadroResumoComponent implements OnInit {
   carregarQuadroResumo(): void {
     this.carregando.set(true);
 
-    const filtros: Record<string, any> = {
+    const filtros: Record<string, string | number | boolean> = {
       pagina: this.paginaAtual(),
       tamanho: this.itensPorPagina(),
     };
@@ -174,14 +226,12 @@ export class QuadroResumoComponent implements OnInit {
     });
   }
 
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(Math.max(0, novaPagina - 1));
-    this.carregarQuadroResumo();
-  }
-
-  mudarItensPorPagina(novoTamanho: number): void {
-    this.itensPorPagina.set(novoTamanho);
-    this.paginaAtual.set(0);
+  aoMudarPagina(event: TablePageEvent): void {
+    const rows = event.rows ?? 15;
+    const first = event.first ?? 0;
+    const novaPagina = Math.floor(first / rows);
+    this.paginaAtual.set(novaPagina);
+    this.itensPorPagina.set(rows);
     this.carregarQuadroResumo();
   }
 
@@ -198,36 +248,23 @@ export class QuadroResumoComponent implements OnInit {
     this.carregarQuadroResumo();
   }
 
-  obterBadgeGravidade(gravidade: string): { classe: string; rotulo: string } {
+  obterBadgeGravidade(gravidade: string): {
+    severity: 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
+    rotulo: string;
+  } {
     switch (gravidade) {
       case 'CATEGORIA_E':
-        return {
-          classe: 'bg-primary-subtle text-primary border border-primary-subtle',
-          rotulo: 'Cat. E',
-        };
+        return { severity: 'info', rotulo: 'Cat. E' };
       case 'CATEGORIA_F':
-        return {
-          classe: 'bg-info-subtle text-info-emphasis border border-info-subtle',
-          rotulo: 'Cat. F',
-        };
+        return { severity: 'info', rotulo: 'Cat. F' };
       case 'CATEGORIA_G':
-        return {
-          classe:
-            'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
-          rotulo: 'Cat. G',
-        };
+        return { severity: 'warn', rotulo: 'Cat. G' };
       case 'CATEGORIA_H':
-        return {
-          classe: 'bg-danger-subtle text-danger border border-danger-subtle',
-          rotulo: 'Cat. H',
-        };
+        return { severity: 'danger', rotulo: 'Cat. H' };
       case 'CATEGORIA_I':
-        return { classe: 'bg-dark text-white', rotulo: 'Cat. I (Óbito)' };
+        return { severity: 'contrast', rotulo: 'Cat. I (Óbito)' };
       default:
-        return {
-          classe: 'bg-light text-secondary border border-light-subtle',
-          rotulo: 'Sem Dano',
-        };
+        return { severity: 'secondary', rotulo: 'Sem Dano' };
     }
   }
 
@@ -260,10 +297,7 @@ export class QuadroResumoComponent implements OnInit {
       const larguraUtil = pdfLargura - margem * 2;
       const alturaUtil = pdfAltura - margem * 2;
 
-      const alturaTotalMm = (canvas.height * larguraUtil) / canvas.width;
-      const alturaPaginaPx = Math.floor(
-        (alturaUtil * canvas.width) / larguraUtil,
-      );
+      const alturaPaginaPx = Math.floor((alturaUtil * canvas.width) / larguraUtil);
 
       let yOffsetPx = 0;
       let paginaAtual = 1;
@@ -273,10 +307,7 @@ export class QuadroResumoComponent implements OnInit {
           pdf.addPage();
         }
 
-        const alturaChunkPx = Math.min(
-          alturaPaginaPx,
-          canvas.height - yOffsetPx,
-        );
+        const alturaChunkPx = Math.min(alturaPaginaPx, canvas.height - yOffsetPx);
         const chunkCanvas = document.createElement('canvas');
         chunkCanvas.width = canvas.width;
         chunkCanvas.height = alturaChunkPx;

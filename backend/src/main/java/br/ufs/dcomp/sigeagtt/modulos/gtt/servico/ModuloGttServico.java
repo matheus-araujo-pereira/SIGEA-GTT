@@ -3,11 +3,10 @@ package br.ufs.dcomp.sigeagtt.modulos.gtt.servico;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.dto.ModuloGttRequisicaoDTO;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.modelo.ModuloGtt;
 import br.ufs.dcomp.sigeagtt.modulos.gtt.repositorio.ModuloGttRepositorio;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ModuloGttServico {
@@ -25,7 +24,8 @@ public class ModuloGttServico {
 
     @Transactional(readOnly = true)
     public ModuloGtt buscarPorId(Long id) {
-        return repositorio.findById(id)
+        return repositorio
+                .findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Módulo GTT não encontrado: " + id));
     }
 
@@ -36,7 +36,8 @@ public class ModuloGttServico {
         String desc = dto.descricao() != null ? dto.descricao().trim() : null;
 
         if (repositorio.findByCodigo(codigo).isPresent()) {
-            throw new IllegalArgumentException("Já existe um módulo registrado com o código: " + codigo);
+            throw new IllegalArgumentException(
+                    "Já existe um módulo registrado com o código: " + codigo);
         }
 
         ModuloGtt modulo = new ModuloGtt();
@@ -56,7 +57,8 @@ public class ModuloGttServico {
         String desc = dto.descricao() != null ? dto.descricao().trim() : null;
 
         if (repositorio.findByCodigoAndIdNot(codigo, id).isPresent()) {
-            throw new IllegalArgumentException("O código '" + codigo + "' já pertence a outro módulo.");
+            throw new IllegalArgumentException(
+                    "O código '" + codigo + "' já pertence a outro módulo.");
         }
 
         modulo.setCodigo(codigo);

@@ -1,243 +1,129 @@
 <div>
-  <!-- CABEÇALHO DA LISTAGEM -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
+  <!-- CABEÇALHO -->
+  <div class="page-header">
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">
-        {{
-          ehAdmin()
-            ? "Gestão de Alunos da Turma"
-            : "Alunos Matriculados na Turma"
-        }}
+      <h1 class="page-title">
+        Alunos da Turma: {{ turma()?.codigoDisciplina }} ({{ turma()?.periodoLetivo }})
       </h1>
-      <span class="text-secondary small" *ngIf="turma()">
-        Turma: <strong>{{ turma()?.codigoDisciplina }}</strong> (Período:
-        {{ turma()?.periodoLetivo }}) &bull; Docente:
-        {{ turma()?.professorResponsavelNome || "Não atribuído" }}
+      <span class="page-subtitle">
+        Docente Responsável: {{ turma()?.professorResponsavelNome }} | Total:
+        {{ totalMatriculados() }} aluno(s)
       </span>
     </div>
     <button
+      pButton
       type="button"
-      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      label="VOLTAR PARA TURMAS"
+      icon="pi pi-arrow-left"
+      [outlined]="true"
+      severity="secondary"
       (click)="voltarParaTurmas()"
-    >
-      <i class="bi bi-arrow-left"></i>
-      <span>VOLTAR</span>
-    </button>
+    ></button>
   </div>
 
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
-  @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
-
-  <!-- CARD DE MATRÍCULA DE NOVO ALUNO (APENAS ADMINISTRADOR) -->
+  <!-- MATRÍCULA RÁPIDA (SE ADMIN) -->
   @if (ehAdmin()) {
-    <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
-    >
-      <div class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label small fw-semibold text-secondary mb-1"
-            >Filtrar Alunos Disponíveis</label
-          >
-          <input
-            type="text"
-            class="form-control form-control-sm"
-            placeholder="Buscar por nome, matrícula ou e-mail..."
-            [ngModel]="termoBuscaDisponivel()"
-            (ngModelChange)="termoBuscaDisponivel.set($event)"
-          />
-        </div>
-        <div class="col-md-5">
-          <label class="form-label small fw-semibold text-secondary mb-1"
-            >Selecionar Aluno</label
-          >
-          <select
-            class="form-select form-select-sm"
-            [(ngModel)]="alunoSelecionadoId"
-            [disabled]="alunosDisponiveis().length === 0"
-          >
-            <option [ngValue]="null">
-              {{
-                alunosDisponiveis().length === 0
-                  ? "Nenhum aluno disponível"
-                  : "Selecione um aluno da lista..."
-              }}
-            </option>
-            <option *ngFor="let a of alunosDisponiveis()" [ngValue]="a.id">
-              {{ a.nomeCompleto }} (Matrícula: {{ a.matriculaSigaa || "S/M" }})
-              -
-              {{ a.email }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <button
-            type="button"
-            class="btn btn-primary btn-sm w-100 d-inline-flex align-items-center justify-content-center gap-1"
-            [disabled]="!alunoSelecionadoId || matriculando()"
-            (click)="matricular()"
-          >
-            @if (matriculando()) {
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-              ></span>
-              <span>MATRICULANDO...</span>
-            } @else {
-              <i class="bi bi-person-check-fill"></i>
-              <span>MATRICULAR ALUNO</span>
-            }
-          </button>
-        </div>
+    <p-card header="Matricular Aluno na Turma" styleClass="enroll-card">
+      <div class="enroll-form">
+        <p-select
+          [options]="opcoesAlunosDisponiveis()"
+          [(ngModel)]="alunoSelecionadoId"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          filterPlaceholder="Buscar aluno por nome ou matrícula..."
+          placeholder="Selecione um aluno para matricular"
+          class="enroll-select"
+        />
+        <button
+          pButton
+          type="button"
+          label="Matricular Aluno"
+          icon="pi pi-user-plus"
+          [disabled]="!alunoSelecionadoId"
+          [loading]="matriculando()"
+          (click)="matricular()"
+        ></button>
       </div>
-    </div>
+    </p-card>
   }
 
-  <!-- BARRA DE BUSCA EM MATRICULADOS -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white mb-3 p-3"
-  >
-    <div class="row g-2 align-items-center">
-      <div class="col-md-8">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-light text-secondary border-end-0">
-            <i class="bi bi-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control border-start-0"
-            placeholder="Filtrar matriculados por nome, matrícula ou e-mail..."
-            [ngModel]="termoBusca()"
-            (ngModelChange)="atualizarBusca($event)"
-          />
-          @if (termoBusca()) {
-            <button
-              class="btn btn-outline-secondary"
-              type="button"
-              (click)="atualizarBusca('')"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          }
-        </div>
-      </div>
-      <div class="col-md-4 text-md-end text-secondary small">
-        Total matriculado: {{ totalMatriculados() }} aluno(s)
-      </div>
-    </div>
+  <!-- BARRA DE BUSCA -->
+  <div class="search-card">
+    <input
+      pInputText
+      type="text"
+      [ngModel]="termoBusca()"
+      (ngModelChange)="termoBusca.set($event)"
+      placeholder="Filtrar por nome do discente, matrícula ou e-mail institucional..."
+      style="width: 100%"
+    />
   </div>
 
-  <!-- TABELA DE ALUNOS MATRICULADOS COM FUNDO BRANCO E SEM BADGES -->
-  <div
-    class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
+  <!-- TABELA PRIMENG COMPACTA -->
+  <p-table
+    [value]="alunosFiltrados()"
+    [tableStyle]="{ 'min-width': '100%' }"
+    styleClass="p-datatable-sm p-datatable-striped"
+    [paginator]="true"
+    [rows]="15"
+    [rowsPerPageOptions]="[15, 25, 50]"
+    [loading]="carregando()"
   >
-    <div class="table-responsive bg-white">
-      <table class="table table-hover table-sm m-0 align-middle bg-white">
-        <thead
-          class="bg-white text-secondary small font-monospace border-bottom border-light-subtle"
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="nome" style="width: 40%">
+          Nome do Discente <p-sortIcon field="nome" />
+        </th>
+        <th pSortableColumn="matricula" style="width: 20%">
+          Matrícula SIGAA <p-sortIcon field="matricula" />
+        </th>
+        <th pSortableColumn="email" style="width: 30%">
+          E-mail Institucional <p-sortIcon field="email" />
+        </th>
+        @if (ehAdmin()) {
+          <th style="width: 10%; text-align: right">Ações</th>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #body let-a>
+      <tr>
+        <td>
+          <span style="font-weight: 600; color: #0f172a">{{ a.nome }}</span>
+        </td>
+        <td>
+          <code>{{ a.matricula }}</code>
+        </td>
+        <td>{{ a.email }}</td>
+        @if (ehAdmin()) {
+          <td>
+            <div class="actions-cell">
+              <button
+                pButton
+                type="button"
+                icon="pi pi-user-minus"
+                [text]="true"
+                severity="danger"
+                size="small"
+                (click)="desmatricular(a.original)"
+                pTooltip="Desmatricular Aluno"
+                tooltipPosition="top"
+                aria-label="Desmatricular Aluno"
+              ></button>
+            </div>
+          </td>
+        }
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td
+          [attr.colspan]="ehAdmin() ? 4 : 3"
+          style="text-align: center; padding: 24px; color: #64748b"
         >
-          <tr>
-            <th scope="col" class="py-2 px-3 bg-white text-secondary">
-              NOME DO ALUNO
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              MATRÍCULA SIGAA
-            </th>
-            <th scope="col" class="py-2 px-2 bg-white text-secondary">
-              E-MAIL INSTITUCIONAL
-            </th>
-            @if (ehAdmin()) {
-              <th
-                scope="col"
-                class="py-2 px-3 text-end bg-white text-secondary"
-              >
-                AÇÕES
-              </th>
-            }
-          </tr>
-        </thead>
-        <tbody class="small font-monospace bg-white">
-          @for (item of alunosPaginados(); track item.id) {
-            <tr class="bg-white">
-              <td
-                class="py-2 px-3 font-sans-serif fw-semibold text-dark bg-white"
-              >
-                {{ item.nome }}
-              </td>
-              <td class="py-2 px-2 text-secondary bg-white">
-                {{ item.matricula }}
-              </td>
-              <td class="py-2 px-2 font-sans-serif text-dark bg-white">
-                {{ item.email }}
-              </td>
-              @if (ehAdmin()) {
-                <td class="py-2 px-3 text-end text-nowrap bg-white">
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger btn-sm py-0 px-2 rounded-1"
-                    (click)="desmatricular(item.original)"
-                    title="Desmatricular Aluno"
-                  >
-                    DESMATRICULAR
-                  </button>
-                </td>
-              }
-            </tr>
-          } @empty {
-            <tr>
-              <td
-                [attr.colspan]="ehAdmin() ? 4 : 3"
-                class="text-center py-5 text-muted bg-white"
-              >
-                <i class="bi bi-people fs-2 d-block text-secondary mb-2"></i>
-                Nenhum aluno matriculado encontrado nesta turma.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- PAGINAÇÃO INTEGRADA AO CARD SEM BORDAS DUPLAS E COM FUNDO BRANCO -->
-    <app-paginacao
-      [totalItens]="totalFiltrados()"
-      [itensPorPagina]="itensPorPagina"
-      [paginaAtual]="paginaAtual()"
-      (paginaAlterada)="mudarPagina($event)"
-    >
-    </app-paginacao>
-  </div>
+          Nenhum aluno matriculado ou encontrado com o filtro.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>

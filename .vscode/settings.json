@@ -1,27 +1,52 @@
 {
+  "java.jdt.ls.java.home": "/home/matheus/.sdkman/candidates/java/25.0.4-tem",
   "java.configuration.runtimes": [
     {
-      "name": "JavaSE-21",
-      "path": "/home/matheus/.sdkman/candidates/java/21.0.6-tem",
+      "name": "JavaSE-25",
+      "path": "/home/matheus/.sdkman/candidates/java/25.0.4-tem",
       "default": true
     }
   ],
-  "java.compile.nullAnalysis.mode": "automatic",
-  "js/ts.tsdk.path": "frontend/node_modules/typescript/lib",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[java]": {
     "editor.defaultFormatter": "redhat.java"
   },
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.DS_Store": true,
-    "**/Thumbs.db": true,
-    "backend/target": true,
-    "frontend/.angular": true
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
   },
-  "java.configuration.updateBuildConfiguration": "automatic"
+  "eslint.experimental.useFlatConfig": true,
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    },
+    "./frontend"
+  ],
+  "sqltools.connections": [
+    {
+      "name": "SIGEA PostgreSQL (Podman)",
+      "dialect": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "sigea_db",
+      "username": "sigea_user",
+      "askForPassword": false,
+      "password": "sigea_password"
+    }
+  ]
 }

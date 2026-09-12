@@ -118,7 +118,7 @@ export interface DesempenhoGatilho {
   taxaConversaoPercentual: number;
   danosGraves: number;
   presentesAdmissao: number;
-  distribuicaoSeveridade: { [key: string]: number };
+  distribuicaoSeveridade: Record<string, number>;
 }
 
 export interface DesempenhoModulo {

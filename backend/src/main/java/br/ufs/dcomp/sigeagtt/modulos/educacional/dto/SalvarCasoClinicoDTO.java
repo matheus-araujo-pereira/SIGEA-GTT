@@ -18,5 +18,4 @@ public record SalvarCasoClinicoDTO(
         @NotBlank String prescricoesMedicas,
         @NotBlank String examesLaboratoriais,
         String relatorioCirurgico,
-        @NotBlank String evolucoesMultiprofissionais) {
-}
+        @NotBlank String evolucoesMultiprofissionais) {}

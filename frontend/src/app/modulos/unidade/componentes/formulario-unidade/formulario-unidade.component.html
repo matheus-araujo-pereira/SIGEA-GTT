@@ -1,148 +1,81 @@
 <div>
-  <!-- CABEÇALHO DO FORMULÁRIO -->
-  <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
-  >
+  <!-- CABEÇALHO -->
+  <div class="form-header">
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
-      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+      <h1 class="form-title">{{ tituloPagina() }}</h1>
+      <span class="form-subtitle">{{ subtituloPagina() }}</span>
     </div>
     <button
+      pButton
       type="button"
-      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
+      label="VOLTAR PARA UNIDADES"
+      icon="pi pi-arrow-left"
+      [outlined]="true"
+      severity="secondary"
       (click)="voltarParaListagem()"
-    >
-      <i class="bi bi-arrow-left"></i>
-      <span>VOLTAR PARA UNIDADES</span>
-    </button>
+    ></button>
   </div>
-
-  <!-- FEEDBACK -->
-  @if (mensagemSucesso()) {
-    <div
-      class="alert alert-success d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-check-circle-fill"></i>
-        <span>{{ mensagemSucesso() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemSucesso.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
-  }
 
   @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-3 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
+    <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full mb-3" />
   }
 
-  <!-- CORPO DO FORMULÁRIO -->
-  <div class="card border border-light-subtle rounded-2 shadow-sm bg-white p-4">
-    @if (carregando()) {
-      <div class="text-center py-5 text-secondary">
-        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-        <span>Carregando dados da unidade...</span>
+  <p-card>
+    <form (ngSubmit)="salvar()">
+      <div class="form-grid">
+        <!-- SIGLA -->
+        <div class="field">
+          <label for="sigla">Sigla da Unidade *</label>
+          <input
+            pInputText
+            id="sigla"
+            type="text"
+            [(ngModel)]="formulario.sigla"
+            name="sigla"
+            required
+            maxlength="20"
+            placeholder="Ex.: CINF, UTI-GERAL"
+            class="w-full"
+          />
+          <span class="field-hint">Abreviação institucional no HU-UFS.</span>
+        </div>
+
+        <!-- NOME DA UNIDADE -->
+        <div class="field">
+          <label for="nome">Nome Completo da Unidade Hospitalar *</label>
+          <input
+            pInputText
+            id="nome"
+            type="text"
+            [(ngModel)]="formulario.nome"
+            name="nome"
+            required
+            maxlength="100"
+            placeholder="Ex.: Clínica de Doenças Infectocontagiosas"
+            class="w-full"
+          />
+          <span class="field-hint">Nome oficial do setor ou enfermaria hospitalar.</span>
+        </div>
       </div>
-    } @else {
-      <form (ngSubmit)="salvar()">
-        <div class="row g-3">
-          <!-- Sigla da Unidade Hospitalar -->
-          <div class="col-md-4">
-            <label
-              for="sigla"
-              class="form-label small fw-semibold text-dark mb-1"
-            >
-              Sigla do Setor <span class="text-danger">*</span>
-            </label>
-            <input
-              id="sigla"
-              name="sigla"
-              type="text"
-              class="form-control form-control-sm font-monospace text-uppercase"
-              [(ngModel)]="formulario.sigla"
-              placeholder="Ex: CINF, UTI-A, CMED"
-              maxlength="20"
-              required
-            />
-            <div class="form-text fs-xxs text-secondary">
-              Sigla ou código do setor hospitalar (até 20 caracteres).
-            </div>
-          </div>
 
-          <!-- Nome da Unidade Hospitalar -->
-          <div class="col-md-8">
-            <label
-              for="nome"
-              class="form-label small fw-semibold text-dark mb-1"
-            >
-              Nome Completo da Unidade Hospitalar
-              <span class="text-danger">*</span>
-            </label>
-            <input
-              id="nome"
-              name="nome"
-              type="text"
-              class="form-control form-control-sm"
-              [(ngModel)]="formulario.nome"
-              placeholder="Ex: Clínica de Doenças Infecciosas e Parasitárias"
-              maxlength="100"
-              required
-            />
-            <div class="form-text fs-xxs text-secondary">
-              Nome oficial da ala, enfermaria ou serviço assistencial do HU-UFS.
-            </div>
-          </div>
-        </div>
-
-        <!-- BOTÕES DE AÇÃO -->
-        <div
-          class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
-        >
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm px-3"
-            (click)="voltarParaListagem()"
-            [disabled]="salvando()"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-sm px-4 d-inline-flex align-items-center gap-2"
-            [disabled]="salvando()"
-          >
-            @if (salvando()) {
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              <span>Salvando...</span>
-            } @else {
-              <i class="bi bi-check-lg"></i>
-              <span>{{
-                modoEdicao() ? "Salvar Alterações" : "Cadastrar Unidade"
-              }}</span>
-            }
-          </button>
-        </div>
-      </form>
-    }
-  </div>
+      <!-- BOTÕES DE AÇÃO -->
+      <div class="form-actions">
+        <button
+          pButton
+          type="button"
+          label="Cancelar"
+          severity="secondary"
+          [text]="true"
+          (click)="voltarParaListagem()"
+        ></button>
+        <button
+          pButton
+          type="submit"
+          label="Salvar Unidade"
+          icon="pi pi-check"
+          [loading]="salvando()"
+        ></button>
+      </div>
+    </form>
+  </p-card>
 </div>

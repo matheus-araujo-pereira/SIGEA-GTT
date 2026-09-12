@@ -44,10 +44,11 @@ public record SubmissaoDTO(
                 s.getAtividade() != null && s.getAtividade().getTurma() != null
                         ? s.getAtividade().getTurma().getNomeDisciplina()
                         : null,
-                s.getAtividade() != null && s.getAtividade().getTurma() != null
-                        && s.getAtividade().getTurma().getProfessorResponsavel() != null
-                                ? s.getAtividade().getTurma().getProfessorResponsavel().getNomeCompleto()
-                                : null,
+                s.getAtividade() != null
+                                && s.getAtividade().getTurma() != null
+                                && s.getAtividade().getTurma().getProfessorResponsavel() != null
+                        ? s.getAtividade().getTurma().getProfessorResponsavel().getNomeCompleto()
+                        : null,
                 s.getAtividade() != null ? s.getAtividade().getTempoLimiteMinutos() : 20,
                 s.getAtividade() != null && s.getAtividade().getCasoClinico() != null
                         ? CasoClinicoDTO.deEntidade(s.getAtividade().getCasoClinico())
@@ -61,7 +62,9 @@ public record SubmissaoDTO(
                 s.getDataInicio(),
                 s.getDataSubmissao(),
                 s.getProfessorCorretor() != null ? s.getProfessorCorretor().getId() : null,
-                s.getProfessorCorretor() != null ? s.getProfessorCorretor().getNomeCompleto() : null,
+                s.getProfessorCorretor() != null
+                        ? s.getProfessorCorretor().getNomeCompleto()
+                        : null,
                 s.getNota(),
                 s.getParecerDocente(),
                 s.getDataAvaliacao(),

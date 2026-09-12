@@ -15,5 +15,4 @@ public record AlunoProgressoDTO(
         LocalDateTime dataSubmissao,
         BigDecimal nota,
         String parecerDocente,
-        LocalDateTime dataAvaliacao) {
-}
+        LocalDateTime dataAvaliacao) {}

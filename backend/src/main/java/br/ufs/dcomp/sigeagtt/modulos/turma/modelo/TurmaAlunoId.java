@@ -2,8 +2,8 @@ package br.ufs.dcomp.sigeagtt.modulos.turma.modelo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.*;
 import java.io.Serializable;
+import lombok.*;
 
 @Embeddable
 @Getter

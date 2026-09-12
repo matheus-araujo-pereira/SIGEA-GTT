@@ -1,18 +1,24 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageModule } from 'primeng/message';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ModuloGttService } from '../../servicos/modulo-gtt.service';
 import { GatilhoService } from '../../servicos/gatilho.service';
 import { ModuloGtt, GatilhoGtt } from '../../modelos/gtt.modelos';
-import { PaginacaoComponent } from '../../../../compartilhado/componentes/paginacao/paginacao.component';
 
 export interface ModuloLinha {
   id: number;
   codigo: string;
   nome: string;
   descricao: string;
-  totalGatilhos: string;
+  totalGatilhos: number;
   status: string;
   ativo: boolean;
   original: ModuloGtt;
@@ -20,38 +26,49 @@ export interface ModuloLinha {
 
 @Component({
   selector: 'app-gerenciar-modulos',
-  standalone: true,
-  imports: [CommonModule, FormsModule, PaginacaoComponent],
+  imports: [
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
+    TooltipModule,
+    MessageModule,
+  ],
   templateUrl: './gerenciar-modulos.component.html',
 })
 export class GerenciarModulosComponent implements OnInit {
   private readonly moduloService = inject(ModuloGttService);
   private readonly gatilhoService = inject(GatilhoService);
   private readonly router = inject(Router);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly messageService = inject(MessageService);
 
   readonly modulos = signal<ModuloGtt[]>([]);
   readonly gatilhos = signal<GatilhoGtt[]>([]);
   readonly carregando = signal(false);
-  readonly mensagemSucesso = signal<string | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
   readonly termoBusca = signal('');
   readonly filtroStatus = signal('TODOS');
 
-  readonly paginaAtual = signal(1);
-  readonly itensPorPagina = 10;
+  readonly statusOptions = [
+    { label: 'Todos os Status', value: 'TODOS' },
+    { label: 'Ativos', value: 'ATIVOS' },
+    { label: 'Inativos', value: 'INATIVOS' },
+  ];
 
   readonly totalModulos = computed(() => this.modulos().length);
 
-  readonly modulosLinhasFiltradas = computed<ModuloLinha[]>(() => {
+  readonly modulosLinhas = computed<ModuloLinha[]>(() => {
     const termo = this.termoBusca().trim().toLowerCase();
     const statusFiltro = this.filtroStatus();
 
     return this.modulos()
       .filter((m) => {
         const matchStatus =
-          statusFiltro === 'TODOS' ||
-          (statusFiltro === 'ATIVOS' ? m.ativo : !m.ativo);
+          statusFiltro === 'TODOS' || (statusFiltro === 'ATIVOS' ? m.ativo : !m.ativo);
         const matchTermo =
           !termo ||
           m.codigo.toLowerCase().includes(termo) ||
@@ -73,24 +90,12 @@ export class GerenciarModulosComponent implements OnInit {
           codigo: m.codigo,
           nome: m.nome,
           descricao: m.descricao || '-',
-          totalGatilhos: `${qtd} gatilho(s)`,
+          totalGatilhos: qtd,
           status: m.ativo ? 'ATIVO' : 'INATIVO',
           ativo: m.ativo,
           original: m,
         };
       });
-  });
-
-  readonly totalFiltrados = computed(
-    () => this.modulosLinhasFiltradas().length,
-  );
-
-  readonly modulosLinhasPaginadas = computed<ModuloLinha[]>(() => {
-    const inicio = (this.paginaAtual() - 1) * this.itensPorPagina;
-    return this.modulosLinhasFiltradas().slice(
-      inicio,
-      inicio + this.itensPorPagina,
-    );
   });
 
   ngOnInit(): void {
@@ -105,9 +110,7 @@ export class GerenciarModulosComponent implements OnInit {
         this.carregando.set(false);
       },
       error: (err) => {
-        this.mensagemErro.set(
-          'Erro ao carregar módulos: ' + (err.error?.mensagem || err.message),
-        );
+        this.mensagemErro.set('Erro ao carregar módulos: ' + (err.error?.mensagem || err.message));
         this.carregando.set(false);
       },
     });
@@ -126,52 +129,51 @@ export class GerenciarModulosComponent implements OnInit {
     this.router.navigate(['/modulos', m.id, 'editar']);
   }
 
-  atualizarBusca(termo: string): void {
-    this.termoBusca.set(termo);
-    this.paginaAtual.set(1);
-  }
-
-  atualizarFiltroStatus(status: string): void {
-    this.filtroStatus.set(status);
-    this.paginaAtual.set(1);
-  }
-
-  mudarPagina(novaPagina: number): void {
-    this.paginaAtual.set(novaPagina);
-  }
-
   alternarStatus(m: ModuloGtt): void {
     this.moduloService.alternarStatus(m.id).subscribe({
       next: () => {
-        this.mensagemSucesso.set(
-          `Módulo "${m.nome}" ${m.ativo ? 'inativado' : 'ativado'} com sucesso.`,
-        );
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Status Atualizado',
+          detail: `Módulo "${m.nome}" ${m.ativo ? 'inativado' : 'ativado'} com sucesso.`,
+        });
         this.carregarDados();
       },
       error: (err) =>
-        this.mensagemErro.set(
-          'Erro ao alternar status: ' + (err.error?.mensagem || err.message),
-        ),
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Erro ao alternar status: ' + (err.error?.mensagem || err.message),
+        }),
     });
   }
 
   excluir(m: ModuloGtt): void {
-    const confirmacao = confirm(
-      `ATENÇÃO: Excluir o módulo "${m.nome}" (${m.codigo}) removerá todos os seus gatilhos vinculados. Deseja prosseguir?`,
-    );
-    if (!confirmacao) return;
-
-    this.moduloService.excluir(m.id).subscribe({
-      next: () => {
-        this.mensagemSucesso.set(
-          `Módulo "${m.nome}" e seus gatilhos foram excluídos com sucesso.`,
-        );
-        this.carregarDados();
+    this.confirmationService.confirm({
+      header: 'Confirmar Exclusão',
+      message: `ATENÇÃO: Excluir o módulo "${m.nome}" (${m.codigo}) removerá todos os seus gatilhos vinculados. Deseja prosseguir?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, Excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.moduloService.excluir(m.id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Excluído',
+              detail: `Módulo "${m.nome}" e seus gatilhos foram excluídos.`,
+            });
+            this.carregarDados();
+          },
+          error: (err) =>
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao excluir módulo: ' + (err.error?.mensagem || err.message),
+            }),
+        });
       },
-      error: (err) =>
-        this.mensagemErro.set(
-          'Erro ao excluir módulo: ' + (err.error?.mensagem || err.message),
-        ),
     });
   }
 }

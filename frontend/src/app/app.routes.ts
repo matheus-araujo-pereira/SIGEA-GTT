@@ -2,7 +2,7 @@ import { Routes, CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { LoginComponent } from './modulos/autenticacao/componentes/login/login.component';
 import { PrimeiroAcessoComponent } from './modulos/autenticacao/componentes/primeiro-acesso/primeiro-acesso.component';
-import { LayoutInternoComponent } from './compartilhado/componentes/layout-interno/layout-interno.component';
+import { MainLayoutComponent } from './layout/main-layout.component';
 import { GerenciarUsuariosComponent } from './modulos/usuario/componentes/gerenciar-usuarios/gerenciar-usuarios.component';
 import { FormularioUsuarioComponent } from './modulos/usuario/componentes/formulario-usuario/formulario-usuario.component';
 import { MeuPerfilComponent } from './modulos/usuario/componentes/meu-perfil/meu-perfil.component';
@@ -45,7 +45,7 @@ export const routes: Routes = [
   { path: 'primeiro-acesso', component: PrimeiroAcessoComponent },
   {
     path: '',
-    component: LayoutInternoComponent,
+    component: MainLayoutComponent,
     canActivate: [autenticacaoGuard],
     children: [
       { path: '', canActivate: [redirecionamentoInicialGuard], children: [] },

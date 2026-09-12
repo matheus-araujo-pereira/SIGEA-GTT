@@ -1,13 +1,13 @@
 package br.ufs.dcomp.sigeagtt.nucleo.seguranca;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.PerfilUsuario;
 import br.ufs.dcomp.sigeagtt.modulos.usuario.modelo.Usuario;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
-import static org.junit.jupiter.api.Assertions.*;
 
 class TokenServicoTest {
 
@@ -35,7 +35,8 @@ class TokenServicoTest {
     @Test
     @DisplayName("Deve gerar um token JWT bem formatado com 3 partes")
     void deveGerarTokenValido() {
-        Usuario usuario = criarUsuarioMock(10L, "professor@academico.ufs.br", PerfilUsuario.PROFESSOR);
+        Usuario usuario =
+                criarUsuarioMock(10L, "professor@academico.ufs.br", PerfilUsuario.PROFESSOR);
 
         String token = tokenServico.gerarToken(usuario);
 
@@ -62,7 +63,8 @@ class TokenServicoTest {
     @Test
     @DisplayName("Deve rejeitar token quando a assinatura for adulterada")
     void deveRejeitarTokenComAssinaturaInvalida() {
-        Usuario usuario = criarUsuarioMock(1L, "admin@academico.ufs.br", PerfilUsuario.ADMINISTRADOR);
+        Usuario usuario =
+                criarUsuarioMock(1L, "admin@academico.ufs.br", PerfilUsuario.ADMINISTRADOR);
         String token = tokenServico.gerarToken(usuario);
 
         String tokenAdulterado = token.substring(0, token.length() - 4) + "XXXX";

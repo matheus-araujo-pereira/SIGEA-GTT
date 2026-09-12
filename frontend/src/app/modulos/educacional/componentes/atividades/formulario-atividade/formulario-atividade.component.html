@@ -1,274 +1,216 @@
-<div>
+<div class="page-container" style="display: flex; flex-direction: column; gap: 1.5rem">
   <!-- CABEÇALHO DO FORMULÁRIO -->
   <div
-    class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light-subtle"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+      padding-bottom: 1rem;
+    "
   >
     <div>
-      <h1 class="h4 fw-bold text-dark m-0">{{ tituloPagina() }}</h1>
-      <span class="text-secondary small">{{ subtituloPagina() }}</span>
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0">
+        {{ tituloPagina() }}
+      </h1>
+      <span style="font-size: 0.875rem; color: #64748b">{{ subtituloPagina() }}</span>
     </div>
-    <button
-      type="button"
-      class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 px-3"
-      (click)="voltarParaListagem()"
-    >
-      <i class="bi bi-arrow-left"></i>
-      <span>VOLTAR PARA ATIVIDADES</span>
-    </button>
+    <p-button
+      label="VOLTAR PARA ATIVIDADES"
+      icon="pi pi-arrow-left"
+      [outlined]="true"
+      severity="secondary"
+      size="small"
+      (onClick)="voltarParaListagem()"
+    />
   </div>
 
-  <!-- FEEDBACKS -->
   @if (mensagemErro()) {
-    <div
-      class="alert alert-danger d-flex justify-content-between align-items-center py-2 px-3 mb-4 rounded-2 small"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ mensagemErro() }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn-close btn-sm"
-        (click)="mensagemErro.set(null)"
-        aria-label="Fechar"
-      ></button>
-    </div>
+    <p-message severity="error" [text]="mensagemErro()!" styleClass="w-full" />
   }
 
-  <!-- ESTADO DE CARREGAMENTO -->
   @if (carregando()) {
     <div
-      class="text-center py-5 bg-white rounded-2 border border-light-subtle shadow-sm"
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        padding: 4rem;
+        background: #ffffff;
+        border-radius: 6px;
+        border: 1px solid var(--p-content-border-color, #e2e8f0);
+      "
     >
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Carregando...</span>
-      </div>
-      <p class="text-secondary small mt-2 mb-0">
-        Carregando dados da atividade...
-      </p>
+      <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4" />
+      <span style="color: #64748b">Carregando dados da atividade...</span>
     </div>
   } @else {
-    <div
-      class="card border border-light-subtle rounded-2 shadow-sm bg-white overflow-hidden"
-    >
-      <div
-        class="card-header bg-white border-bottom border-light-subtle py-3 px-4"
-      >
-        <span class="fw-bold text-dark small text-uppercase font-monospace">
-          <i class="bi bi-journal-plus me-1"></i> Configurações da Atividade
-          Prática
-        </span>
-      </div>
+    <p-card header="Configurações da Atividade Prática">
+      <form (ngSubmit)="salvar()" style="display: flex; flex-direction: column; gap: 1.5rem">
+        <!-- TÍTULO DA ATIVIDADE -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem">
+          <label for="titulo" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+            Título da Atividade <span style="color: #ef4444">*</span>
+          </label>
+          <input
+            pInputText
+            id="titulo"
+            type="text"
+            [(ngModel)]="formulario.titulo"
+            name="titulo"
+            placeholder="Ex.: Auditoria de Prontuário 01 - Rastreamento de Gatilhos e Análise 6M"
+            class="w-full"
+            required
+          />
+        </div>
 
-      <div class="card-body p-4">
-        <form (ngSubmit)="salvar()">
-          <div class="row g-3">
-            <!-- TÍTULO DA ATIVIDADE -->
-            <div class="col-12">
-              <label
-                for="titulo"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Título da Atividade <span class="text-danger">*</span>
-              </label>
-              <input
-                id="titulo"
-                type="text"
-                class="form-control form-control-sm"
-                [(ngModel)]="formulario.titulo"
-                name="titulo"
-                required
-                placeholder="Ex.: Auditoria de Prontuário 01 - Rastreamento de Gatilhos e Análise 6M"
-              />
-            </div>
-
-            <!-- TURMA -->
-            <div class="col-md-6">
-              <label
-                for="turmaId"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Turma Acadêmica <span class="text-danger">*</span>
-              </label>
-              <select
-                id="turmaId"
-                class="form-select form-select-sm"
-                [(ngModel)]="formulario.turmaId"
-                name="turmaId"
-                required
-              >
-                <option [ngValue]="0" disabled>Selecione a turma...</option>
-                @for (t of turmas(); track t.id) {
-                  <option [ngValue]="t.id">
-                    {{ t.codigoDisciplina }} - {{ t.periodoLetivo }} ({{
-                      t.nomeDisciplina || "Disciplina"
-                    }})
-                  </option>
-                }
-              </select>
-            </div>
-
-            <!-- CASO CLÍNICO -->
-            <div class="col-md-6">
-              <label
-                for="casoClinicoId"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Caso Clínico Simulado <span class="text-danger">*</span>
-              </label>
-              <select
-                id="casoClinicoId"
-                class="form-select form-select-sm"
-                [(ngModel)]="formulario.casoClinicoId"
-                name="casoClinicoId"
-                required
-              >
-                <option [ngValue]="0" disabled>
-                  Selecione o caso clínico...
-                </option>
-                @for (c of casos(); track c.id) {
-                  <option [ngValue]="c.id">
-                    {{ c.numeroAtendimento }} — {{ c.titulo }} ({{
-                      c.unidadeHospitalarSigla
-                    }})
-                  </option>
-                }
-              </select>
-            </div>
-
-            <!-- PRAZOS -->
-            <div class="col-md-4">
-              <label
-                for="dataInicio"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Data de Abertura <span class="text-danger">*</span>
-              </label>
-              <input
-                id="dataInicio"
-                type="date"
-                class="form-control form-control-sm"
-                [(ngModel)]="formulario.dataInicio"
-                name="dataInicio"
-                required
-              />
-            </div>
-
-            <div class="col-md-4">
-              <label
-                for="dataFim"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Prazo Limite para Envio <span class="text-danger">*</span>
-              </label>
-              <input
-                id="dataFim"
-                type="date"
-                class="form-control form-control-sm"
-                [(ngModel)]="formulario.dataFim"
-                name="dataFim"
-                required
-              />
-            </div>
-
-            <!-- TEMPO LIMITE (PADRÃO IHI GTT: 20 MIN) -->
-            <div class="col-md-4">
-              <label
-                for="tempoLimiteMinutos"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Tempo Limite Cronometrado (minutos)
-                <span class="text-danger">*</span>
-              </label>
-              <div class="input-group input-group-sm">
-                <input
-                  id="tempoLimiteMinutos"
-                  type="number"
-                  class="form-control"
-                  [(ngModel)]="formulario.tempoLimiteMinutos"
-                  name="tempoLimiteMinutos"
-                  required
-                  min="1"
-                  max="180"
-                />
-                <span class="input-group-text bg-light text-secondary"
-                  >min (IHI GTT: 20)</span
-                >
-              </div>
-            </div>
-
-            <!-- ORIENTAÇÕES PEDAGÓGICAS -->
-            <div class="col-12">
-              <label
-                for="orientacoesPedagogicas"
-                class="form-label small fw-semibold text-secondary"
-              >
-                Orientações Pedagógicas para os Alunos
-              </label>
-              <textarea
-                id="orientacoesPedagogicas"
-                class="form-control form-control-sm"
-                rows="4"
-                [(ngModel)]="formulario.orientacoesPedagogicas"
-                name="orientacoesPedagogicas"
-                placeholder="Instruções aos discentes sobre a realização da auditoria clínica, busca ativa de gatilhos nos registros e preenchimento dos pilares 6M, 5W3H e PDCA..."
-              ></textarea>
-            </div>
-
-            <!-- ATIVA -->
-            <div class="col-12">
-              <div class="form-check form-switch">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="ativa"
-                  [(ngModel)]="formulario.ativa"
-                  name="ativa"
-                />
-                <label
-                  class="form-check-label small fw-semibold text-dark"
-                  for="ativa"
-                >
-                  Atividade Ativa (visível para os alunos realizarem)
-                </label>
-              </div>
-            </div>
+        <!-- TURMA E CASO CLÍNICO -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem">
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label for="turmaId" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+              Turma Acadêmica <span style="color: #ef4444">*</span>
+            </label>
+            <p-select
+              inputId="turmaId"
+              [options]="turmasOpcoes()"
+              optionLabel="label"
+              optionValue="value"
+              [(ngModel)]="formulario.turmaId"
+              name="turmaId"
+              placeholder="Selecione a turma..."
+              styleClass="w-full"
+            />
           </div>
 
-          <!-- BOTÕES -->
-          <div
-            class="mt-4 pt-3 border-top border-light-subtle d-flex justify-content-end gap-2"
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label
+              for="casoClinicoId"
+              style="font-size: 0.875rem; font-weight: 600; color: #1e293b"
+            >
+              Caso Clínico Simulado <span style="color: #ef4444">*</span>
+            </label>
+            <p-select
+              inputId="casoClinicoId"
+              [options]="casosOpcoes()"
+              optionLabel="label"
+              optionValue="value"
+              [(ngModel)]="formulario.casoClinicoId"
+              name="casoClinicoId"
+              placeholder="Selecione o caso clínico..."
+              styleClass="w-full"
+            />
+          </div>
+        </div>
+
+        <!-- PRAZOS E TEMPO LIMITE -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem">
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label for="dataInicio" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+              Data de Abertura <span style="color: #ef4444">*</span>
+            </label>
+            <input
+              pInputText
+              id="dataInicio"
+              type="date"
+              [(ngModel)]="formulario.dataInicio"
+              name="dataInicio"
+              class="w-full"
+              required
+            />
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label for="dataFim" style="font-size: 0.875rem; font-weight: 600; color: #1e293b">
+              Prazo Limite para Envio <span style="color: #ef4444">*</span>
+            </label>
+            <input
+              pInputText
+              id="dataFim"
+              type="date"
+              [(ngModel)]="formulario.dataFim"
+              name="dataFim"
+              class="w-full"
+              required
+            />
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem">
+            <label
+              for="tempoLimiteMinutos"
+              style="font-size: 0.875rem; font-weight: 600; color: #1e293b"
+            >
+              Tempo Limite (minutos) <span style="color: #ef4444">*</span>
+            </label>
+            <p-inputNumber
+              inputId="tempoLimiteMinutos"
+              [(ngModel)]="formulario.tempoLimiteMinutos"
+              name="tempoLimiteMinutos"
+              suffix=" min (IHI GTT: 20)"
+              [min]="1"
+              [max]="180"
+              styleClass="w-full"
+            />
+          </div>
+        </div>
+
+        <!-- ORIENTAÇÕES PEDAGÓGICAS -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem">
+          <label
+            for="orientacoesPedagogicas"
+            style="font-size: 0.875rem; font-weight: 600; color: #1e293b"
           >
-            <button
-              type="button"
-              class="btn btn-outline-secondary px-3"
-              (click)="voltarParaListagem()"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary px-4 d-inline-flex align-items-center gap-2"
-              [disabled]="salvando()"
-            >
-              @if (salvando()) {
-                <span
-                  class="spinner-border spinner-border-sm"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                <span>Salvando...</span>
-              } @else {
-                <i class="bi bi-check-lg"></i>
-                <span>{{
-                  modoEdicao() ? "Salvar Alterações" : "Criar Atividade"
-                }}</span>
-              }
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            Orientações Pedagógicas para os Alunos
+          </label>
+          <textarea
+            pTextarea
+            id="orientacoesPedagogicas"
+            rows="4"
+            [(ngModel)]="formulario.orientacoesPedagogicas"
+            name="orientacoesPedagogicas"
+            placeholder="Instruções aos discentes sobre a realização da auditoria clínica, busca ativa de gatilhos nos registros e preenchimento dos pilares 6M, 5W3H e PDCA..."
+            class="w-full"
+          ></textarea>
+        </div>
+
+        <!-- STATUS ATIVO -->
+        <div style="display: flex; align-items: center; gap: 0.75rem">
+          <p-toggleswitch inputId="ativa" [(ngModel)]="formulario.ativa" name="ativa" />
+          <label
+            for="ativa"
+            style="font-size: 0.875rem; font-weight: 600; color: #1e293b; cursor: pointer"
+          >
+            Atividade Ativa (visível para os alunos realizarem)
+          </label>
+        </div>
+
+        <!-- BOTÕES -->
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            border-top: 1px solid var(--p-content-border-color, #e2e8f0);
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+          "
+        >
+          <p-button
+            label="Cancelar"
+            [outlined]="true"
+            severity="secondary"
+            size="small"
+            (onClick)="voltarParaListagem()"
+          />
+          <p-button
+            [label]="modoEdicao() ? 'Salvar Alterações' : 'Criar Atividade'"
+            icon="pi pi-check"
+            type="submit"
+            size="small"
+            [loading]="salvando()"
+          />
+        </div>
+      </form>
+    </p-card>
   }
 </div>

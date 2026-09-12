@@ -1,13 +1,28 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { MessageModule } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { EducacionalService } from '../../../servicos/educacional.service';
 import { Submissao } from '../../../modelos/educacional.modelos';
 
 @Component({
   selector: 'app-resultado-atividade',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    DecimalPipe,
+    CardModule,
+    TagModule,
+    ButtonModule,
+    TableModule,
+    MessageModule,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './resultado-atividade.component.html',
 })
 export class ResultadoAtividadeComponent implements OnInit {
@@ -19,9 +34,9 @@ export class ResultadoAtividadeComponent implements OnInit {
   readonly submissao = signal<Submissao | null>(null);
   readonly mensagemErro = signal<string | null>(null);
 
-  readonly abaResolucao = signal<
-    'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca' | 'prontuario'
-  >('gatilhos');
+  readonly abaResolucao = signal<'gatilhos' | 'ishikawa' | 'plano5w3h' | 'pdca' | 'prontuario'>(
+    'gatilhos',
+  );
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -39,8 +54,7 @@ export class ResultadoAtividadeComponent implements OnInit {
       },
       error: (err) => {
         this.mensagemErro.set(
-          'Erro ao carregar resultado da atividade: ' +
-            (err.error?.mensagem || err.message),
+          'Erro ao carregar resultado da atividade: ' + (err.error?.mensagem || err.message),
         );
         this.carregando.set(false);
       },
